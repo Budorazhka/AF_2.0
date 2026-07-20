@@ -25,8 +25,12 @@ jobs:
           python-version: "3.x"
 
       # Подставляет partials/top.html и partials/bottom.html вместо SSI-инклюдов
-      # (GitHub Pages не умеет их обрабатывать, в отличие от nginx в проде)
+      # (GitHub Pages не умеет их обрабатывать, в отличие от nginx в проде).
+      # SITE_BASE_PATH = "/<имя репозитория>" — project-сайт GitHub Pages живёт
+      # в подпапке (https://user.github.io/AF_2.0/), а не в корне домена.
       - name: Build static site
+        env:
+          SITE_BASE_PATH: /${{ github.event.repository.name }}
         run: python scripts/build_pages.py
 
       - uses: actions/upload-pages-artifact@v3

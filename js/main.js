@@ -6,6 +6,11 @@
 
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
+  // На root-деплоях (Docker/nginx, Vercel, локальный dev_server.py) не задан — "".
+  // На GitHub Pages (проектный сайт в подпапке /AF_2.0) build_pages.py прописывает
+  // его инлайновым скриптом в <head> каждой страницы.
+  const BASE_PATH = (window.__BASE_PATH__ || "").replace(/\/$/, "");
+  const stripBasePath = (p) => (BASE_PATH && p.indexOf(BASE_PATH) === 0) ? (p.slice(BASE_PATH.length) || "/") : p;
   const normalizePath = (pathname) => {
     let path = (pathname.replace(/\/$/, "") || "/");
     if (path.endsWith(".html")) path = path.slice(0, -5) || "/";
@@ -280,9 +285,12 @@
   const initPage = () => {
     // 2. Active nav path styling
     const path = normalizePath(location.pathname);
+    // главная ссылка на BASE_PATH-деплое это не "/", а "/AF_2.0" — иначе она
+    // подсвечивалась бы активной на любой странице (startsWith совпадал всегда)
+    const homeHref = BASE_PATH || "/";
     $$(".overlay-menu a").forEach((a) => {
       const href = (a.getAttribute("href") || "").replace(/\/$/, "");
-      a.classList.toggle("is-active", href && href !== "/" && (path === href || path.startsWith(href + "/")));
+      a.classList.toggle("is-active", href && href !== homeHref && (path === href || path.startsWith(href + "/")));
     });
 
     // 3. Year setup
@@ -411,7 +419,8 @@
     // 10. Chapter navigation at bottom
     const chapterNext = $("#chapterNext");
     if (chapterNext) {
-      const cur = normalizePath(location.pathname);
+      // CHAPTERS хранит логические (без BASE_PATH) маршруты — сравниваем со "снятым" путём
+      const cur = normalizePath(stripBasePath(location.pathname));
       const mainOverride = $("main[data-chapter-next-title]");
       let next;
       if (mainOverride) {
@@ -424,17 +433,19 @@
         if (idx === -1) idx = 0;
         next = CHAPTERS[(idx + 1) % CHAPTERS.length];
       }
-      const imgPath = NEXT_IMG_FALLBACKS[next.href] || "/assets/img/2.jpg";
+      // а в реальный href на странице подставляем уже с BASE_PATH — иначе браузер уйдёт в корень домена
+      const hrefAbs = BASE_PATH + next.href;
+      const imgPath = BASE_PATH + (NEXT_IMG_FALLBACKS[next.href] || "/assets/img/2.jpg");
       const imgFallback = imgPath;
       const arrow = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-      
+
       chapterNext.hidden = false;
       chapterNext.innerHTML =
-        '<a class="chapter-next__media media-placeholder" href="' + next.href + '">' +
+        '<a class="chapter-next__media media-placeholder" href="' + hrefAbs + '">' +
         '<img data-src="' + imgPath + '" data-fallback="' + imgFallback + '" alt="" class="parallax__img lazy" /></a>' +
         '<div class="chapter-next__overlay"></div>' +
         '<div class="chapter-next__inner">' +
-          '<a href="' + next.href + '" class="circle-btn chapter-next__arrow" aria-label="' + next.title + '">' + arrow + '</a>' +
+          '<a href="' + hrefAbs + '" class="circle-btn chapter-next__arrow" aria-label="' + next.title + '">' + arrow + '</a>' +
           '<div class="chapter-next__text-wrap">' +
             '<p class="chapter-next__eyebrow">Следующая глава</p>' +
             '<h2 class="chapter-next__title">' + next.title + '</h2>' +
