@@ -1,0 +1,6 @@
+{
+  "buildCommand": "python3 scripts/build_pages.py",
+  "outputDirectory": "_site",
+  "cleanUrls": true,
+  "trailingSlash": false
+}

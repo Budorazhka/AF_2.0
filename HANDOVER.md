@@ -28,6 +28,16 @@ docker compose up -d
 
 ---
 
+## ☁️ Деплой на статический хостинг (GitHub Pages / Vercel)
+
+Nginx и `dev_server.py` умеют SSI (`<!--# include virtual="..." -->`) — статические хостинги вроде GitHub Pages и Vercel нет. `scripts/build_pages.py` подставляет партиалы (`partials/top.html`, `partials/bottom.html`) прямо в HTML и складывает результат в `_site/` (не коммитится, генерируется каждый раз заново). Каждая страница пишется и как `name.html`, и как `name/index.html` — чтобы `/location` работало независимо от того, умеет хостинг раскрывать URL без расширения.
+
+*   **GitHub Pages:** `.github/workflows/pages.yml` гоняет сборку в Actions при пуше в `main`. В настройках репозитория Settings → Pages → Source нужно выбрать «GitHub Actions» (не «Deploy from a branch»).
+*   **Vercel:** `vercel.json` уже задаёт `buildCommand`/`outputDirectory` — при импорте репозитория достаточно нажать Deploy, никаких доп. настроек не требуется.
+*   **Локальная проверка сборки:** `python scripts/build_pages.py`, затем `cd _site && python -m http.server 8099`.
+
+---
+
 ## 🏗️ Архитектура JS и жизненный цикл (Barba.js + GSAP)
 Вся логика интерактивности находится в файле [js/main.js](file:///Users/egor/Desktop/aurum/js/main.js). Из-за использования **Barba.js** переходы происходят без полной перезагрузки страницы (AJAX-запросы).
 
