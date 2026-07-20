@@ -23,3 +23,6 @@ Thumbs.db
 *.sw?
 .preview/
 assets/img/*_files/
+
+# Статическая сборка для GitHub Pages/Vercel (генерируется scripts/build_pages.py)
+/_site/
