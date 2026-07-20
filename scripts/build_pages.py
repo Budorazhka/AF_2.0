@@ -31,6 +31,21 @@ dev_server.py и nginx с ssi on), и копирует статику в _site/.
 
 Для Vercel/Docker/локального dev_server.py переменная не задаётся —
 BASE_PATH пустой, ничего не меняется.
+
+Абсолютные URL для og:image/og:url/canonical (SITE_ORIGIN)
+------------------------------------------------------------------
+og:image и og:url обязаны быть абсолютными (со схемой и доменом) —
+относительный путь краулеры соцсетей (особенно Telegram/WhatsApp)
+часто просто не резолвят, превью не соберётся. canonical тоже
+предпочтительно делать абсолютным.
+
+Пока боевой домен не выбран, эти три тега остаются относительными
+(валидно для canonical, но не идеально для og:*). Как только домен
+определится — выставить SITE_ORIGIN (например
+"https://aurumfort.example") в переменных окружения Vercel/Actions,
+без правки HTML: скрипт сам подставит его перед всеми href/content
+у этих трёх тегов (после уже применённого SITE_BASE_PATH, если он
+тоже задан).
 """
 from __future__ import annotations
 
@@ -50,6 +65,9 @@ CSS_URL_RE = re.compile(r'url\((["\']?)(/assets/[^)"\']*)\1\)')
 
 ROUTE_PATHS = {"/", "/location", "/architecture", "/infrastructure", "/flats", "/contacts"}
 SITE_PREFIXES = ("/css/", "/js/", "/assets/")
+
+CANONICAL_RE = re.compile(r'(<link rel="canonical" href=")([^"]*)(")')
+OG_URL_IMAGE_RE = re.compile(r'(property="og:(?:image|url)" content=")([^"]*)(")')
 
 PAGES = [
     "index.html",
@@ -87,6 +105,15 @@ def rewrite_base_path(html: str, base_path: str) -> str:
     return ATTR_RE.sub(repl, html)
 
 
+def rewrite_absolute_urls(html: str, origin: str) -> str:
+    if not origin:
+        return html
+    repl = lambda m: f"{m.group(1)}{origin}{m.group(2)}{m.group(3)}"
+    html = CANONICAL_RE.sub(repl, html)
+    html = OG_URL_IMAGE_RE.sub(repl, html)
+    return html
+
+
 def inject_base_path_global(html: str, base_path: str) -> str:
     script = f'<script>window.__BASE_PATH__={base_path!r};</script>'
     return html.replace("<head>", "<head>\n  " + script, 1)
@@ -100,8 +127,11 @@ def rewrite_css(css: str, base_path: str) -> str:
 
 def main() -> None:
     base_path = os.environ.get("SITE_BASE_PATH", "").rstrip("/")
+    origin = os.environ.get("SITE_ORIGIN", "").rstrip("/")
     if base_path:
         print(f"SITE_BASE_PATH={base_path!r}")
+    if origin:
+        print(f"SITE_ORIGIN={origin!r}")
 
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -114,6 +144,7 @@ def main() -> None:
             continue
         rendered = resolve_includes(src.read_text(encoding="utf-8"))
         rendered = rewrite_base_path(rendered, base_path)
+        rendered = rewrite_absolute_urls(rendered, origin)
         rendered = inject_base_path_global(rendered, base_path)
 
         (OUT / name).write_text(rendered, encoding="utf-8")
