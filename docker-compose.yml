@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    image: aurum-club-web
+    container_name: aurum_club_web
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${WEB_PORT:-8090}:80"
+    # медиа можно монтировать без пересборки образа:
+    volumes:
+      - ./assets:/usr/share/nginx/html/assets:ro

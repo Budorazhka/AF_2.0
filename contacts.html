@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#14181b" />
+  <title>Контакты — Aurum Fort</title>
+  <meta name="description" content="Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=51" />
+</head>
+<body>
+  <!--# include virtual="/partials/top.html" -->
+
+  <main data-barba="container" data-barba-namespace="contacts">
+    <!-- ============ HERO ============ -->
+    <section class="location-hero" data-chapter="Контакты">
+      <div class="container location-hero__container reveal">
+        <div class="location-hero__left">
+          <h1 class="location-hero__title">Выбрать<br />квартиру</h1>
+        </div>
+        <div class="location-hero__right">
+          <div class="location-hero__watermark flats-crest"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACTS ============ -->
+    <section class="section">
+      <div class="container home-service__grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start;">
+        <div class="reveal">
+          <p class="eyebrow">Свяжитесь с нами</p>
+          <a href="tel:+995557207070" class="contacts-phone">+995 557 20 70 70</a>
+          <button class="btn btn--gold" data-callback style="margin: 18px 0 40px;">Обратный звонок</button>
+
+          <div class="home-list">
+            <div class="home-list__row"><span class="home-list__name">Офис продаж</span><span class="home-list__note">г. Батуми, ул. Царя Парнаваза, 18</span></div>
+            <div class="home-list__row"><span class="home-list__name">Часы работы</span><span class="home-list__note">Пн–пт с 11:00 до 19:00</span></div>
+            <div class="home-list__row"><span class="home-list__name">Клубный дом</span><span class="home-list__note">ул. Петре Ибери 51, Гонио, Батуми</span></div>
+          </div>
+
+          <a href="https://yandex.ru/maps/?text=Батуми, улица Царя Парнаваза, 18" target="_blank" rel="noopener" class="btn btn--outline" style="margin-top: 34px;">Построить маршрут</a>
+        </div>
+
+        <div class="reveal">
+          <div class="contacts-map">
+            <iframe
+              title="Карта — офис продаж Aurum Fort"
+              src="https://yandex.ru/map-widget/v1/?text=Батуми%2C%20улица%20Царя%20Парнаваза%2C%2018&z=15"
+              width="100%" height="100%" frameborder="0" loading="lazy"
+              style="border: 0; display: block;"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!--# include virtual="/partials/bottom.html" -->
+</body>
+</html>
