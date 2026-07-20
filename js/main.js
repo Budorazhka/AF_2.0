@@ -27,11 +27,11 @@
     { href: "/contacts",       title: "Выбрать квартиру" }
   ];
   const NEXT_IMG_FALLBACKS = {
-    "/": "/assets/img/2.jpg",
-    "/location": "/assets/img/6_upscaled.PNG",
-    "/architecture": "/assets/img/18_1_upscaled.PNG",
+    "/": "/assets/img/2.webp",
+    "/location": "/assets/img/6_upscaled.webp",
+    "/architecture": "/assets/img/18_1_upscaled.webp",
     "/infrastructure": "/assets/img/next-infrastructure.webp",
-    "/flats": "/assets/img/п12.PNG",
+    "/flats": "/assets/img/п12.webp",
     "/contacts": "/assets/img/next-contacts.webp"
   };
 
@@ -435,7 +435,7 @@
       }
       // а в реальный href на странице подставляем уже с BASE_PATH — иначе браузер уйдёт в корень домена
       const hrefAbs = BASE_PATH + next.href;
-      const imgPath = BASE_PATH + (NEXT_IMG_FALLBACKS[next.href] || "/assets/img/2.jpg");
+      const imgPath = BASE_PATH + (NEXT_IMG_FALLBACKS[next.href] || "/assets/img/2.webp");
       const imgFallback = imgPath;
       const arrow = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 

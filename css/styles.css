@@ -27,7 +27,7 @@
   --sans: "Tenor Sans", system-ui, sans-serif;
   --body: "Montserrat", system-ui, sans-serif;
   --marble: #f3f0eb;
-  --marble-bg: url("/assets/img/marble-bg.jpg");
+  --marble-bg: url("/assets/img/marble-bg.webp");
 
   --container: 1280px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
