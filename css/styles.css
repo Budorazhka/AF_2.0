@@ -14,9 +14,10 @@
   --cream: #f6f1e7;
   --cream-2: #f6f5f4;
   /* исторические имена --navy/--navy-deep сохранены: на них завязаны 40+ правил.
-     Значения переведены на брендовые — зелёный для заголовков глав, мягкий чёрный для текста. */
-  --navy: #4e6046;
+     Заказчик (правки от 21.07.2026, п. 7 и далее) перевёл все заголовки на фирменный синий. */
+  --navy: #1c4e89;
   --navy-deep: #34302a;
+  --brand-green: #4e6046;
   --beige: #d2cdca;
   --grey: #8b8b8b;
   --grey-light: #e7e7e7;
@@ -149,7 +150,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .preloader.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .preloader__inner { text-align: center; }
 .preloader__mark { font-family: var(--serif); color: var(--gold); font-size: 2.6rem; letter-spacing: 0.3em; margin-bottom: 22px; }
-.preloader__bar { width: 180px; height: 1px; background: rgba(255,255,255,0.18); overflow: hidden; }
+/* п. 42: знак крупнее и рядом словесная часть логотипа — заставка выглядела пустовато */
+.preloader__wordmark {
+  font-family: var(--serif);
+  color: var(--gold);
+  font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  margin-bottom: 26px;
+  padding-left: 0.42em;
+}
+.preloader__bar { width: 220px; height: 1px; background: rgba(255,255,255,0.18); overflow: hidden; }
 .preloader__bar span { display: block; height: 100%; width: 0; background: var(--gold); transition: width 0.2s linear; }
 
 /* ---------- ROTATE NOTICE ---------- */
@@ -494,9 +505,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .masters-arrow span { position: relative; display: block; }
 
 /* --- АВТОРСКИЙ ПОЧЕРК (бюро + архитектор) --- */
-.authors__head { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 80px); align-items: start; margin-bottom: clamp(40px, 6vw, 74px); }
-.authors__title { font-family: var(--serif); font-weight: 400; text-transform: uppercase; color: var(--navy-deep); font-size: clamp(1.9rem, 4vw, 3.4rem); line-height: 1.08; letter-spacing: 0.05em; }
-.authors__lead { font-family: var(--body); font-weight: 300; text-transform: uppercase; color: var(--navy-deep); font-size: clamp(1.05rem, 1.5vw, 1.35rem); line-height: 1.6; letter-spacing: 0.06em; max-width: 60ch; align-self: center; }
+/* п. 10: заголовок идёт отдельной строкой во всю ширину и ложится ровно в две строки */
+.authors__head { display: flex; flex-direction: column; align-items: center; gap: clamp(18px, 3vw, 34px); margin-bottom: clamp(40px, 6vw, 74px); text-align: center; }
+.authors__title { font-family: var(--serif); font-weight: 400; text-transform: uppercase; color: var(--navy); font-size: clamp(1.7rem, 3.8vw, 3.4rem); line-height: 1.14; letter-spacing: 0.05em; text-wrap: balance; }
+.authors__lead { font-family: var(--body); font-weight: 300; text-transform: uppercase; color: var(--navy-deep); font-size: clamp(1.05rem, 1.5vw, 1.35rem); line-height: 1.6; letter-spacing: 0.06em; max-width: 60ch; margin: 0 auto; }
 .authors__people { display: flex; justify-content: center; gap: clamp(48px, 10vw, 150px); margin: 0 auto clamp(40px, 6vw, 70px); }
 .author { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .author__avatar { width: clamp(140px, 18vw, 210px); height: clamp(140px, 18vw, 210px); border-radius: 50%; overflow: hidden; background: #ece8e1; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(52, 48, 42,0.15); }
@@ -538,7 +550,7 @@ main > section { margin: 0; }
 .home-ready { background: #fff; padding: clamp(56px, 8vw, 120px) 0 0; text-align: center; }
 .home-ready__title {
   font-family: var(--serif); font-weight: 400; text-transform: uppercase;
-  color: var(--navy-deep); font-size: clamp(1.9rem, 5vw, 4.1rem);
+  color: var(--navy); font-size: clamp(1.9rem, 5vw, 4.1rem);
   line-height: 1.14; letter-spacing: 0.14em; margin: 0 auto clamp(34px, 5vw, 60px);
 }
 
@@ -654,13 +666,15 @@ main > section { margin: 0; }
   color: #fff;
   text-wrap: balance;
 }
+/* п. 8: текст был мелкий и полупрозрачный — крупнее, плотнее по весу и контрастнее */
 .home-district__text {
   font-family: var(--body);
-  font-size: 0.95rem;
-  line-height: 1.8;
-  color: rgba(255,255,255,0.74);
-  font-weight: 300;
-  max-width: 48ch;
+  font-size: clamp(1.05rem, 1.4vw, 1.28rem);
+  line-height: 1.72;
+  color: rgba(255,255,255,0.94);
+  font-weight: 400;
+  max-width: 52ch;
+  text-wrap: pretty;
 }
 
 /* Right column: large image at natural proportions */
@@ -738,18 +752,36 @@ main > section { margin: 0; }
 .home-service__grid--rev { grid-template-columns: 0.75fr 1.25fr; }
 .home-service__grid--rev .home-service__media { order: 2; }
 .home-service__media { height: auto; }
-.home-service--lobby .home-service__media { aspect-ratio: 610 / 571; position: relative; overflow: hidden; background: #0d130a; }
-.home-service--tech .home-service__media { aspect-ratio: 3 / 4; position: relative; overflow: hidden; background: #0d130a; }
-.home-service__media .parallax__img { top: -12%; height: 124%; object-position: center; }
+/* п. 11-12: рендеры показываем целиком, без обрезки по высоте */
+.home-service--lobby .home-service__media,
+.home-service--tech .home-service__media {
+  aspect-ratio: auto; position: relative; overflow: hidden; background: #0d130a;
+}
+.home-service--lobby .home-service__media .parallax__img,
+.home-service--tech .home-service__media .parallax__img {
+  position: static; top: auto; height: auto; width: 100%; object-fit: contain; transform: none !important;
+}
+.home-service__media .parallax__img { object-position: center; }
 .home-service__eyebrow {
   font-size: clamp(0.9rem, 1.4vw, 1.15rem); letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--gold-2); font-weight: 400; line-height: 1.5; margin-bottom: 22px; max-width: 80ch;
 }
+/* п. 11: выравнивание всей колонки по центру */
+.home-service--lobby .home-service__grid > .reveal,
+.home-service--tech .home-service__grid > .reveal { text-align: center; }
+.home-service--lobby .home-service__eyebrow,
+.home-service--tech .home-service__eyebrow { margin-left: auto; margin-right: auto; }
+.home-service--lobby .acc__head,
+.home-service--tech .acc__head { justify-content: center; text-align: center; }
+.home-service--tech .acc__body p,
+.home-service--lobby .acc__body p { text-align: center; }
 .home-service__title {
-  font-family: var(--sans); font-weight: 400; text-transform: uppercase; color: var(--navy-deep);
+  font-family: var(--sans); font-weight: 400; text-transform: uppercase; color: var(--navy);
   font-size: clamp(2rem, 4.4vw, 3.6rem); line-height: 1.05; letter-spacing: 0.06em; margin-bottom: 40px;
-  display: flex;
-  align-items: baseline;
+  /* flex ломал переносы внутри заголовка — текст вылезал за контейнер */
+  display: block;
+  text-align: center;
+  text-wrap: balance;
 }
 .home-service__chapter-num {
   font-family: var(--serif);
@@ -838,6 +870,38 @@ main > section { margin: 0; }
   opacity: 0; pointer-events: none; transition: opacity 0.35s var(--ease); z-index: 2;
 }
 .geo__hint.is-on { opacity: 1; }
+
+/* п. 16: подписи меток прямо на карте — какая точка чем является.
+   Иконка узкая, поэтому подписи разрешено выходить за её границы. */
+.geo__map [class*="placemark-overlay"],
+.geo__map [class*="image-with-content"] { overflow: visible !important; }
+.geo__pin-label {
+  position: absolute;
+  left: 15px;
+  transform: translateX(-50%);
+  top: 42px;
+  white-space: nowrap;
+  font-family: var(--body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--navy-deep);
+  background: rgba(255,255,255,0.94);
+  padding: 3px 9px;
+  box-shadow: 0 2px 10px rgba(20,24,27,0.18);
+  pointer-events: none;
+}
+.geo__pin-label--home {
+  left: 19px;
+  /* подпись дома над меткой, чтобы не спорить с соседними точками */
+  top: -22px;
+  font-family: var(--serif);
+  font-size: 0.86rem;
+  letter-spacing: 0.12em;
+  color: var(--navy);
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(20,24,27,0.24);
+}
 .geo__map-fallback {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   text-align: center; padding: 30px; color: var(--graphite); font-size: 0.85rem; letter-spacing: 0.04em;
@@ -919,38 +983,56 @@ main > section { margin: 0; }
   background-size: cover; background-position: center; background-repeat: no-repeat;
 }
 .hero__slide.is-active { opacity: 1; z-index: 1; }
-.hero__overlay { position: absolute; inset: 0; z-index: 2; background: rgba(0,0,0,0.10); pointer-events: none; }
+/* п. 1: фото идут без затемнения — подложка под текст вшита в сами рендеры */
+.hero__overlay { display: none; }
 
 .hero__slide-caption {
   position: absolute;
   top: clamp(140px, 18vh, 200px);
-  right: clamp(10px, 2vw, 24px);
+  right: clamp(20px, 3vw, 46px);
   z-index: 3;
   display: flex;
   align-items: flex-start;
   gap: clamp(6px, 1vw, 12px);
+  text-align: right;
+}
+/* «33 РЕЗИДЕНЦИИ …» — цифра и текст в одну строку, по базовой линии (реф, п. 1) */
+.hero__slide-caption--inline {
+  flex-direction: row;
+  align-items: baseline;
+  gap: clamp(10px, 1.5vw, 22px);
   text-align: left;
 }
+.hero__slide-caption--stack {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: clamp(6px, 1vw, 14px);
+}
+/* Первая строка-акцент («ГОТОВЫЙ», «ЗДОРОВЬЕ КАК СРЕДА») крупнее остального блока */
+.hero__slide-text--lead { font-size: clamp(2rem, 4.2vw, 3.6rem); letter-spacing: 0.09em; }
+.hero__slide-text--sub { font-size: clamp(1.25rem, 2.4vw, 2rem); }
+/* п. 1-5: Tenor Sans в один вес, крупнее, без обводок и «жирности» */
 .hero__slide-number {
   font-family: var(--serif);
-  font-size: clamp(4.5rem, 10vw, 9rem);
+  font-size: clamp(5rem, 11.5vw, 10.5rem);
+  font-weight: 400;
   line-height: 0.85;
   margin-bottom: 0;
   color: #ffffff !important;
   opacity: 1 !important;
-  text-shadow: 0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.6), 0 4px 30px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.95);
+  text-shadow: 0 2px 18px rgba(0,0,0,0.35);
   -webkit-text-fill-color: #ffffff !important;
 }
 .hero__slide-text {
-  font-family: var(--sans);
-  font-size: clamp(1.4rem, 2.8vw, 2.4rem);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 3.3vw, 2.9rem);
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  line-height: 1.24;
   color: #ffffff !important;
   opacity: 1 !important;
   text-transform: uppercase;
-  text-shadow: 0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.6), 0 4px 30px rgba(0,0,0,0.95), 0 2px 8px rgba(0,0,0,0.95);
+  text-shadow: 0 2px 18px rgba(0,0,0,0.35);
   -webkit-text-fill-color: #ffffff !important;
 }
 .hero__stats {
@@ -1548,7 +1630,7 @@ main > section { margin: 0; }
   font-family: var(--sans);
   font-weight: 400;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--navy);
   font-size: clamp(2.2rem, 5.2vw, 4.4rem);
   letter-spacing: 0.08em;
   margin: 0;
@@ -1661,9 +1743,10 @@ main > section { margin: 0; }
 .location-intro__title {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(1.5rem, 2.8vw, 2.3rem);
+  /* п. 15: заголовок растянут и переведён на фирменный синий */
+  font-size: clamp(1.7rem, 3.2vw, 2.65rem);
   line-height: 1.3;
-  color: var(--ink);
+  color: var(--navy);
   text-transform: uppercase;
   letter-spacing: 0.02em;
   margin: 0 auto clamp(40px, 6vw, 80px);
@@ -1703,11 +1786,14 @@ main > section { margin: 0; }
   color: var(--gold);
 }
 .location-intro__pin-icon svg { width: 100%; height: auto; display: block; }
+/* п. 15: описание крупнее и плотнее по весу — было мелким и бледным */
 .location-intro__paragraph {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: var(--grey-dark, #555);
-  max-width: 50ch;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  line-height: 1.68;
+  color: var(--navy-deep);
+  font-weight: 400;
+  max-width: 56ch;
+  text-wrap: pretty;
 }
 
 .location-banner {
@@ -1951,8 +2037,9 @@ main > section { margin: 0; }
   font-family: var(--sans);
   font-weight: 400;
   text-transform: none;
-  color: var(--navy-deep);
-  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  /* п. 18: текст крупнее и синим */
+  color: var(--navy);
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
   line-height: 1.65;
   margin: 0 auto;
   max-width: 1100px;
@@ -2199,9 +2286,10 @@ main > section { margin: 0; }
   padding: clamp(40px, 6vw, 80px) 0 clamp(60px, 8vw, 120px);
   background: var(--cream);
 }
+/* п. 25: фото крупнее, текстовая колонка растянута */
 .arch-acc__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   gap: clamp(28px, 4.5vw, 64px);
   align-items: center;
 }
@@ -2225,7 +2313,7 @@ main > section { margin: 0; }
 }
 .arch-acc__panel {
   text-align: center;
-  max-width: 44ch;
+  max-width: 56ch;
   margin: 0 auto;
   width: 100%;
 }
@@ -2311,16 +2399,17 @@ main > section { margin: 0; }
 /* shared accordion defaults (other pages) */
 .acc__item { border-top: 1px solid rgba(52, 48, 42,0.2); }
 .acc__item:last-child { border-bottom: 1px solid rgba(52, 48, 42,0.2); }
-.acc__head { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 4px; text-align: left; font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.08em; color: var(--navy); font-size: clamp(1.1rem, 1.6vw, 1.35rem); background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; outline: none; transition: color 0.3s var(--ease); }
-.acc__head:hover { color: var(--gold); }
+/* п. 11: заголовки списков крупнее, раскрытый пункт остаётся тёмным (не уходит в золото) */
+.acc__head { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 4px; text-align: left; font-family: var(--sans); text-transform: uppercase; letter-spacing: 0.08em; color: var(--navy); font-size: clamp(1.3rem, 2vw, 1.7rem); background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; outline: none; transition: color 0.3s var(--ease); }
+.acc__head:hover { color: var(--navy-deep); }
 .acc__head:focus, .acc__head:focus-visible { outline: none; }
 .acc__item:focus-within { outline: none; }
 .acc__head .chev { color: var(--gold); transition: transform 0.35s var(--ease); }
-.acc__item.is-open .acc__head { color: var(--gold); }
+.acc__item.is-open .acc__head { color: var(--navy-deep); }
 .acc__item.is-open .acc__head .chev { transform: rotate(180deg); }
 .acc__body { max-height: 0; overflow: hidden; transition: max-height 0.45s var(--ease); }
 .acc__item.is-open .acc__body { max-height: var(--acc-open-h, 600px); }
-.acc__body p { padding: 0 4px 24px; color: var(--navy-deep); line-height: 1.7; font-size: clamp(0.95rem, 1.2vw, 1.1rem); font-weight: 500; }
+.acc__body p { padding: 0 4px 24px; color: var(--navy-deep); line-height: 1.7; font-size: clamp(1.02rem, 1.35vw, 1.2rem); font-weight: 500; }
 
 @media (max-width: 860px) {
   .arch-split__grid, .arch-acc__grid { grid-template-columns: 1fr; }
@@ -2348,6 +2437,28 @@ main > section { margin: 0; }
   max-width: 42ch;
   letter-spacing: 0.02em;
 }
+/* п. 27: блок «24/7» — фото не режется, текст по центру колонки */
+.infra-247__grid { align-items: center; }
+.infra-247__media { aspect-ratio: auto; min-height: auto; height: auto; }
+.infra-247__media img { width: 100%; height: auto; object-fit: contain; }
+.infra-247__content { text-align: center; }
+.infra-247__num {
+  font-family: var(--serif);
+  font-size: clamp(3.2rem, 7vw, 5.5rem);
+  color: var(--gold);
+  margin-bottom: clamp(15px, 3vw, 25px);
+  line-height: 1;
+  font-weight: 400;
+}
+.infra-247__text {
+  font-family: var(--sans);
+  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+  line-height: 1.7;
+  color: var(--navy-deep);
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
 .infra-mgmt__title {
   font-family: var(--serif);
   font-weight: 400;
@@ -2368,6 +2479,11 @@ main > section { margin: 0; }
   font-size: clamp(1.15rem, 1.8vw, 1.5rem);
   margin: 0 0 18px;
 }
+/* п. 30: весь блок УК выровнен по центру, как в референсе */
+.infra-mgmt .arch-acc__grid > .reveal { text-align: center; }
+.infra-mgmt .acc__head { justify-content: center; text-align: center; }
+.infra-mgmt .acc__body p { text-align: center; }
+.infra-mgmt__lead { text-wrap: pretty; }
 /* Подпись-кредит над изображением («Рендер входная группа» и т.п.) */
 .media-credit--right { text-align: right; }
 .media-credit {
@@ -2422,13 +2538,20 @@ main > section { margin: 0; }
 .infra-feature { padding: clamp(48px, 7vw, 110px) 0; }
 /* В макете фото — узкая колонка слева, аккордеон занимает бо́льшую часть ширины,
    чтобы заголовки пунктов ложились в одну строку */
-.infra-feature__grid { display: grid; grid-template-columns: 0.72fr 1.28fr; gap: clamp(30px, 5vw, 70px); align-items: stretch; }
-.infra-feature__media { position: relative; min-height: clamp(520px, 62vh, 760px); overflow: hidden; background: #ebe8e3; }
-.infra-feature__media img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.45s var(--ease); }
+.infra-feature__grid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: clamp(30px, 5vw, 70px); align-items: start; }
+/* п. 29: фото формата 4/5 вместо вытянутого 9/16 */
+.infra-feature__media { position: relative; aspect-ratio: 4 / 5; min-height: 0; overflow: hidden; background: #ebe8e3; }
+.infra-feature__media img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.25s var(--ease); }
 
-/* numbered accordion head */
-.acc__label { display: flex; align-items: baseline; gap: 14px; }
-.acc__no { color: var(--gold); font-family: var(--serif); font-size: 1.15em; line-height: 1; min-width: 1.1em; }
+/* п. 29: нумерация убрана, заголовки пунктов по центру, верхняя линия первого пункта снята */
+.acc__label { display: flex; align-items: baseline; justify-content: center; gap: 14px; flex: 1; text-align: center; }
+.infra-feature__grid .acc__item:first-child { border-top: none; }
+
+/* п. 31: блок паркинга выровнен по центру, как в референсе */
+.infra-parking__content { text-align: center; }
+.infra-parking__text { text-wrap: pretty; }
+.infra-parking .arch-split__title { text-align: center; }
+.infra-parking .infra-parkstats { justify-content: center; }
 
 /* --- Parking block --- */
 .infra-parking__grid {
@@ -2503,15 +2626,15 @@ main > section { margin: 0; }
   align-items: stretch;
   gap: clamp(24px, 4vw, 48px);
 }
+/* п. 34: фото не режем — показываем в оригинальных пропорциях */
 .flats-privacy__media {
-  aspect-ratio: 1736 / 1612;
+  aspect-ratio: auto;
   min-height: 0;
 }
 .flats-privacy__media > img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
+  height: auto;
+  object-fit: contain;
   display: block;
 }
 .flats-privacy__content {
@@ -2519,7 +2642,27 @@ main > section { margin: 0; }
 }
 .flats-privacy__text {
   color: #1a1a1a;
+  text-wrap: pretty;
 }
+
+/* п. 36-38: текстовые колонки выровнены по центру и вертикально по оси фото */
+.flats-ceilings__grid,
+.flats-water__grid,
+.flats-air__grid,
+.flats-height__grid { align-items: center; }
+.flats-ceilings__content,
+.flats-water__content,
+.flats-air__content,
+.flats-height__content { text-align: center; }
+.flats-ceilings__content .arch-split__title,
+.flats-water__content .arch-split__title,
+.flats-air__content .arch-split__title,
+.flats-height__content .arch-split__title { text-align: center; }
+.flats-ceilings__text,
+.flats-water__text,
+.flats-air__text,
+.flats-height__text { text-wrap: pretty; }
+.flats-ceilings__stats { justify-content: center; }
 .flats-privacy__text p {
   font-weight: 500;
   font-size: clamp(1.05rem, 1.45vw, 1.28rem);
@@ -2590,17 +2733,19 @@ main > section { margin: 0; }
   .flats-height__grid { grid-template-columns: 1fr; }
   .flats-height__media { aspect-ratio: 4/3; }
 }
+/* п. 40: бежевые поля сверху и снизу уменьшены, фото сдвинуто влево, цитата растянута */
 .flats-quote {
   background: var(--cream);
-  padding: clamp(56px, 8vw, 110px) 0;
+  padding: clamp(34px, 5vw, 64px) 0;
 }
 .flats-quote__inner {
   display: grid;
   grid-template-columns: clamp(160px, 20vw, 220px) minmax(0, 1fr);
   gap: clamp(32px, 5vw, 72px);
   align-items: center;
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
+  justify-items: start;
 }
 .flats-quote__avatar {
   position: relative;
@@ -2634,7 +2779,8 @@ main > section { margin: 0; }
   letter-spacing: 0.02em;
   color: var(--navy);
   text-transform: none;
-  max-width: 36em;
+  max-width: 52em;
+  text-wrap: pretty;
 }
 .flats-quote__text::before {
   content: "«";
@@ -2836,7 +2982,8 @@ main > section { margin: 0; }
 .flats-pano {
   position: relative; height: clamp(520px, 92vh, 960px); overflow: hidden; color: #fff;
 }
-.flats-pano .parallax__img, .flats-pano .media-placeholder { filter: brightness(0.78); }
+/* п. 35: было слишком темно по сравнению с ТЗ — затемнение почти снято */
+.flats-pano .parallax__img, .flats-pano .media-placeholder { filter: brightness(0.95); }
 /* Заголовок поверх панорамы (макет, стр. 48) */
 /* Без transform: класс .reveal анимирует transform через GSAP и перебил бы центрирование */
 .flats-pano__title {
@@ -2858,8 +3005,9 @@ main > section { margin: 0; }
   text-shadow: 0 2px 26px rgba(0, 0, 0, 0.45);
   pointer-events: none;
 }
+/* п. 35: кружок 360° стоит ровно под заголовком, по той же оси */
 .flats-pano__badge {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  position: absolute; left: 50%; top: clamp(230px, 38vh, 400px); transform: translateX(-50%);
   z-index: 3; text-align: center; pointer-events: none;
 }
 .flats-pano__badge-ring {
@@ -2936,7 +3084,8 @@ main > section { margin: 0; }
 /* ============ CONTACTS ============ */
 .contacts-phone {
   display: inline-block; font-family: var(--serif);
-  font-size: clamp(1.9rem, 4vw, 3rem); color: var(--soft-black);
+  /* п. 41: переменной --soft-black в проекте нет — цвет не применялся; ставим фирменный синий */
+  font-size: clamp(1.9rem, 4vw, 3rem); color: var(--navy);
   line-height: 1; margin: 6px 0 0; transition: color 0.3s;
 }
 .contacts-phone:hover { color: var(--gold); }
@@ -3044,7 +3193,8 @@ main > section { margin: 0; }
 }
 .slide-author__title {
   font-family: var(--serif);
-  color: var(--ink);
+  /* п. 20: заголовок синим */
+  color: var(--navy);
   font-size: clamp(1.6rem, 3.4vw, 2.8rem);
   line-height: 1.15;
   font-weight: 400;
@@ -3066,10 +3216,11 @@ main > section { margin: 0; }
   justify-content: center;
   gap: 10px;
   min-height: 120px;
-  padding: 24px 36px;
+  padding: 26px 40px;
   text-align: center;
   background: #ece5d6;
-  border: 1px dashed rgba(52, 48, 42, 0.4);
+  /* п. 20: пришла реальная цитата — пунктир заглушки убран */
+  border: none;
   color: var(--ink);
 }
 /* Декоративные кавычки как в макете (стр. 28) */
@@ -3084,6 +3235,23 @@ main > section { margin: 0; }
 }
 .slide-author__quote-body::before { content: "\201C"; top: 2px; left: 10px; }
 .slide-author__quote-body::after { content: "\201D"; bottom: -6px; right: 10px; }
+.slide-author__quote-text {
+  font-family: var(--serif);
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.5;
+  color: var(--navy-deep);
+  margin: 0;
+  text-wrap: pretty;
+}
+.slide-author__quote-meta { display: flex; flex-direction: column; gap: 3px; margin-top: 14px; }
+.slide-author__quote-name {
+  font-family: var(--serif); font-style: normal; font-size: 0.98rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy);
+}
+.slide-author__quote-role {
+  font-family: var(--body); font-size: 0.8rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gold-2);
+}
 .slide-author__avatar {
   width: clamp(90px, 10vw, 130px);
   height: clamp(90px, 10vw, 130px);
@@ -3182,17 +3350,19 @@ main > section { margin: 0; }
   gap: clamp(30px, 6vw, 84px);
   align-items: stretch;
 }
+/* п. 22: основной текст крупнее и по центру, как в референсе */
 .slide-deconstruct__left {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 28px;
   color: var(--navy-deep);
-  line-height: 1.95;
-  font-size: clamp(1.02rem, 1.3vw, 1.2rem);
+  line-height: 1.8;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
   font-family: var(--body);
   font-weight: 400;
-  text-align: left;
+  text-align: center;
+  text-wrap: pretty;
 }
 .slide-deconstruct__right {
   display: flex;
@@ -3305,14 +3475,24 @@ main > section { margin: 0; }
   font-weight: 400;
   text-transform: uppercase;
   margin-bottom: 20px;
-  white-space: nowrap;
+  /* nowrap убран: на узких экранах заголовок вылезал за контейнер */
+  text-wrap: balance;
 }
+/* п. 24: широкое фото с дрона вместо трёх колонок-заглушек */
+.slide-logic__wide {
+  width: 100%;
+  overflow: hidden;
+  background: #ebe8e3;
+}
+.slide-logic__wide img { width: 100%; height: auto; display: block; }
+/* п. 24: текст был мелкий — растянут и укрупнён */
 .slide-logic__text {
   font-family: var(--body);
-  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
-  line-height: 1.75;
+  font-size: clamp(1.12rem, 1.55vw, 1.35rem);
+  line-height: 1.7;
   color: var(--navy-deep);
   font-weight: 400;
+  text-wrap: pretty;
 }
 .slide-logic__grid {
   display: grid;

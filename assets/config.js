@@ -14,12 +14,17 @@ window.SITE_CONFIG = {
   // Вкладка «Инфраструктура» — плоский список с таймингами (макет, стр. 19)
   poi: [
     {
-      name: "Магазины: Nikora (24/7)/Spar",
+      name: "Магазин Nikora (24/7)",
       coords: [41.5752, 41.5710],
       time: "7 минут"
     },
     {
-      name: "ТЦ MetroCity Batumi",
+      name: "Магазин Spar",
+      coords: [41.5713, 41.5668],
+      time: "7 минут"
+    },
+    {
+      name: "ТЦ Metro City Batumi",
       coords: [41.6234, 41.5942],
       time: "25 минут"
     },
@@ -29,7 +34,7 @@ window.SITE_CONFIG = {
       time: "30 минут"
     },
     {
-      name: "Общеобразовательная школа №30",
+      name: "Школа №30",
       coords: [41.5620, 41.5720],
       time: "6 минут"
     },
