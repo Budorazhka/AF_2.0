@@ -1109,9 +1109,14 @@
         parallaxItems.push({ el, img, speed, current: 0, target: 0 });
       });
 
-      const homeFeature = $(".home-feature");
-      const homeFeatureImg = $(".home-feature__img");
-      const homeFeatureTitle = $(".home-feature__title");
+      /* Sticky-проезд «Место силы» рассчитан на 220vh протяжки — на телефоне это
+         два экрана пустого поля. Там секция схлопнута в CSS до обычного кадра,
+         поэтому эффект не инициализируем: иначе инлайновый transform/opacity
+         от скрипта сдвинул бы картинку и оставил подпись невидимой. */
+      const isNarrow = window.matchMedia("(max-width: 700px)").matches;
+      const homeFeature = isNarrow ? null : $(".home-feature");
+      const homeFeatureImg = isNarrow ? null : $(".home-feature__img");
+      const homeFeatureTitle = isNarrow ? null : $(".home-feature__title");
       stickyState.container = homeFeature;
       stickyState.img = homeFeatureImg;
       stickyState.title = homeFeatureTitle;
