@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/css/styles.css?v=51" />
+  <link rel="stylesheet" href="/css/styles.css?v=52" />
 </head>
 <body>
 
@@ -33,49 +33,51 @@
       <div class="hero__media">
         <!-- Slide 1: Facade -->
         <div class="hero__slide is-active" data-bg="/assets/img/п1.webp">
-          <div class="hero__overlay" style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.52) 100%); pointer-events: none;"></div>
-          <div class="hero__slide-caption" style="position: absolute; top: clamp(150px, 19vh, 200px); right: 25px; z-index: 3; display: flex; align-items: center; gap: clamp(10px, 1.5vw, 20px); text-align: left;">
-            <div class="hero__slide-number" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--serif); font-size: clamp(4.5rem, 10vw, 9rem); line-height: 0.85; margin-bottom: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">33</div>
-            <div class="hero__slide-text" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--sans); font-size: clamp(1.4rem, 2.8vw, 2.4rem); font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">РЕЗИДЕНЦИИ<br />НА ГОРНОМ СКЛОНЕ</div>
+          <div class="hero__slide-caption hero__slide-caption--inline">
+            <div class="hero__slide-number">33</div>
+            <div class="hero__slide-text">РЕЗИДЕНЦИИ<br />НА ГОРНОМ СКЛОНЕ</div>
           </div>
         </div>
         <!-- Slide 2: Living Room -->
         <div class="hero__slide" data-bg="/assets/img/п2.webp">
-          <div class="hero__overlay" style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.52) 100%); pointer-events: none;"></div>
-          <div class="hero__slide-caption" style="position: absolute; top: clamp(150px, 19vh, 200px); right: 25px; z-index: 3; display: flex; align-items: center; text-align: right;">
-            <div class="hero__slide-text" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--sans); font-size: clamp(1.4rem, 2.8vw, 2.4rem); font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">ГОТОВЫЙ КЛУБНЫЙ ДОМ<br />В ГОНИО, С&nbsp;ПАНОРАМНЫМ<br />ВИДОМ НА МОРЕ</div>
+          <div class="hero__slide-caption hero__slide-caption--stack">
+            <div class="hero__slide-text hero__slide-text--lead">ГОТОВЫЙ</div>
+            <div class="hero__slide-text">КЛУБНЫЙ ДОМ В&nbsp;ГОНИО,<br />С&nbsp;ПАНОРАМНЫМ ВИДОМ<br />НА МОРЕ</div>
           </div>
         </div>
-        <!-- Slide 3: Dining Room -->
+        <!-- Slide 3: Concierge -->
         <div class="hero__slide" data-bg="/assets/img/п3.webp">
-          <div class="hero__overlay" style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.52) 100%); pointer-events: none;"></div>
-          <div class="hero__slide-caption" style="position: absolute; top: clamp(150px, 19vh, 200px); right: 25px; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; text-align: right;">
-            <div class="hero__slide-number" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--serif); font-size: clamp(4.5rem, 10vw, 9rem); line-height: 0.85; margin-bottom: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">24/7</div>
-            <div class="hero__slide-text" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--sans); font-size: clamp(1.4rem, 2.8vw, 2.4rem); font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">КОНСЬЕРЖ СЕРВИС<br />И ОХРАНЯЕМАЯ<br />ТЕРРИТОРИЯ</div>
+          <div class="hero__slide-caption hero__slide-caption--stack">
+            <div class="hero__slide-number">24/7</div>
+            <div class="hero__slide-text">КОНСЬЕРЖ СЕРВИС<br />И ОХРАНЯЕМАЯ<br />ТЕРРИТОРИЯ</div>
           </div>
         </div>
-        <!-- Slide 4: Kitchen/Bar -->
+        <!-- Slide 4: Lobby -->
         <div class="hero__slide" data-bg="/assets/img/п4.webp">
-          <div class="hero__overlay" style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.52) 100%); pointer-events: none;"></div>
-          <div class="hero__slide-caption" style="position: absolute; top: clamp(150px, 19vh, 200px); right: 25px; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; text-align: right;">
-            <div class="hero__slide-number" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--serif); font-size: clamp(4.5rem, 10vw, 9rem); line-height: 0.85; margin-bottom: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">7–12%</div>
-            <div class="hero__slide-text" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--sans); font-size: clamp(1.4rem, 2.8vw, 2.4rem); font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">ГОДОВЫХ — ДОМ,<br />В КОТОРОМ ХОЧЕТСЯ ЖИТЬ<br />И КОТОРЫЙ РАБОТАЕТ,<br />ПОКА ТЕБЯ НЕТ</div>
+          <div class="hero__slide-caption hero__slide-caption--stack">
+            <div class="hero__slide-number">7–12%</div>
+            <div class="hero__slide-text">ГОДОВЫХ — ДОМ,<br />В КОТОРОМ ХОЧЕТСЯ<br />ЖИТЬ И КОТОРЫЙ<br />РАБОТАЕТ, ПОКА<br />ТЕБЯ НЕТ</div>
           </div>
         </div>
-        <!-- Slide 5: Library -->
+        <!-- Slide 5: Panorama -->
         <div class="hero__slide" data-bg="/assets/img/п5.webp">
-          <div class="hero__overlay" style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,0.12) 42%, rgba(0,0,0,0.52) 100%); pointer-events: none;"></div>
-          <div class="hero__slide-caption" style="position: absolute; top: clamp(150px, 19vh, 200px); right: 25px; z-index: 3; display: flex; align-items: center; text-align: right;">
-            <div class="hero__slide-text" style="color: #ffffff !important; opacity: 1 !important; font-family: var(--sans); font-size: clamp(1.4rem, 2.8vw, 2.4rem); font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; -webkit-text-fill-color: #ffffff !important;">МОРЕ НА ГОРИЗОНТЕ. ГОРЫ ЗА СПИНОЙ.<br />РУЧЕЙ И ОРЕХОВАЯ РОЩА — ВО ДВОРЕ.<br />ПРИРОДА ЗДЕСЬ НЕ ФОН,<br />А ЧАСТЬ ВАШЕЙ ЖИЗНИ</div>
+          <div class="hero__slide-caption hero__slide-caption--stack">
+            <div class="hero__slide-text">МОРЕ НА ГОРИЗОНТЕ. ГОРЫ ЗА СПИНОЙ.<br />РУЧЕЙ И ОРЕХОВАЯ РОЩА — ВО ДВОРЕ.<br />ПРИРОДА ЗДЕСЬ НЕ ФОН, А&nbsp;ЧАСТЬ ВАШЕЙ ЖИЗНИ</div>
           </div>
         </div>
-        <!-- Слайд «Здоровье как среда» снят: в макете (стр. 6) помечен «ПОКА НЕТ РЕНДЕРА ЭТОТ БЛОК СКИП».
-             Вернуть, когда заказчик передаст рендер уличного бассейна. -->
+        <!-- Slide 6: Здоровье как среда (возвращён по п. 6 правок — рендер получен) -->
+        <div class="hero__slide" data-bg="/assets/img/п6-pool.webp">
+          <div class="hero__slide-caption hero__slide-caption--stack">
+            <div class="hero__slide-text hero__slide-text--lead">ЗДОРОВЬЕ КАК СРЕДА</div>
+            <div class="hero__slide-text hero__slide-text--sub">ХАММАМ, ФИНСКАЯ САУНА, БАНЯ У&nbsp;РУЧЬЯ,<br />ДВА БАССЕЙНА, ЙОГА И&nbsp;СПОРТЗАЛ —<br />В&nbsp;ШАГОВОЙ ДОСТУПНОСТИ НА&nbsp;ТЕРРИТОРИИ ДОМА</div>
+          </div>
+        </div>
       </div>
 
       <!-- Slider dots from mockup (top center) -->
       <div class="hero__slider-nav" style="position: absolute; top: 130px; left: 50%; transform: translateX(-50%); z-index: 10;">
         <div class="slider-dot is-active"><div class="slider-dot-inner"></div></div>
+        <div class="slider-dot"><div class="slider-dot-inner"></div></div>
         <div class="slider-dot"><div class="slider-dot-inner"></div></div>
         <div class="slider-dot"><div class="slider-dot-inner"></div></div>
         <div class="slider-dot"><div class="slider-dot-inner"></div></div>
@@ -109,10 +111,10 @@
 
           <div class="reveal">
             <h3 class="home-district__title">
-              Район&nbsp;с двухтысячелетней историей древней Колхиды&nbsp;и инфраструктурой будущего
+              Район&nbsp;с двухтысячелетней историей<br />древней Колхиды и&nbsp;инфраструктурой будущего
             </h3>
             <p class="home-district__text">
-              Aurum Fort расположен на&nbsp;горном склоне Гонио&nbsp;— в&nbsp;нескольких минутах от&nbsp;римской крепости II&nbsp;века, в&nbsp;окружении субтропической природы с&nbsp;панорамными видами на&nbsp;море и&nbsp;горы. Район живёт и&nbsp;меняется: новые марины, набережные, точки притяжения регионального масштаба. Всё необходимое для&nbsp;комфортной и&nbsp;размеренной жизни&nbsp;— на&nbsp;территории и&nbsp;в непосредственной близости от&nbsp;дома.
+              Aurum Fort расположен на&nbsp;горном склоне Гонио&nbsp;— в&nbsp;нескольких минутах от&nbsp;римской крепости II&nbsp;века, в&nbsp;окружении субтропической природы с&nbsp;панорамными видами на&nbsp;море и&nbsp;горы. Район живёт и&nbsp;меняется: новые марины, набережные, точки притяжения регионального масштаба. Всё необходимое для&nbsp;комфортной и&nbsp;размеренной жизни&nbsp;— на&nbsp;территории и&nbsp;в&nbsp;непосредственной близости от&nbsp;дома.
             </p>
           </div>
         </div>
@@ -129,7 +131,7 @@
     <!-- ИЗ КВАРТИР ОТКРЫВАЮТСЯ ВИДЫ -->
     <section class="home-views parallax" data-chapter="Виды из окон" data-parallax="0.12">
       <img class="parallax__img lazy" data-src="/assets/img/home-views.webp" alt="Панорамные виды на море и горы" />
-      <p class="home-views__text reveal">Из квартир открываются панорамные виды на море и горы</p>
+      <p class="home-views__text reveal">Из квартир открываются<br />панорамные виды<br />на&nbsp;море и&nbsp;горы</p>
     </section>
 
     <!-- ============ CHAPTER 4 · АВТОРСКИЙ ПОЧЕРК ============ -->
@@ -137,6 +139,8 @@
       <div class="container">
         <div class="authors__head reveal">
           <h2 class="authors__title">Авторский почерк<br />в&nbsp;каждой детали</h2>
+          <!-- п. 10: заголовок держим ровно в две строки -->
+
           <p class="authors__lead">Команда признанных мастеров создаёт архитектурный образ&nbsp;и пространственный характер Aurum&nbsp;Fort</p>
         </div>
 
@@ -210,7 +214,7 @@
       <div class="container reveal">
         <div class="home-count__num" data-count="33">33</div>
         <div class="home-count__subtitle">Резиденции</div>
-        <p class="home-count__text">Камерный формат обеспечивает абсолютную приватность и однородное комьюнити</p>
+        <p class="home-count__text">Камерный формат обеспечивает абсолютную приватность<br />и&nbsp;однородное комьюнити</p>
         <div class="home-count__crest">
           <img src="/assets/img/shell.webp" alt="" width="45" height="40" />
         </div>

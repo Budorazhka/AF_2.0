@@ -559,12 +559,25 @@
       const items = $$(".acc__item", acc);
       const mediaSel = acc.getAttribute("data-media-target");
       const mediaImg = mediaSel ? $(mediaSel) : null;
+      /* п. 29 правок: фото пролагивали при перелистывании — грузились только в момент клика.
+         Прогреваем кэш заранее и подменяем кадр сразу, как только он готов. */
+      if (mediaImg) {
+        items.forEach((it) => {
+          const src = it.getAttribute("data-img");
+          if (src) { const pre = new Image(); pre.src = src; }
+        });
+      }
       const swapMedia = (item) => {
         if (!mediaImg) return;
         const src = item.getAttribute("data-img");
         if (!src || mediaImg.getAttribute("src") === src) return;
+        const next = new Image();
+        const show = () => { mediaImg.src = src; mediaImg.style.opacity = 1; };
         mediaImg.style.opacity = 0;
-        setTimeout(() => { mediaImg.src = src; mediaImg.style.opacity = 1; }, 220);
+        next.onload = show;
+        next.onerror = show;
+        next.src = src;
+        if (next.complete) show();
       };
       $$(".acc__head", acc).forEach((head) => {
         head.addEventListener("click", () => {
@@ -611,7 +624,10 @@
       
       heroSlides.forEach(slide => {
         const bg = slide.getAttribute("data-bg");
-        if (bg) slide.style.backgroundImage = `url('${bg}')`;
+        if (bg) {
+          slide.style.backgroundImage = `url('${bg}')`;
+          const pre = new Image(); pre.src = bg; // прогрев кэша: слайды не должны мигать при смене
+        }
       });
 
       sliderDots.forEach((dot, index) => {
@@ -810,6 +826,25 @@
       const poiIconOpts = { iconLayout: "default#image", iconImageHref: POI_PIN, iconImageSize: [30, 40], iconImageOffset: [-15, -40] };
       const homeIconOpts = { iconLayout: "default#image", iconImageHref: HOME_PIN, iconImageSize: [38, 50], iconImageOffset: [-19, -50] };
 
+      /* п. 16 правок: у каждой метки подпись прямо на карте, а не только по наведению.
+         default#image игнорирует iconContent, поэтому переключаемся на imageWithContent
+         и рисуем подпись собственным макетом (создаётся внутри ymaps.ready). */
+      const labelLayouts = {};
+      const labelOpts = (opts, size) => {
+        const key = size || "poi";
+        if (!window.ymaps || !window.ymaps.templateLayoutFactory) return opts;
+        if (!labelLayouts[key]) {
+          labelLayouts[key] = window.ymaps.templateLayoutFactory.createClass(
+            '<div class="geo__pin-label geo__pin-label--' + key + '">$[properties.iconContent]</div>'
+          );
+        }
+        return Object.assign({}, opts, {
+          iconLayout: "default#imageWithContent",
+          iconContentLayout: labelLayouts[key],
+          iconContentOffset: [0, 0]
+        });
+      };
+
       const initMap = () => {
         /* global ymaps */
         if (typeof ymaps === "undefined") { showFallback(); return; }
@@ -833,17 +868,30 @@
           }, { passive: false });
 
           const home = new ymaps.Placemark(b.coords,
-            { hintContent: "Клубный дом" + (b.label ? " " + b.label : ""), balloonContent: b.address || "Клубный дом" },
-            homeIconOpts
+            {
+              iconContent: b.label || "AURUM FORT",
+              hintContent: "Клубный дом" + (b.label ? " " + b.label : ""),
+              balloonContent: b.address || "Клубный дом"
+            },
+            labelOpts(homeIconOpts, "home")
           );
           ymap.geoObjects.add(home);
 
-          const infraCol = new ymaps.GeoObjectCollection(null, poiIconOpts);
+          const infraCol = new ymaps.GeoObjectCollection();
           poi.forEach((p) => infraCol.add(new ymaps.Placemark(p.coords, {
+            iconContent: p.name,
             balloonContent: p.name + (p.time ? " — " + p.time : ""), hintContent: p.name
-          }, poiIconOpts)));
+          }, labelOpts(poiIconOpts))));
           collections.infra = infraCol;
           ymap.geoObjects.add(infraCol);
+
+          /* п. 16: на вкладке «Маршруты» точки тоже подписаны — как на вкладке «Инфраструктура» */
+          const routesCol = new ymaps.GeoObjectCollection();
+          routes.forEach((r) => routesCol.add(new ymaps.Placemark(r.coords, {
+            iconContent: r.name,
+            balloonContent: r.name + (r.time ? " — " + r.time : ""), hintContent: r.name
+          }, labelOpts(poiIconOpts))));
+          collections.routes = routesCol;
 
           fitView(ptsInfra());
 
@@ -943,9 +991,17 @@
         if (name === "infra") {
           clearRoute();
           $$(".geo__route", routesWrap).forEach((x) => x.classList.remove("is-active"));
+          if (ymap) {
+            if (collections.routes) ymap.geoObjects.remove(collections.routes);
+            if (collections.infra) ymap.geoObjects.add(collections.infra);
+          }
           fitView(ptsInfra(), 500);
         } else {
-          if (ymap) Object.keys(collections).forEach((id) => ymap.geoObjects.remove(collections[id]));
+          /* показываем подписанные точки маршрутов вместо инфраструктурных */
+          if (ymap) {
+            if (collections.infra) ymap.geoObjects.remove(collections.infra);
+            if (collections.routes) ymap.geoObjects.add(collections.routes);
+          }
           $$(".geo__cat", cats).forEach((c) => c.classList.remove("is-open"));
           fitView(ptsRoutes(), 500);
         }
