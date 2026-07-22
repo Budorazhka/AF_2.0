@@ -4,42 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="theme-color" content="#14181b" />
-  <title>Локация — Aurum Fort</title>
-  <meta name="description" content="Тихий престижный район с богатой историей, парками и набережной." />
+  <title data-i18n="Локация — Aurum Fort">Локация — Aurum Fort</title>
+  <meta name="description" content="Тихий престижный район с богатой историей, парками и набережной." data-i18n-attr="content:Тихий престижный район с богатой историей, парками и набережной." />
   <link rel="canonical" href="/location" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Локация — Aurum Fort" />
-  <meta property="og:description" content="Тихий престижный район с богатой историей, парками и набережной." />
+  <meta property="og:title" content="Локация — Aurum Fort" data-i18n-attr="content:Локация — Aurum Fort" />
+  <meta property="og:description" content="Тихий престижный район с богатой историей, парками и набережной." data-i18n-attr="content:Тихий престижный район с богатой историей, парками и набережной." />
   <meta property="og:image" content="/assets/img/og/og-location.jpg" />
   <meta property="og:url" content="/location" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=54" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=55" />
+
+  <!-- i18n: словарь грузинского грузится ДО движка, движок ДО main.js -->
+  <script src="/js/i18n-ka.js?v=1"></script>
+  <script src="/js/i18n.js?v=1"></script>
 </head>
 <body>
   <!--# include virtual="/partials/top.html" -->
 
   <main data-barba="container" data-barba-namespace="location">
     <!-- ============ CHAPTER 1 · HERO TITLE ============ -->
-    <section class="location-hero-new" data-chapter="Локация">
+    <section class="location-hero-new" data-chapter="Локация" data-i18n-attr="data-chapter:Локация">
       <div class="container location-hero-new__container reveal">
-        <h1 class="location-hero-new__title">Локация</h1>
+        <h1 class="location-hero-new__title" data-i18n="Локация">Локация</h1>
       </div>
     </section>
 
     <!-- ============ CHAPTER 2 · PANORAMA IMAGE (PARALLAX) ============ -->
     <section class="location-panorama parallax" data-parallax="0.16">
-      <img class="parallax__img lazy" data-src="/assets/img/7.webp" alt="Панорама района" />
+      <img class="parallax__img lazy" data-src="/assets/img/7.webp" alt="Панорама района" data-i18n-attr="alt:Панорама района" />
     </section>
 
     <!-- ============ CHAPTER 3 · DESCRIPTION ============ -->
     <section class="location-intro">
       <div class="container">
-        <h2 class="location-intro__title reveal">
+        <h2 class="location-intro__title reveal" data-i18n-html="Тихий склон с&nbsp;двухтысячелетней историей, живой природой<br />
+          и&nbsp;инфраструктурой, которая только набирает масштаб">
           Тихий склон с&nbsp;двухтысячелетней историей, живой природой<br />
           и&nbsp;инфраструктурой, которая только набирает масштаб
         </h2>
@@ -52,11 +57,11 @@
                   <circle cx="12" cy="9.2" r="2.4" fill="#fff" />
                 </svg>
               </span>
-              <span>Петре Ибери 51, Гонио, Батуми</span>
+              <span data-i18n="Петре Ибери 51, Гонио, Батуми">Петре Ибери 51, Гонио, Батуми</span>
             </a>
           </div>
           <div class="location-intro__col-right">
-            <p class="location-intro__paragraph">
+            <p class="location-intro__paragraph" data-i18n-html="Aurum Fort расположен в&nbsp;одной из&nbsp;самых тихих точек Гонио&nbsp;— ул.&nbsp;Петре Ибери&nbsp;51. Горный склон, панорама на&nbsp;море и&nbsp;горы, зелень вокруг&nbsp;— и&nbsp;всё необходимое для&nbsp;размеренной жизни рядом.">
               Aurum Fort расположен в&nbsp;одной из&nbsp;самых тихих точек Гонио&nbsp;— ул.&nbsp;Петре Ибери&nbsp;51. Горный склон, панорама на&nbsp;море и&nbsp;горы, зелень вокруг&nbsp;— и&nbsp;всё необходимое для&nbsp;размеренной жизни рядом.
             </p>
           </div>
@@ -65,26 +70,26 @@
     </section>
 
     <!-- ============ CHAPTER 4 · MAP (Yandex) ============ -->
-    <section class="section section--map" id="map" data-chapter="На карте" style="padding-top: 0; padding-bottom: 0;">
+    <section class="section section--map" id="map" data-chapter="На карте" data-i18n-attr="data-chapter:На карте" style="padding-top: 0; padding-bottom: 0;">
       <div class="geo geo--bw reveal">
         <div class="geo__map" id="geoMap">
-          <div class="geo__hint" id="geoHint">Используйте Ctrl + scroll, чтобы приблизить карту</div>
+          <div class="geo__hint" id="geoHint" data-i18n="Используйте Ctrl + scroll, чтобы приблизить карту">Используйте Ctrl + scroll, чтобы приблизить карту</div>
           <div class="geo__map-fallback" id="geoFallback" style="display:none">
-            <b>Петре Ибери 51, Гонио, Батуми</b>
-            <span>Карта появится после добавления ключа Яндекс.Карт в <code>assets/config.js</code></span>
-            <a href="https://yandex.ru/maps/?text=Петре Ибери 51, Гонио, Батуми" target="_blank" rel="noopener" class="footer__route">Открыть в Яндекс.Картах</a>
+            <b data-i18n="Петре Ибери 51, Гонио, Батуми">Петре Ибери 51, Гонио, Батуми</b>
+            <span data-i18n-html="Карта появится после добавления ключа Яндекс.Карт в <code>assets/config.js</code>">Карта появится после добавления ключа Яндекс.Карт в <code>assets/config.js</code></span>
+            <a href="https://yandex.ru/maps/?text=Петре Ибери 51, Гонио, Батуми" target="_blank" rel="noopener" class="footer__route" data-i18n="Открыть в Яндекс.Картах">Открыть в Яндекс.Картах</a>
           </div>
         </div>
         <aside class="geo__panel">
           <div class="geo__tabs">
-            <button class="geo__tab is-active" type="button" data-tab="infra">Инфраструктура</button>
-            <button class="geo__tab" type="button" data-tab="routes">Маршруты</button>
+            <button class="geo__tab is-active" type="button" data-tab="infra" data-i18n="Инфраструктура">Инфраструктура</button>
+            <button class="geo__tab" type="button" data-tab="routes" data-i18n="Маршруты">Маршруты</button>
           </div>
           <div class="geo__cats" id="geoCats"></div>
           <div class="geo__routes" id="geoRoutes" hidden></div>
           <div class="geo__address">
-            <p class="lbl">Адрес дома</p>
-            <p class="val">Петре Ибери 51, Гонио, Батуми</p>
+            <p class="lbl" data-i18n="Адрес дома">Адрес дома</p>
+            <p class="val" data-i18n="Петре Ибери 51, Гонио, Батуми">Петре Ибери 51, Гонио, Батуми</p>
           </div>
         </aside>
       </div>
@@ -92,9 +97,9 @@
 
     <!-- ============ CHAPTER 5 · LANDSCAPE BANNER (PARALLAX) ============ -->
     <section class="location-banner parallax" data-parallax="0.18">
-      <img class="parallax__img lazy" data-src="/assets/img/8.webp" alt="Гонио" />
+      <img class="parallax__img lazy" data-src="/assets/img/8.webp" alt="Гонио" data-i18n-attr="alt:Гонио" />
       <div class="location-banner__overlay"></div>
-      <h2 class="location-banner__title">Гонио</h2>
+      <h2 class="location-banner__title" data-i18n="Гонио">Гонио</h2>
     </section>
 
     <!-- ============ CHAPTER 6 · OUTRO BANNER & SLIDER ============ -->
@@ -105,7 +110,7 @@
       <div class="container location-outro-banner__container reveal">
         <div class="location-outro-banner__header">
           <div class="location-outro-banner__text">
-            <p>Гонио известен чистыми пляжами и&nbsp;двухтысячелетней историей&nbsp;— главные точки притяжения это крепость Гонио-Апсарос и&nbsp;смотровая площадка Крест&nbsp;Гонио.</p>
+            <p data-i18n-html="Гонио известен чистыми пляжами и&nbsp;двухтысячелетней историей&nbsp;— главные точки притяжения это крепость Гонио-Апсарос и&nbsp;смотровая площадка Крест&nbsp;Гонио.">Гонио известен чистыми пляжами и&nbsp;двухтысячелетней историей&nbsp;— главные точки притяжения это крепость Гонио-Апсарос и&nbsp;смотровая площадка Крест&nbsp;Гонио.</p>
           </div>
         </div>
         
@@ -116,61 +121,62 @@
               <!-- Card 1 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/9_upscaled.webp" alt="Смотровая площадка Крест Гонио" />
+                  <img src="/assets/img/9_upscaled.webp" alt="Смотровая площадка Крест Гонио" data-i18n-attr="alt:Смотровая площадка Крест Гонио" />
                 </div>
-                <h3 class="location-card__title">Смотровая площадка Крест Гонио<br><span class="location-card__dist">800 м от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Смотровая площадка Крест Гонио">Смотровая площадка Крест Гонио</span><br><span class="location-card__dist" data-i18n="800 м от дома">800 м от дома</span></h3>
               </div>
               <!-- Card 2 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/10.webp" alt="Пляж Гонио" />
+                  <img src="/assets/img/10.webp" alt="Пляж Гонио" data-i18n-attr="alt:Пляж Гонио" />
                 </div>
-                <h3 class="location-card__title">Пляж Гонио<br><span class="location-card__dist">1,1 км от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Пляж Гонио">Пляж Гонио</span><br><span class="location-card__dist" data-i18n="1,1 км от дома">1,1 км от дома</span></h3>
               </div>
               <!-- Card 3 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/11_upscaled.webp" alt="Крепость Гонио-Апсарос" />
+                  <img src="/assets/img/11_upscaled.webp" alt="Крепость Гонио-Апсарос" data-i18n-attr="alt:Крепость Гонио-Апсарос" />
                 </div>
-                <h3 class="location-card__title">Крепость Гонио-Апсарос<br><span class="location-card__dist">1,5 км от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Крепость Гонио-Апсарос">Крепость Гонио-Апсарос</span><br><span class="location-card__dist" data-i18n="1,5 км от дома">1,5 км от дома</span></h3>
               </div>
               <!-- Card 4 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/12_upscaled.webp" alt="Турецкая граница (Сарпи)" />
+                  <img src="/assets/img/12_upscaled.webp" alt="Турецкая граница (Сарпи)" data-i18n-attr="alt:Турецкая граница (Сарпи)" />
                 </div>
-                <h3 class="location-card__title">Турецкая граница (Сарпи)<br><span class="location-card__dist">6 км от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Турецкая граница (Сарпи)">Турецкая граница (Сарпи)</span><br><span class="location-card__dist" data-i18n="6 км от дома">6 км от дома</span></h3>
               </div>
               <!-- Card 5 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/batumi-center.webp" alt="Центр Батуми" />
+                  <img src="/assets/img/batumi-center.webp" alt="Центр Батуми" data-i18n-attr="alt:Центр Батуми" />
                 </div>
-                <h3 class="location-card__title">Центр Батуми<br><span class="location-card__dist">13 км от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Центр Батуми">Центр Батуми</span><br><span class="location-card__dist" data-i18n="13 км от дома">13 км от дома</span></h3>
               </div>
               <!-- Card 6 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/14_upscaled.webp" alt="Нац. парк Мтирала (ЮНЕСКО)" />
+                  <img src="/assets/img/14_upscaled.webp" alt="Нац. парк Мтирала (ЮНЕСКО)" data-i18n-attr="alt:Нац. парк Мтирала (ЮНЕСКО)" />
                 </div>
-                <h3 class="location-card__title">Нац. парк Мтирала (ЮНЕСКО)<br><span class="location-card__dist">25 км от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Нац. парк Мтирала (ЮНЕСКО)">Нац. парк Мтирала (ЮНЕСКО)</span><br><span class="location-card__dist" data-i18n="25 км от дома">25 км от дома</span></h3>
               </div>
               <!-- Card 7 -->
               <div class="location-card">
                 <div class="location-card__media">
-                  <img src="/assets/img/15_upscaled_upscaled.webp" alt="Нац. парк Мачахела" />
+                  <img src="/assets/img/15_upscaled_upscaled.webp" alt="Нац. парк Мачахела" data-i18n-attr="alt:Нац. парк Мачахела" />
                 </div>
-                <h3 class="location-card__title">Нац. парк Мачахела<br><span class="location-card__dist">35 км от дома</span></h3>
+                <h3 class="location-card__title"><span data-i18n="Нац. парк Мачахела">Нац. парк Мачахела</span><br><span class="location-card__dist" data-i18n="35 км от дома">35 км от дома</span></h3>
               </div>
             </div>
             <!-- Slider navigation arrow (outside track so it stays fixed while cards scroll) -->
-            <button class="location-arrow" data-slide-next aria-label="Вперед"><span>&#8594;</span></button>
+            <button class="location-arrow" data-slide-next aria-label="Вперед" data-i18n-attr="aria-label:Вперед"><span>&#8594;</span></button>
           </div>
         </div>
 
         <!-- Outro bottom text (centered, sentence-case) -->
         <div class="location-outro-banner__footer">
-          <p class="location-outro-banner__footer-text">
+          <p class="location-outro-banner__footer-text" data-i18n-html="Живите там, где чистое море и&nbsp;свежий воздух стали частью повседневности,<br>
+            вся инфраструктура расположена на&nbsp;территории дома, а&nbsp;до&nbsp;Батуми всего 15&nbsp;минут">
             Живите там, где чистое море и&nbsp;свежий воздух стали частью повседневности,<br>
             вся инфраструктура расположена на&nbsp;территории дома, а&nbsp;до&nbsp;Батуми всего 15&nbsp;минут
           </p>

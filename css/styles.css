@@ -34,6 +34,39 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ---------- ГРУЗИНСКАЯ ВЕРСИЯ (lang="ka") ----------
+   Tenor Sans и Montserrat не содержат грузинских глифов, поэтому под
+   грузинский подключена элегантная пара Noto Georgian: антиква с засечками
+   (Noto Serif Georgian) в роли display/serif — вместо Tenor Sans — и
+   гуманистический гротеск (Noto Sans Georgian) для основного текста —
+   вместо Montserrat. Переключение языка ставит lang="ka" на <html>
+   (js/i18n.js), и эти переопределения меняют только шрифтовые переменные,
+   не трогая палитру, ритм и раскладку. Русский (lang="ru") — дефолт выше. */
+html[lang="ka"] {
+  --serif: "Noto Serif Georgian", "Tenor Sans", system-ui, serif;
+  --serif-soft: "Noto Serif Georgian", "Tenor Sans", system-ui, serif;
+  --sans: "Noto Serif Georgian", "Tenor Sans", system-ui, serif;
+  --body: "Noto Sans Georgian", "Montserrat", system-ui, sans-serif;
+}
+/* В грузинском нет заглавных букв — uppercase не даёт эффекта, но широкий
+   трекинг на дисплейных начертаниях делает буквы разреженными и рыхлыми.
+   Поджимаем межбуквенный интервал у крупных грузинских заголовков. */
+html[lang="ka"] .h2,
+html[lang="ka"] .authors__title,
+html[lang="ka"] .hero__slide-text,
+html[lang="ka"] .arch-statement__title,
+html[lang="ka"] .chapter-next__title {
+  letter-spacing: 0.005em;
+}
+/* Мелкие грузинские лейблы с большим трекингом читаются тяжело — смягчаем. */
+html[lang="ka"] .eyebrow,
+html[lang="ka"] .ph__label,
+html[lang="ka"] .master__role,
+html[lang="ka"] .author__role,
+html[lang="ka"] .overlay-menu__primary a i {
+  letter-spacing: 0.14em;
+}
+
 /* ---------- RESET ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 /* overflow-x только на body в iOS Safari не удерживает страницу — дублируем на html */
@@ -228,6 +261,27 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: var(--graphite); background: none; border: 0; padding: 0; transition: color 0.3s var(--ease); white-space: nowrap;
 }
 .header__callback:hover { color: var(--gold); }
+
+/* ---------- ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА RU / KA ---------- */
+.lang-switch {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--body);
+  font-size: 0.72rem; letter-spacing: 0.1em; font-weight: 600;
+  white-space: nowrap;
+}
+.lang-switch__btn {
+  background: none; border: 0; padding: 2px 1px;
+  color: var(--grey); letter-spacing: inherit; font: inherit;
+  transition: color 0.3s var(--ease); line-height: 1;
+}
+.lang-switch__btn:hover { color: var(--gold); }
+.lang-switch__btn.is-active { color: var(--navy); }
+.lang-switch__sep { color: var(--beige); pointer-events: none; }
+/* Светлый вариант — на тёмном оверлей-меню */
+.lang-switch--light .lang-switch__btn { color: rgba(255,255,255,0.55); }
+.lang-switch--light .lang-switch__btn:hover { color: var(--gold); }
+.lang-switch--light .lang-switch__btn.is-active { color: #fff; }
+.lang-switch--light .lang-switch__sep { color: rgba(255,255,255,0.3); }
 
 /* burger */
 .burger { display: block; width: 30px; height: 18px; position: relative; }

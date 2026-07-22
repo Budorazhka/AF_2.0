@@ -4,31 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="theme-color" content="#14181b" />
-  <title>Архитектура и конструктив — Aurum Fort</title>
-  <meta name="description" content="Авторская архитектура Aurum Fort в исполнении бюро Arabidze Architects: деконструктивизм, монолитный каркас повышенной прочности и продуманная инженерная логика." />
+  <title data-i18n="Архитектура и конструктив — Aurum Fort">Архитектура и конструктив — Aurum Fort</title>
+  <meta name="description" data-i18n-attr="content:Авторская архитектура Aurum Fort в исполнении бюро Arabidze Architects: деконструктивизм, монолитный каркас повышенной прочности и продуманная инженерная логика." content="Авторская архитектура Aurum Fort в исполнении бюро Arabidze Architects: деконструктивизм, монолитный каркас повышенной прочности и продуманная инженерная логика." />
   <link rel="canonical" href="/architecture" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Архитектура и конструктив — Aurum Fort" />
-  <meta property="og:description" content="Авторская архитектура Aurum Fort в исполнении бюро Arabidze Architects: деконструктивизм, монолитный каркас повышенной прочности и продуманная инженерная логика." />
+  <meta property="og:title" data-i18n-attr="content:Архитектура и конструктив — Aurum Fort" content="Архитектура и конструктив — Aurum Fort" />
+  <meta property="og:description" data-i18n-attr="content:Авторская архитектура Aurum Fort в исполнении бюро Arabidze Architects: деконструктивизм, монолитный каркас повышенной прочности и продуманная инженерная логика." content="Авторская архитектура Aurum Fort в исполнении бюро Arabidze Architects: деконструктивизм, монолитный каркас повышенной прочности и продуманная инженерная логика." />
   <meta property="og:image" content="/assets/img/og/og-architecture.jpg" />
   <meta property="og:url" content="/architecture" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=54" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=55" />
+
+  <!-- i18n: словарь грузинского грузится ДО движка, движок ДО main.js -->
+  <script src="/js/i18n-ka.js?v=1"></script>
+  <script src="/js/i18n.js?v=1"></script>
 </head>
 <body>
   <!--# include virtual="/partials/top.html" -->
 
   <main data-barba="container" data-barba-namespace="architecture">
     <!-- ============ SLIDE 1 · HERO TITLE ============ -->
-    <section class="slide-section slide-hero" data-chapter="Архитектура">
+    <section class="slide-section slide-hero" data-chapter="Архитектура" data-i18n-attr="data-chapter:Архитектура">
       <div class="container slide-hero__container reveal">
         <div class="slide-hero__header">
-          <h1 class="slide-hero__title">
+          <h1 class="slide-hero__title" data-i18n-html="АРХИТЕКТУРА<br />
+            И КОНСТРУКТИВ">
             АРХИТЕКТУРА<br />
             И КОНСТРУКТИВ
           </h1>
@@ -42,77 +47,82 @@
     <section class="arch-expand">
       <div class="arch-expand__frame" data-expand>
         <div class="arch-expand__media">
-          <img data-src="/assets/img/37_upscaled.webp" alt="Архитектура" class="lazy" />
+          <img data-src="/assets/img/37_upscaled.webp" alt="Архитектура" data-i18n-attr="alt:Архитектура" class="lazy" />
         </div>
       </div>
     </section>
 
     <!-- ============ SLIDE 2 · AUTHOR ARCHITECTURE ============ -->
-    <section class="slide-section slide-author marble-bg" data-chapter="Авторы проекта">
+    <section class="slide-section slide-author marble-bg" data-chapter="Авторы проекта" data-i18n-attr="data-chapter:Авторы проекта">
       <div class="container reveal">
         <div class="slide-author__top">
-          <h2 class="slide-author__title">
+          <h2 class="slide-author__title" data-i18n-html="Авторская архитектура<br />
+            в исполнении бюро<br />
+            Arabidze Architects">
             Авторская архитектура<br />
             в исполнении бюро<br />
             Arabidze Architects
           </h2>
           <div class="slide-author__quote">
             <div class="slide-author__avatar">
-              <img src="/assets/img/arabidze.webp" alt="Зураб Арабидзе" />
+              <img src="/assets/img/arabidze.webp" alt="Зураб Арабидзе" data-i18n-attr="alt:Зураб Арабидзе" />
             </div>
             <blockquote class="slide-author__quote-body">
-              <p class="slide-author__quote-text">Мы не&nbsp;навязываем декоративные решения. Мы&nbsp;раскрываем внутреннюю силу и&nbsp;логику места, заложенную самой природой.</p>
+              <p class="slide-author__quote-text" data-i18n-html="Мы не&nbsp;навязываем декоративные решения. Мы&nbsp;раскрываем внутреннюю силу и&nbsp;логику места, заложенную самой природой.">Мы не&nbsp;навязываем декоративные решения. Мы&nbsp;раскрываем внутреннюю силу и&nbsp;логику места, заложенную самой природой.</p>
               <footer class="slide-author__quote-meta">
-                <cite class="slide-author__quote-name">Зураб Арабидзе</cite>
-                <span class="slide-author__quote-role">архитектор дома</span>
+                <cite class="slide-author__quote-name" data-i18n="Зураб Арабидзе">Зураб Арабидзе</cite>
+                <span class="slide-author__quote-role" data-i18n="архитектор дома">архитектор дома</span>
               </footer>
             </blockquote>
           </div>
         </div>
-        
+
         <div class="slide-author__grid">
           <div class="slide-author__media">
-            <img src="/assets/img/17_upscaled.webp" alt="Архитектура" />
+            <img src="/assets/img/17_upscaled.webp" alt="Архитектура" data-i18n-attr="alt:Архитектура" />
           </div>
-          
+
           <div class="slide-author__text-block">
-            <p>Концептуальный облик клубного дома Aurum Fort и&nbsp;философия его внутренней среды развиваются под&nbsp;творческим руководством Зураба Арабидзе, основателя архитектурного бюро Arabidze Architects и&nbsp;признанного концептуального художника, чьи пространственные артефакты выставлялись в&nbsp;Государственной Третьяковской галерее, галерее Ruarts и&nbsp;на&nbsp;международном аукционе CHRISTIE’S.</p>
-            <p>Вместо навязывания случайных декоративных решений бюро выявляет скрытую логику пространства, заложенную природой Гонио и&nbsp;монументальной формой самого здания.</p>
+            <p data-i18n-html="Концептуальный облик клубного дома Aurum Fort и&nbsp;философия его внутренней среды развиваются под&nbsp;творческим руководством Зураба Арабидзе, основателя архитектурного бюро Arabidze Architects и&nbsp;признанного концептуального художника, чьи пространственные артефакты выставлялись в&nbsp;Государственной Третьяковской галерее, галерее Ruarts и&nbsp;на&nbsp;международном аукционе CHRISTIE’S.">Концептуальный облик клубного дома Aurum Fort и&nbsp;философия его внутренней среды развиваются под&nbsp;творческим руководством Зураба Арабидзе, основателя архитектурного бюро Arabidze Architects и&nbsp;признанного концептуального художника, чьи пространственные артефакты выставлялись в&nbsp;Государственной Третьяковской галерее, галерее Ruarts и&nbsp;на&nbsp;международном аукционе CHRISTIE’S.</p>
+            <p data-i18n-html="Вместо навязывания случайных декоративных решений бюро выявляет скрытую логику пространства, заложенную природой Гонио и&nbsp;монументальной формой самого здания.">Вместо навязывания случайных декоративных решений бюро выявляет скрытую логику пространства, заложенную природой Гонио и&nbsp;монументальной формой самого здания.</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ============ SLIDE 3 · GEOMETRY ============ -->
-    <section class="slide-section slide-geometry" data-chapter="Геометрия">
+    <section class="slide-section slide-geometry" data-chapter="Геометрия" data-i18n-attr="data-chapter:Геометрия">
       <div class="container reveal">
         <div class="slide-geometry__header">
-          <h2 class="slide-geometry__title">
+          <h2 class="slide-geometry__title" data-i18n="ГЕОМЕТРИЯ ВНЕ КАНОНОВ">
             ГЕОМЕТРИЯ ВНЕ КАНОНОВ
           </h2>
         </div>
         <div class="slide-geometry__media parallax" data-parallax="0.25">
-          <img class="parallax__img lazy" data-src="/assets/img/р1.webp" alt="Геометрия вне канонов" />
+          <img class="parallax__img lazy" data-src="/assets/img/р1.webp" alt="Геометрия вне канонов" data-i18n-attr="alt:Геометрия вне канонов" />
         </div>
       </div>
     </section>
 
     <!-- ============ SLIDE 4 · DECONSTRUCTIVISM ============ -->
-    <section class="slide-section slide-deconstruct" data-chapter="Деконструктивизм">
+    <section class="slide-section slide-deconstruct" data-chapter="Деконструктивизм" data-i18n-attr="data-chapter:Деконструктивизм">
       <div class="container reveal">
         <div class="slide-deconstruct__grid">
           <div class="slide-deconstruct__left">
-            <p>
+            <p data-i18n-html="Здание сознательно отказывается от&nbsp;привычной симметрии и&nbsp;прямых углов, свойственных массовой курортной застройке. Его оболочка собрана из&nbsp;наклонных граней, асимметричных многогранников и&nbsp;трапеций, которые создают ощущение живого, тектонического сдвига прямо на&nbsp;склоне Гонио.">
               Здание сознательно отказывается от&nbsp;привычной симметрии и&nbsp;прямых углов, свойственных массовой курортной застройке. Его оболочка собрана из&nbsp;наклонных граней, асимметричных многогранников и&nbsp;трапеций, которые создают ощущение живого, тектонического сдвига прямо на&nbsp;склоне Гонио.
             </p>
-            <p>
+            <p data-i18n-html="Этот сложный геометрический излом выполняет важную физическую функцию. Наклонные плоскости фасадных ячеек рассчитаны под&nbsp;субтропическое солнце Аджарии: они работают как естественные светофильтры, отсекая избыточные лучи, защищая лоджии от&nbsp;перегрева и&nbsp;сохраняя абсолютную приватность панорамы 180° для&nbsp;каждой резиденции.">
               Этот сложный геометрический излом выполняет важную физическую функцию. Наклонные плоскости фасадных ячеек рассчитаны под&nbsp;субтропическое солнце Аджарии: они работают как естественные светофильтры, отсекая избыточные лучи, защищая лоджии от&nbsp;перегрева и&nbsp;сохраняя абсолютную приватность панорамы 180° для&nbsp;каждой резиденции.
             </p>
           </div>
-          
+
           <div class="slide-deconstruct__right">
             <div class="slide-deconstruct__title-wrap">
-              <h2 class="slide-deconstruct__title">
+              <h2 class="slide-deconstruct__title" data-i18n-html="Визуальный язык Aurum Fort<br />
+                полностью принадлежит<br />
+                международной традиции<br />
+                деконструктивизма.">
                 Визуальный язык Aurum Fort<br />
                 полностью принадлежит<br />
                 международной традиции<br />
@@ -120,7 +130,7 @@
               </h2>
             </div>
             <div class="slide-deconstruct__media">
-              <img src="/assets/img/18_upscaled.webp" alt="Деконструктивизм" />
+              <img src="/assets/img/18_upscaled.webp" alt="Деконструктивизм" data-i18n-attr="alt:Деконструктивизм" />
             </div>
           </div>
         </div>
@@ -128,63 +138,63 @@
     </section>
 
     <!-- ============ SLIDE 5 · CONSTRUCTIVE ============ -->
-    <section class="slide-section slide-constructive" data-chapter="Конструктив">
+    <section class="slide-section slide-constructive" data-chapter="Конструктив" data-i18n-attr="data-chapter:Конструктив">
       <div class="container reveal">
         <div class="slide-constructive__header">
-          <h2 class="slide-constructive__title">КОНСТРУКТИВ</h2>
+          <h2 class="slide-constructive__title" data-i18n="КОНСТРУКТИВ">КОНСТРУКТИВ</h2>
         </div>
         <div class="slide-constructive__media">
-          <img src="/assets/img/п4.webp" alt="Конструктив" />
+          <img src="/assets/img/п4.webp" alt="Конструктив" data-i18n-attr="alt:Конструктив" />
         </div>
       </div>
     </section>
 
     <!-- ============ SLIDE 6 · STRUCTURAL LOGIC ============ -->
-    <section class="slide-section slide-logic marble-bg" data-chapter="Инженерия">
+    <section class="slide-section slide-logic marble-bg" data-chapter="Инженерия" data-i18n-attr="data-chapter:Инженерия">
       <div class="container reveal">
         <div class="slide-logic__header">
-          <h2 class="slide-logic__title">СТРУКТУРНАЯ ЛОГИКА И ИНЖЕНЕРИЯ</h2>
-          <p class="slide-logic__text">
+          <h2 class="slide-logic__title" data-i18n="СТРУКТУРНАЯ ЛОГИКА И ИНЖЕНЕРИЯ">СТРУКТУРНАЯ ЛОГИКА И ИНЖЕНЕРИЯ</h2>
+          <p class="slide-logic__text" data-i18n-html="Конструктивные и&nbsp;технические решения клубного дома скоординированы как единый механизм. Первоначально разработанный по&nbsp;отельным нормативам надёжности, монолитный каркас имеет запас прочности существенно выше стандартной жилой нормы. Объект официально переведён в&nbsp;статус жилого фонда, полностью возведён и&nbsp;прошёл период естественной усадки, что гарантирует абсолютную безопасность инвестиционного актива.">
             Конструктивные и&nbsp;технические решения клубного дома скоординированы как единый механизм. Первоначально разработанный по&nbsp;отельным нормативам надёжности, монолитный каркас имеет запас прочности существенно выше стандартной жилой нормы. Объект официально переведён в&nbsp;статус жилого фонда, полностью возведён и&nbsp;прошёл период естественной усадки, что гарантирует абсолютную безопасность инвестиционного актива.
           </p>
         </div>
 
         <!-- п. 24: три заглушки заменены одним широким фото с дрона (реф из правок) -->
         <div class="slide-logic__wide">
-          <img class="lazy" data-src="/assets/img/arch-drone.webp" alt="Клубный дом Aurum Fort на горном склоне, съёмка с дрона" />
+          <img class="lazy" data-src="/assets/img/arch-drone.webp" alt="Клубный дом Aurum Fort на горном склоне, съёмка с дрона" data-i18n-attr="alt:Клубный дом Aurum Fort на горном склоне, съёмка с дрона" />
         </div>
       </div>
     </section>
 
     <!-- ============ CHAPTER 13 · CONSTRUCTIVE & ENGINEERING ============ -->
-    <section class="arch-acc" data-chapter="Конструктив и инженерия">
+    <section class="arch-acc" data-chapter="Конструктив и инженерия" data-i18n-attr="data-chapter:Конструктив и инженерия">
       <div class="container arch-acc__grid">
         <div class="arch-acc__media arch-acc__media--square reveal">
-          <img src="/assets/img/20_upscaled.webp" alt="Конструктивные решения" />
+          <img src="/assets/img/20_upscaled.webp" alt="Конструктивные решения" data-i18n-attr="alt:Конструктивные решения" />
         </div>
         <div class="arch-acc__panel reveal" data-acc>
           <div class="acc__item">
             <button class="acc__head" type="button">
-              <span class="acc__head-label">Сейсмостойкость и&nbsp;фундамент</span>
+              <span class="acc__head-label" data-i18n-html="Сейсмостойкость и&nbsp;фундамент">Сейсмостойкость и&nbsp;фундамент</span>
             </button>
             <div class="acc__body">
-              <p>Монолитный железобетонный каркас дома имеет высший класс огнестойкости&nbsp;I-B. Конструкция фундамента состоит из&nbsp;двух независимых плит со&nbsp;свайными элементами, которые залиты в&nbsp;два раза глубже нормативных требований. Прочностные характеристики рассчитаны на&nbsp;сильные землетрясения интенсивностью более 8&nbsp;баллов по&nbsp;шкале&nbsp;MSK, что&nbsp;официально подтверждено положительным экспертным заключением Беки Тоидзе. Здание полностью возведено и&nbsp;прошло период естественной усадки, исключая любые риски деформации.</p>
+              <p data-i18n-html="Монолитный железобетонный каркас дома имеет высший класс огнестойкости&nbsp;I-B. Конструкция фундамента состоит из&nbsp;двух независимых плит со&nbsp;свайными элементами, которые залиты в&nbsp;два раза глубже нормативных требований. Прочностные характеристики рассчитаны на&nbsp;сильные землетрясения интенсивностью более 8&nbsp;баллов по&nbsp;шкале&nbsp;MSK, что&nbsp;официально подтверждено положительным экспертным заключением Беки Тоидзе. Здание полностью возведено и&nbsp;прошло период естественной усадки, исключая любые риски деформации.">Монолитный железобетонный каркас дома имеет высший класс огнестойкости&nbsp;I-B. Конструкция фундамента состоит из&nbsp;двух независимых плит со&nbsp;свайными элементами, которые залиты в&nbsp;два раза глубже нормативных требований. Прочностные характеристики рассчитаны на&nbsp;сильные землетрясения интенсивностью более 8&nbsp;баллов по&nbsp;шкале&nbsp;MSK, что&nbsp;официально подтверждено положительным экспертным заключением Беки Тоидзе. Здание полностью возведено и&nbsp;прошло период естественной усадки, исключая любые риски деформации.</p>
             </div>
           </div>
           <div class="acc__item">
             <button class="acc__head" type="button">
-              <span class="acc__head-label">Климатический и&nbsp;акустический контроль</span>
+              <span class="acc__head-label" data-i18n-html="Климатический и&nbsp;акустический контроль">Климатический и&nbsp;акустический контроль</span>
             </button>
             <div class="acc__body">
-              <p>Наружные стены здания построены из&nbsp;бетонных блоков толщиной 25&nbsp;см с&nbsp;изоляционным слоем. Высота потолков в&nbsp;резиденциях составляет 3,0&nbsp;метра в&nbsp;чистоте, а&nbsp;остекление выполнено из&nbsp;долговечного алюминиевого профиля, устойчивого к&nbsp;воздействию морской соли. В&nbsp;доме полностью отсутствуют общие вентиляционные шахты, каждая квартира оснащена индивидуальным вытяжным каналом, что гарантирует стопроцентную изоляцию от&nbsp;запахов и&nbsp;шума смежных юнитов. Межкомнатные перегородки выполнены из&nbsp;газоблока толщиной 10&nbsp;см, а&nbsp;шаг несущих колонн сохраняет полную свободу планировочных решений.</p>
+              <p data-i18n-html="Наружные стены здания построены из&nbsp;бетонных блоков толщиной 25&nbsp;см с&nbsp;изоляционным слоем. Высота потолков в&nbsp;резиденциях составляет 3,0&nbsp;метра в&nbsp;чистоте, а&nbsp;остекление выполнено из&nbsp;долговечного алюминиевого профиля, устойчивого к&nbsp;воздействию морской соли. В&nbsp;доме полностью отсутствуют общие вентиляционные шахты, каждая квартира оснащена индивидуальным вытяжным каналом, что гарантирует стопроцентную изоляцию от&nbsp;запахов и&nbsp;шума смежных юнитов. Межкомнатные перегородки выполнены из&nbsp;газоблока толщиной 10&nbsp;см, а&nbsp;шаг несущих колонн сохраняет полную свободу планировочных решений.">Наружные стены здания построены из&nbsp;бетонных блоков толщиной 25&nbsp;см с&nbsp;изоляционным слоем. Высота потолков в&nbsp;резиденциях составляет 3,0&nbsp;метра в&nbsp;чистоте, а&nbsp;остекление выполнено из&nbsp;долговечного алюминиевого профиля, устойчивого к&nbsp;воздействию морской соли. В&nbsp;доме полностью отсутствуют общие вентиляционные шахты, каждая квартира оснащена индивидуальным вытяжным каналом, что гарантирует стопроцентную изоляцию от&nbsp;запахов и&nbsp;шума смежных юнитов. Межкомнатные перегородки выполнены из&nbsp;газоблока толщиной 10&nbsp;см, а&nbsp;шаг несущих колонн сохраняет полную свободу планировочных решений.</p>
             </div>
           </div>
           <div class="acc__item">
             <button class="acc__head" type="button">
-              <span class="acc__head-label">Автономность и&nbsp;резервные системы</span>
+              <span class="acc__head-label" data-i18n-html="Автономность и&nbsp;резервные системы">Автономность и&nbsp;резервные системы</span>
             </button>
             <div class="acc__body">
-              <p>Инженерный контур включает 3&nbsp;независимых источника водоснабжения, среди которых выделенная городская труба Гонио, собственный горный ручей и&nbsp;резервуары на&nbsp;40&nbsp;тонн родниковой воды, обеспечивающие до&nbsp;3&nbsp;недель автономной жизни Клуба. Газовая инфраструктура полностью вынесена в&nbsp;единую котельную, а&nbsp;в&nbsp;резиденциях предусмотрены электрические варочные панели. При отключении внешних сетей автоматика мгновенно запускает мощный генератор, поддерживающий бесперебойную работу двух скоростных лифтов, насосов и&nbsp;заведенного в&nbsp;дом оптоволоконного интернета.</p>
+              <p data-i18n-html="Инженерный контур включает 3&nbsp;независимых источника водоснабжения, среди которых выделенная городская труба Гонио, собственный горный ручей и&nbsp;резервуары на&nbsp;40&nbsp;тонн родниковой воды, обеспечивающие до&nbsp;3&nbsp;недель автономной жизни Клуба. Газовая инфраструктура полностью вынесена в&nbsp;единую котельную, а&nbsp;в&nbsp;резиденциях предусмотрены электрические варочные панели. При отключении внешних сетей автоматика мгновенно запускает мощный генератор, поддерживающий бесперебойную работу двух скоростных лифтов, насосов и&nbsp;заведенного в&nbsp;дом оптоволоконного интернета.">Инженерный контур включает 3&nbsp;независимых источника водоснабжения, среди которых выделенная городская труба Гонио, собственный горный ручей и&nbsp;резервуары на&nbsp;40&nbsp;тонн родниковой воды, обеспечивающие до&nbsp;3&nbsp;недель автономной жизни Клуба. Газовая инфраструктура полностью вынесена в&nbsp;единую котельную, а&nbsp;в&nbsp;резиденциях предусмотрены электрические варочные панели. При отключении внешних сетей автоматика мгновенно запускает мощный генератор, поддерживающий бесперебойную работу двух скоростных лифтов, насосов и&nbsp;заведенного в&nbsp;дом оптоволоконного интернета.</p>
             </div>
           </div>
         </div>
