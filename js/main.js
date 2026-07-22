@@ -1146,8 +1146,22 @@
           if (transition) {
             transition.classList.remove("is-leaving");
             transition.classList.add("is-active");
-            // Wait for CSS transition (0.5s) to complete cover
-            setTimeout(done, 500);
+            // круг 2, п. 34: анимируем золотое лого на шторке перехода — как в прелоадере
+            // (fillOpacity 0→1 + лёгкий scale со stagger). Показываем на всех страницах.
+            const logoPaths = transition.querySelectorAll(".page-transition__mark svg path");
+            if (logoPaths.length && typeof gsap !== "undefined") {
+              gsap.killTweensOf(logoPaths);
+              gsap.set(logoPaths, { fillOpacity: 0, scale: 0.94, transformOrigin: "center center" });
+              gsap.to(logoPaths, {
+                fillOpacity: 1,
+                scale: 1,
+                duration: 0.55,
+                ease: "power2.out",
+                stagger: 0.006
+              });
+            }
+            // Ждём, пока шторка накроет экран (0.5s CSS) + успеет проявиться лого
+            setTimeout(done, 650);
           } else {
             done();
           }

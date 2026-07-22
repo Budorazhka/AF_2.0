@@ -692,22 +692,25 @@ main > section { margin: 0; }
   color: #fff;
   text-wrap: balance;
 }
-/* п. 8: текст был мелкий и полупрозрачный — крупнее, плотнее по весу и контрастнее */
+/* п. 8 + круг 2: текст был мелкий и нечитаемый — ещё крупнее, плотнее по весу
+   и на полном контрасте (100% белый), чтобы читался с экрана без напряжения */
 .home-district__text {
   font-family: var(--body);
-  font-size: clamp(1.05rem, 1.4vw, 1.28rem);
-  line-height: 1.72;
-  color: rgba(255,255,255,0.94);
+  font-size: clamp(1.18rem, 1.6vw, 1.42rem);
+  line-height: 1.75;
+  color: #fff;
   font-weight: 400;
-  max-width: 52ch;
+  max-width: 54ch;
   text-wrap: pretty;
 }
 
-/* Right column: large image at natural proportions */
+/* Right column: large image at natural proportions.
+   круг 2: убран лишний верхний отступ (создавал пустую тёмную полосу под фото —
+   заказчик читал её как «белый прямоугольник снизу»); фото тянется на всю высоту колонки. */
 .home-district__right {
   display: flex;
-  align-items: flex-start;
-  margin-top: clamp(60px, 8vw, 120px);
+  align-items: stretch;
+  margin-top: clamp(20px, 3vw, 44px);
 }
 @media (max-width: 860px) {
   .home-district__right {
@@ -717,6 +720,7 @@ main > section { margin: 0; }
 .home-district__thumb-large {
   position: relative;
   width: 100%;
+  min-height: 100%;
   aspect-ratio: 1800 / 1616;
   overflow: hidden;
   background: #0d130a;
@@ -773,9 +777,10 @@ main > section { margin: 0; }
 /* --- Сервисы: мраморный фон (оба блока одного цвета) --- */
 .home-service { padding: clamp(56px, 7vw, 100px) 0; }
 .home-service--marble + .home-service--marble { padding-top: clamp(24px, 3vw, 40px); }
-.home-service__grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: clamp(40px, 5vw, 80px); align-items: center; }
+/* круг 2, п. 4: фото крупнее — колонка с рендером расширена (было 1.25/0.75). */
+.home-service__grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: clamp(40px, 5vw, 72px); align-items: center; }
 .home-service__grid > * { min-width: 0; }
-.home-service__grid--rev { grid-template-columns: 0.75fr 1.25fr; }
+.home-service__grid--rev { grid-template-columns: 1fr 1.5fr; }
 .home-service__grid--rev .home-service__media { order: 2; }
 .home-service__media { height: auto; }
 /* п. 11-12: рендеры показываем целиком, без обрезки по высоте */
@@ -790,7 +795,7 @@ main > section { margin: 0; }
 .home-service__media .parallax__img { object-position: center; }
 .home-service__eyebrow {
   font-size: clamp(0.9rem, 1.4vw, 1.15rem); letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--gold-2); font-weight: 400; line-height: 1.5; margin-bottom: 22px; max-width: 80ch;
+  color: var(--gold-2); font-weight: 400; line-height: 1.5; margin-bottom: 22px; max-width: 46ch;
 }
 /* п. 11: выравнивание всей колонки по центру */
 .home-service--lobby .home-service__grid > .reveal,
@@ -824,8 +829,13 @@ main > section { margin: 0; }
 
 /* --- Аккордеон в блоках сервиса (выпадающие списки) --- */
 .home-acc { margin-top: 6px; }
-.home-acc .acc__head { font-family: var(--body); font-weight: 500; letter-spacing: 0.08em; color: var(--navy-deep); font-size: clamp(1.05rem, 1.3vw, 1.25rem); }
+/* круг 2, п. 4: заголовки выпадающего списка были тёмно-коричневые (почти чёрные) —
+   переведены на фирменный синий, как заголовки секций (заказчик: «синие или золотые»). */
+.home-acc .acc__head { font-family: var(--body); font-weight: 500; letter-spacing: 0.08em; color: var(--navy); font-size: clamp(1.05rem, 1.3vw, 1.25rem); }
 .home-acc .acc__head .chev { font-size: 0.62rem; }
+/* синий держится и при наведении, и в раскрытом состоянии (иначе уходил в тёмный) */
+.home-acc .acc__head:hover,
+.home-acc .acc__item.is-open .acc__head { color: var(--navy); }
 .home-acc .acc__body p { font-family: var(--body); font-weight: 300; padding: 0 4px 22px; text-transform: none; letter-spacing: 0.01em; color: #6b727a; }
 
 /* --- 36 — приватность (компактная полоса) --- */
@@ -1006,6 +1016,10 @@ main > section { margin: 0; }
   /* короче, чем раньше (1.2s): при автопрокрутке два подписанных текстом слайда
      успевали наложиться друг на друга и стать нечитаемыми */
   transition: opacity 0.7s ease;
+  /* п. 2 (круг 2): графитовая подложка под каждым слайдом. Без неё в фазе
+     двойной прозрачности при кроссфейде просвечивал светлый фон секции —
+     заказчик видел «белый квадрат» при листании. Теперь между кадрами только графит. */
+  background-color: var(--graphite);
   background-size: cover; background-position: center; background-repeat: no-repeat;
 }
 .hero__slide.is-active { opacity: 1; z-index: 1; }
@@ -1015,12 +1029,16 @@ main > section { margin: 0; }
 .hero__slide-caption {
   position: absolute;
   top: clamp(140px, 18vh, 200px);
-  right: clamp(20px, 3vw, 46px);
+  right: clamp(24px, 4vw, 64px);
   z-index: 3;
   display: flex;
   align-items: flex-start;
   gap: clamp(6px, 1vw, 12px);
   text-align: right;
+  /* п. 2 (круг 2): раньше подпись не имела ширины и тянулась влево до края
+     вьюпорта — на слайдах «7–12% ГОДОВЫХ…» и «ХАММАМ…» текст вылезал за рамку.
+     Ограничиваем ширину блока — строки переносятся внутри, ровно по правому краю. */
+  max-width: min(52vw, 640px);
 }
 /* «33 РЕЗИДЕНЦИИ …» — цифра и текст в одну строку, по базовой линии (реф, п. 1) */
 .hero__slide-caption--inline {
@@ -1036,7 +1054,9 @@ main > section { margin: 0; }
 }
 /* Первая строка-акцент («ГОТОВЫЙ», «ЗДОРОВЬЕ КАК СРЕДА») крупнее остального блока */
 .hero__slide-text--lead { font-size: clamp(2rem, 4.2vw, 3.6rem); letter-spacing: 0.09em; }
-.hero__slide-text--sub { font-size: clamp(1.25rem, 2.4vw, 2rem); }
+/* круг 2: sub-текст чуть мельче и плотнее по строке — длинная подпись «ХАММАМ…»
+   ложится ровным блоком без рваной лесенки и с запасом до правого края. */
+.hero__slide-text--sub { font-size: clamp(1.15rem, 2vw, 1.7rem); line-height: 1.3; }
 
 @media (max-width: 700px) {
   /* Подписи прижимались к самому краю, а «33» вылезало за левую границу.
@@ -2452,11 +2472,11 @@ main > section { margin: 0; }
   padding: clamp(40px, 6vw, 80px) 0 clamp(60px, 8vw, 120px);
   background: var(--cream);
 }
-/* п. 25: фото крупнее, текстовая колонка растянута */
+/* п. 25 + круг 2: фото ещё крупнее — колонка с рендером расширена (было 1.15fr). */
 .arch-acc__grid {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: clamp(28px, 4.5vw, 64px);
+  grid-template-columns: 1.4fr 1fr;
+  gap: clamp(28px, 4.5vw, 60px);
   align-items: center;
 }
 .arch-acc__media {
@@ -2591,10 +2611,12 @@ main > section { margin: 0; }
    INFRASTRUCTURE PAGE
    ============================================================ */
 /* --- Big gold stat (e.g. 24/7) --- */
+/* круг 2, п. 30: заголовок был жирный (--sans 600) и выбивался. Переведён на тонкое
+   serif-начертание 400, как остальные заголовки секций — «тонкий как везде». */
 .infra-lead {
   display: block;
-  font-family: var(--sans);
-  font-weight: 600;
+  font-family: var(--serif);
+  font-weight: 400;
   font-size: clamp(1.45rem, 2.6vw, 2.35rem);
   color: var(--navy);
   line-height: 1.3;
@@ -2604,7 +2626,8 @@ main > section { margin: 0; }
   letter-spacing: 0.02em;
 }
 /* п. 27: блок «24/7» — фото не режется, текст по центру колонки */
-.infra-247__grid { align-items: center; }
+/* круг 2, п. 30: фото крупнее — колонка с рендером лобби расширена (было 1fr/1.2fr). */
+.infra-247__grid { align-items: center; grid-template-columns: 1.3fr 1fr; }
 .infra-247__media { aspect-ratio: auto; min-height: auto; height: auto; }
 .infra-247__media img { width: 100%; height: auto; object-fit: contain; }
 .infra-247__content { text-align: center; }
@@ -2704,9 +2727,10 @@ main > section { margin: 0; }
 .infra-feature { padding: clamp(48px, 7vw, 110px) 0; }
 /* В макете фото — узкая колонка слева, аккордеон занимает бо́льшую часть ширины,
    чтобы заголовки пунктов ложились в одну строку */
-.infra-feature__grid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: clamp(30px, 5vw, 70px); align-items: start; }
-/* п. 29: фото формата 4/5 вместо вытянутого 9/16 */
-.infra-feature__media { position: relative; aspect-ratio: 4 / 5; min-height: 0; overflow: hidden; background: #ebe8e3; }
+/* круг 2, п. 32: фото было высотой только с первый пункт (align-items:start) —
+   теперь колонка растягивается на всю высоту списка, и фото идёт вровень со всеми пунктами. */
+.infra-feature__grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: clamp(30px, 5vw, 70px); align-items: stretch; }
+.infra-feature__media { position: relative; min-height: clamp(420px, 52vw, 640px); height: 100%; overflow: hidden; background: #ebe8e3; }
 .infra-feature__media img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.25s var(--ease); }
 
 /* п. 29: нумерация убрана, заголовки пунктов по центру, верхняя линия первого пункта снята */
@@ -3072,7 +3096,9 @@ main > section { margin: 0; }
   line-height: 1.1;
   letter-spacing: 0.03em;
   text-align: center;
-  margin: 0 0 clamp(30px, 5vw, 60px);
+  /* круг 2, п. 33: сверху не было отступа — заголовок жался к фото над ним.
+     Отступ сверху приравнен к нижнему, пространство стало симметричным. */
+  margin: clamp(30px, 5vw, 60px) 0 clamp(30px, 5vw, 60px);
   text-wrap: balance;
 }
 .flats-air__content .arch-split__title {
@@ -3439,7 +3465,7 @@ main > section { margin: 0; }
 }
 .slide-author__grid {
   display: grid;
-  grid-template-columns: 1.18fr 1fr;
+  grid-template-columns: 1.05fr 1fr;
   gap: clamp(30px, 5vw, 60px);
   align-items: center;
 }
@@ -3464,11 +3490,13 @@ main > section { margin: 0; }
   color: #fff;
   border-color: #fff;
 }
+/* круг 2, п. 22: текст крупнее и растянут по колонке — заполняет отведённое поле
+   справа от фото, а не жмётся узким столбиком по центру. */
 .slide-author__text-block {
   text-align: center;
   font-family: var(--body);
-  font-size: clamp(1.15rem, 1.5vw, 1.45rem);
-  line-height: 1.7;
+  font-size: clamp(1.3rem, 1.75vw, 1.62rem);
+  line-height: 1.72;
   color: var(--navy-deep);
 }
 .slide-author__text-block p {
@@ -3477,6 +3505,18 @@ main > section { margin: 0; }
 }
 
 /* Slide 3 - Geometry */
+/* круг 2, п. 22: под заголовком была плоская кремовая (почти белая) полоса —
+   «ни к селу ни к городу». Заливаем секцию тем же мраморным градиентом, что и
+   соседний блок автора, чтобы заголовок жил на мраморе, а не на белой плашке. */
+.slide-geometry {
+  background-color: var(--beige);
+  background-image:
+    linear-gradient(rgba(210, 205, 202, 0.55), rgba(210, 205, 202, 0.55)),
+    var(--marble-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 .slide-geometry__header {
   display: flex;
   justify-content: center;
@@ -3516,8 +3556,8 @@ main > section { margin: 0; }
 /* Slide 4 - Deconstructivism */
 .slide-deconstruct__grid {
   display: grid;
-  grid-template-columns: 1fr 1.25fr;
-  gap: clamp(30px, 6vw, 84px);
+  grid-template-columns: 0.85fr 1.4fr;
+  gap: clamp(30px, 5vw, 72px);
   align-items: stretch;
 }
 /* п. 22: основной текст крупнее и по центру, как в референсе */
@@ -3541,17 +3581,19 @@ main > section { margin: 0; }
 }
 .slide-deconstruct__title-wrap {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-start;
   gap: 20px;
 }
+/* круг 2, п. 23: заголовок отцентрован над фото (был прижат влево) */
 .slide-deconstruct__title {
   font-family: var(--serif);
   color: var(--navy);
-  font-size: clamp(1.2rem, 2.3vw, 1.8rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.9rem);
   line-height: 1.32;
   font-weight: 400;
   text-transform: uppercase;
+  text-align: center;
   flex: 1;
 }
 .slide-deconstruct__num-wrap {
@@ -3559,7 +3601,7 @@ main > section { margin: 0; }
 }
 .slide-deconstruct__media {
   position: relative;
-  aspect-ratio: 16 / 9.5;
+  aspect-ratio: 16 / 11;
   overflow: hidden;
   background: #ebe8e3;
 }
@@ -3649,8 +3691,12 @@ main > section { margin: 0; }
   text-wrap: balance;
 }
 /* п. 24: широкое фото с дрона вместо трёх колонок-заглушек */
+/* круг 2: фото должно вставать вплотную к низу слайда — убираем нижний паддинг
+   секции и растягиваем кадр во всю ширину экрана до самого края. */
+.slide-logic { padding-bottom: 0; }
 .slide-logic__wide {
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
   overflow: hidden;
   background: #ebe8e3;
 }
