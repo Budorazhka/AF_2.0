@@ -439,16 +439,24 @@
       const imgFallback = imgPath;
       const arrow = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
+      // Локализация: название следующей главы и надпись «Следующая глава»
+      // берём через словарь i18n (если подключён), чтобы блок,
+      // собираемый на лету, тоже переводился. AF_refreshChapterNext ниже
+      // пересобирает его при смене языка.
+      var i18n = window.AF_I18N;
+      var nextTitle = i18n ? i18n.t(next.title) : next.title;
+      var eyebrowNext = i18n ? i18n.t("Следующая глава") : "Следующая глава";
+
       chapterNext.hidden = false;
       chapterNext.innerHTML =
         '<a class="chapter-next__media media-placeholder" href="' + hrefAbs + '">' +
         '<img data-src="' + imgPath + '" data-fallback="' + imgFallback + '" alt="" class="parallax__img lazy" /></a>' +
         '<div class="chapter-next__overlay"></div>' +
         '<div class="chapter-next__inner">' +
-          '<a href="' + hrefAbs + '" class="circle-btn chapter-next__arrow" aria-label="' + next.title + '">' + arrow + '</a>' +
+          '<a href="' + hrefAbs + '" class="circle-btn chapter-next__arrow" aria-label="' + nextTitle + '">' + arrow + '</a>' +
           '<div class="chapter-next__text-wrap">' +
-            '<p class="chapter-next__eyebrow">Следующая глава</p>' +
-            '<h2 class="chapter-next__title">' + next.title + '</h2>' +
+            '<p class="chapter-next__eyebrow">' + eyebrowNext + '</p>' +
+            '<h2 class="chapter-next__title">' + nextTitle + '</h2>' +
           '</div>' +
         '</div>';
         
@@ -468,6 +476,21 @@
           chapterIndicator.classList.toggle("is-hidden-by-next", entry.isIntersecting);
         }, { threshold: 0.15 }).observe(chapterNext);
       }
+
+      // При смене языка (i18n.setLang) не пересобираем весь блок —
+      // только переписываем текстовые узлы, сохраняя observer и картинку.
+      window.AF_refreshChapterNext = function () {
+        var t = window.AF_I18N ? window.AF_I18N.t.bind(window.AF_I18N) : function (s) { return s; };
+        var title = t(next.title);
+        var titleEl = chapterNext.querySelector(".chapter-next__title");
+        var eyebrowEl = chapterNext.querySelector(".chapter-next__eyebrow");
+        var arrowEl = chapterNext.querySelector(".chapter-next__arrow");
+        if (titleEl) titleEl.textContent = title;
+        if (eyebrowEl) eyebrowEl.textContent = t("Следующая глава");
+        if (arrowEl) arrowEl.setAttribute("aria-label", title);
+      };
+    } else {
+      window.AF_refreshChapterNext = function () {};
     }
 
     // 11. EXPANDING MEDIA ("on rails" section pinning)

@@ -4,31 +4,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="theme-color" content="#14181b" />
-  <title>Контакты — Aurum Fort</title>
-  <meta name="description" content="Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." />
+  <title data-i18n="Контакты — Aurum Fort">Контакты — Aurum Fort</title>
+  <meta name="description" data-i18n-attr="content:Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." content="Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." />
   <link rel="canonical" href="/contacts" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Контакты — Aurum Fort" />
-  <meta property="og:description" content="Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." />
+  <meta property="og:title" data-i18n-attr="content:Контакты — Aurum Fort" content="Контакты — Aurum Fort" />
+  <meta property="og:description" data-i18n-attr="content:Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." content="Офис продаж Aurum Fort: г. Батуми, ул. Царя Парнаваза, 18. Телефон +995 557 20 70 70. Клубный дом в Гонио, ул. Петре Ибери 51." />
   <meta property="og:image" content="/assets/img/og/og-contacts.jpg" />
   <meta property="og:url" content="/contacts" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=54" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=55" />
+
+  <!-- i18n: словарь грузинского грузится ДО движка, движок ДО main.js -->
+  <script src="/js/i18n-ka.js?v=1"></script>
+  <script src="/js/i18n.js?v=1"></script>
 </head>
 <body>
   <!--# include virtual="/partials/top.html" -->
 
   <main data-barba="container" data-barba-namespace="contacts">
     <!-- ============ HERO ============ -->
-    <section class="location-hero" data-chapter="Контакты">
+    <section class="location-hero" data-chapter="Контакты" data-i18n-attr="data-chapter:Контакты">
       <div class="container location-hero__container reveal">
         <div class="location-hero__left">
-          <h1 class="location-hero__title">Выбрать<br />квартиру</h1>
+          <h1 class="location-hero__title" data-i18n-html="Выбрать<br />квартиру">Выбрать<br />квартиру</h1>
         </div>
         <div class="location-hero__right">
           <div class="location-hero__watermark flats-crest"></div>
@@ -40,23 +44,24 @@
     <section class="section">
       <div class="container home-service__grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start;">
         <div class="reveal">
-          <p class="eyebrow">Свяжитесь с нами</p>
+          <p class="eyebrow" data-i18n="Свяжитесь с нами">Свяжитесь с нами</p>
           <a href="tel:+995557207070" class="contacts-phone">+995 557 20 70 70</a>
-          <button class="btn btn--gold" data-callback style="margin: 18px 0 40px;">Обратный звонок</button>
+          <button class="btn btn--gold" data-callback style="margin: 18px 0 40px;" data-i18n="Обратный звонок">Обратный звонок</button>
 
           <div class="home-list">
-            <div class="home-list__row"><span class="home-list__name">Офис продаж</span><span class="home-list__note">г. Батуми, ул. Царя Парнаваза, 18</span></div>
-            <div class="home-list__row"><span class="home-list__name">Часы работы</span><span class="home-list__note">Пн–пт с 11:00 до 19:00</span></div>
-            <div class="home-list__row"><span class="home-list__name">Клубный дом</span><span class="home-list__note">ул. Петре Ибери 51, Гонио, Батуми</span></div>
+            <div class="home-list__row"><span class="home-list__name" data-i18n="Офис продаж">Офис продаж</span><span class="home-list__note" data-i18n="г. Батуми, ул. Царя Парнаваза, 18">г. Батуми, ул. Царя Парнаваза, 18</span></div>
+            <div class="home-list__row"><span class="home-list__name" data-i18n="Часы работы">Часы работы</span><span class="home-list__note" data-i18n="Пн–пт с 11:00 до 19:00">Пн–пт с 11:00 до 19:00</span></div>
+            <div class="home-list__row"><span class="home-list__name" data-i18n="Клубный дом">Клубный дом</span><span class="home-list__note" data-i18n="ул. Петре Ибери 51, Гонио, Батуми">ул. Петре Ибери 51, Гонио, Батуми</span></div>
           </div>
 
-          <a href="https://yandex.ru/maps/?text=Батуми, улица Царя Парнаваза, 18" target="_blank" rel="noopener" class="btn btn--outline" style="margin-top: 34px;">Построить маршрут</a>
+          <a href="https://yandex.ru/maps/?text=Батуми, улица Царя Парнаваза, 18" target="_blank" rel="noopener" class="btn btn--outline" style="margin-top: 34px;" data-i18n="Построить маршрут">Построить маршрут</a>
         </div>
 
         <div class="reveal">
           <div class="contacts-map">
             <iframe
               title="Карта — офис продаж Aurum Fort"
+              data-i18n-attr="title:Карта — офис продаж Aurum Fort"
               src="https://yandex.ru/map-widget/v1/?text=Батуми%2C%20улица%20Царя%20Парнаваза%2C%2018&z=15"
               width="100%" height="100%" frameborder="0" loading="lazy"
               style="border: 0; display: block;"></iframe>
