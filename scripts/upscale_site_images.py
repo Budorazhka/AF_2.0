@@ -32,7 +32,6 @@ class Asset:
 ASSETS = (
     # Full-screen hero renders: only small originals are available.
     Asset("\u043f1.png", ("\u043f1.webp",), 2400, 45),
-    Asset("\u043f3.jpeg", ("\u043f3.webp",), 2400, 45),
     Asset("\u043f4.png", ("\u043f4.webp", "\u043f6.webp"), 2400, 45),
     Asset("\u043f6.png", ("\u043f6-pool.webp",), 2400, 45),
     # Large sources were previously exported too small for their CSS slots.
