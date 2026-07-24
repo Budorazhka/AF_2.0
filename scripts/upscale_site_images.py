@@ -27,19 +27,21 @@ class Asset:
     target_width: int
     sharpen_percent: int = 15
     source_from_assets: bool = False
+    quality: int = WEBP_QUALITY
 
 
 ASSETS = (
     # Full-screen hero renders: only small originals are available.
     Asset("\u043f1.png", ("\u043f1.webp",), 2400, 45),
-    Asset("\u043f3.jpeg", ("\u043f3.webp",), 2400, 45),
     Asset("\u043f4.png", ("\u043f4.webp", "\u043f6.webp"), 2400, 45),
     Asset("\u043f6.png", ("\u043f6-pool.webp",), 2400, 45),
     # Large sources were previously exported too small for their CSS slots.
     Asset(
         "AURUM FORT Investment Presentation ENG.pptx, \u043a\u043e\u043f\u0438\u044f (2).png",
         ("ready-home.webp",),
-        4800,
+        target_width=6000,
+        sharpen_percent=0,
+        quality=100,
     ),
     Asset("6_upscaled.PNG", ("6_upscaled.webp",), 3200),
     Asset("18_1_upscaled.PNG", ("18_1_upscaled.webp",), 3200),
@@ -54,7 +56,10 @@ def rebuild(asset: Asset) -> None:
     source_root = OUTPUT_ROOT if asset.source_from_assets else SOURCE_ROOT
     source_path = source_root / asset.source
     with Image.open(source_path) as source:
-        image = source.convert("RGB")
+        has_alpha = "A" in source.getbands()
+        rgba = source.convert("RGBA") if has_alpha else None
+        image = rgba.convert("RGB") if rgba else source.convert("RGB")
+        alpha = rgba.getchannel("A") if rgba else None
         icc_profile = source.info.get("icc_profile")
         exif = source.info.get("exif", b"")
 
@@ -65,9 +70,25 @@ def rebuild(asset: Asset) -> None:
         return
 
     target_height = round(image.height * asset.target_width / image.width)
-    resized = image.resize(
-        (asset.target_width, target_height),
-        resample=Image.Resampling.LANCZOS,
+    resized = (
+        image.resize(
+            (asset.target_width, target_height),
+            resample=Image.Resampling.LANCZOS,
+        )
+        if image.width != asset.target_width
+        else image.copy()
+    )
+    resized_alpha = (
+        (
+            alpha.resize(
+                (asset.target_width, target_height),
+                resample=Image.Resampling.LANCZOS,
+            )
+            if alpha.width != asset.target_width
+            else alpha.copy()
+        )
+        if alpha
+        else None
     )
 
     # Restore edge contrast softened by interpolation without inventing
@@ -80,13 +101,15 @@ def rebuild(asset: Asset) -> None:
                 threshold=3,
             )
         )
+    if resized_alpha:
+        resized.putalpha(resized_alpha)
 
     for output_name in asset.outputs:
         output_path = OUTPUT_ROOT / output_name
         resized.save(
             output_path,
             format="WEBP",
-            quality=WEBP_QUALITY,
+            quality=asset.quality,
             method=6,
             icc_profile=icc_profile,
             exif=exif,
