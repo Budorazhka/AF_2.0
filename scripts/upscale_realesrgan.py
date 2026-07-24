@@ -2,7 +2,8 @@
 
 Example:
     python scripts/upscale_realesrgan.py ^
-        ../media/п3.jpeg assets/img/п3.webp --width 3840 --quality 90
+        ../media/from-drive/п3-original-drive.jpg assets/img/п3.webp ^
+        --width 3840 --quality 96
 
 Set ``REALESRGAN_DIR`` when the portable application is installed somewhere
 other than the default ``~/Desktop/IT/ai-tools`` location.

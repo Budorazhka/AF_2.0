@@ -261,7 +261,14 @@
         const rect = stickyState.container.getBoundingClientRect();
         if (rect.bottom >= 0 && rect.top <= vh + rect.height) {
           stickyState.current += (stickyState.target - stickyState.current) * LERP_EASE;
-          const shift = stickyState.current * -60.0;
+          /* Move exactly through the image's overflow. This keeps the bottom
+             edge aligned with the viewport even when CSS changes its height,
+             and avoids the previous 250vh quality-destroying zoom. */
+          const imageHeight = stickyState.img.offsetHeight;
+          const maxShiftPercent = imageHeight > 0
+            ? Math.max(0, ((imageHeight - vh) / imageHeight) * 100)
+            : 0;
+          const shift = stickyState.current * -maxShiftPercent;
           stickyState.img.style.transform = "translate3d(0," + shift.toFixed(2) + "%,0)";
 
           if (stickyState.title) {

@@ -31,18 +31,15 @@ class Asset:
 
 
 ASSETS = (
-    # Full-screen hero renders: only small originals are available.
-    Asset("\u043f1.png", ("\u043f1.webp",), 2400, 45),
-    Asset("\u043f4.png", ("\u043f4.webp", "\u043f6.webp"), 2400, 45),
-    Asset("\u043f6.png", ("\u043f6-pool.webp",), 2400, 45),
+    # Large hero masters: retain real source detail and prepare for HiDPI.
+    # Small hero sources п1/п4/п6 are intentionally handled by
+    # upscale_realesrgan.py so this Lanczos job cannot overwrite them.
+    Asset("\u043f2.png", ("\u043f2.webp",), 3840, 0, quality=92),
+    Asset("\u043f5_upscaled.png", ("\u043f5.webp",), 3840, 0, quality=92),
     # Large sources were previously exported too small for their CSS slots.
-    Asset(
-        "AURUM FORT Investment Presentation ENG.pptx, \u043a\u043e\u043f\u0438\u044f (2).png",
-        ("ready-home.webp",),
-        target_width=6000,
-        sharpen_percent=0,
-        quality=100,
-    ),
+    # Full 6480px master replaces the background-removed export: the latter
+    # exposed a large transparent region and looked black in some renderers.
+    Asset("\u04401.png", ("ready-home.webp",), 6480, 0, quality=90),
     Asset("6_upscaled.PNG", ("6_upscaled.webp",), 3200),
     Asset("18_1_upscaled.PNG", ("18_1_upscaled.webp",), 3200),
     Asset("2.jpg", ("2.webp",), 1200),

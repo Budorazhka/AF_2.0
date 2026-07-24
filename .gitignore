@@ -9,6 +9,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # System Files
 .DS_Store
 Thumbs.db
