@@ -28,10 +28,10 @@
   ];
   const NEXT_IMG_FALLBACKS = {
     "/": "/assets/img/2.webp",
-    "/location": "/assets/img/6_upscaled.webp",
-    "/architecture": "/assets/img/18_1_upscaled.webp",
+    "/location": "/assets/img/6_upscaled.webp?v=2",
+    "/architecture": "/assets/img/18_1_upscaled.webp?v=2",
     "/infrastructure": "/assets/img/next-infrastructure.webp",
-    "/flats": "/assets/img/п12.webp",
+    "/flats": "/assets/img/п12.webp?v=2",
     "/contacts": "/assets/img/next-contacts.webp"
   };
 
