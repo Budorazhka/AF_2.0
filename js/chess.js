@@ -350,7 +350,11 @@
     body.innerHTML = buildPanelHtml(apt);
     panel.classList.add("is-open");
     panel.setAttribute("aria-hidden", "false");
+    // Глушим и внешний скроллбар (html — скроллер страницы), и Lenis,
+    // иначе колесо над панелью крутит заодно страницу под ней
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    if (window.AF_lenis) window.AF_lenis.stop();
 
     var planImg = body.querySelector("[data-plan-open]");
     if (planImg) {
@@ -365,7 +369,9 @@
     if (!panel) return;
     panel.classList.remove("is-open");
     panel.setAttribute("aria-hidden", "true");
+    document.documentElement.style.overflow = "";
     document.body.style.overflow = "";
+    if (window.AF_lenis) window.AF_lenis.start();
   }
 
   function esc(str) {
@@ -516,7 +522,13 @@
   }
   function hookBarba() {
     if (window.barba && barba.hooks) {
-      barba.hooks.after(function () { init(); });
+      barba.hooks.after(function () {
+        // если ушли со страницы с открытой панелью — снять блокировку скролла
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
+        if (window.AF_lenis) window.AF_lenis.start();
+        init();
+      });
     } else {
       setTimeout(hookBarba, 120); // barba грузится с defer — ждём
     }
