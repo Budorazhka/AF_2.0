@@ -3,6 +3,15 @@
    Палитра, типографика, секции, анимации
    ============================================================ */
 
+/* Скрыто визуально, доступно для скринридеров и поисковых роботов —
+   для единственного h1 на странице, когда дизайн не предусматривает
+   отдельный видимый заголовок (напр. hero-слайдер главной). */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
 /* Палитра бренда Aurum Fort (см. последние страницы макета):
    золото #C09A50 ~10% · зелёный #4E6046 ~30% · крем #F6F1E7 ~60% · мягкий чёрный #34302A */
 :root {
@@ -121,6 +130,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .lead--center { margin-left: auto; margin-right: auto; text-align: center; }
 
 .container { width: 100%; max-width: var(--container); margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px); }
+
+/* Страховка от горизонтального вылезания заголовков на узких экранах:
+   uppercase + serif + длинное слово («ПРОСТРАНСТВО», «ИНФРАСТРУКТУРА») на
+   ~375-390px может быть шире контейнера — без переноса браузер не сжимает
+   слово и даёт горизонтальный скролл страницы. */
+h1, h2, h3 { max-width: 100%; overflow-wrap: break-word; }
 .section { padding: clamp(72px, 11vw, 160px) 0; position: relative; }
 .section--dark { background: var(--graphite); color: var(--white); }
 .section--dark .lead, .section--dark .grey { color: #9aa0a6; }
@@ -949,7 +964,10 @@ main > section { margin: 0; }
   .home-district__grid, .home-service__grid, .home-service__grid--rev { grid-template-columns: 1fr; }
   .home-service__grid--rev .home-service__media { order: 0; }
   .home-district__thumb { aspect-ratio: 4/3; }
-  .home-list__note { display: none; }
+  /* .home-list живёт только на /contacts (адрес, часы работы) — раньше значение
+     скрывалось на мобиле совсем; вместо этого переносим строку на новую линию */
+  .home-list__row { flex-wrap: wrap; }
+  .home-list__note { flex-basis: 100%; text-align: left; margin-top: 4px; }
   .marble-bg,
   .home-service--marble,
   .masters.section,
@@ -1844,7 +1862,7 @@ main > section { margin: 0; }
   justify-content: space-between;
   align-items: flex-end;
 }
-.location-hero__left { flex: 1; }
+.location-hero__left { flex: 1; min-width: 0; }
 .location-hero__title {
   font-family: var(--serif);
   font-weight: 400;
@@ -2557,7 +2575,7 @@ main > section { margin: 0; }
 }
 .arch-split__grid > * { min-width: 0; }
 .arch-split--rev .arch-split__media { order: 2; }
-.arch-split__title { font-family: var(--serif); font-weight: 400; text-transform: uppercase; color: var(--navy); font-size: clamp(1.55rem, 2.9vw, 2.5rem); line-height: 1.15; margin-bottom: 26px; text-wrap: balance; }
+.arch-split__title { font-family: var(--serif); font-weight: 400; text-transform: uppercase; color: var(--navy); font-size: clamp(1.55rem, 2.9vw, 2.5rem); line-height: 1.15; margin-bottom: 26px; text-wrap: balance; max-width: 100%; overflow-wrap: break-word; }
 .arch-split__text { color: var(--grey); line-height: 1.8; }
 .arch-split__text p { margin-bottom: 1.1em; }
 .arch-split__media {
@@ -3443,7 +3461,9 @@ main > section { margin: 0; }
   align-items: center;
   gap: clamp(24px, 5vw, 80px);
   margin-bottom: 0;
+  min-width: 0;
 }
+.slide-hero__header > * { min-width: 0; }
 .slide-hero--plain .slide-hero__header {
   justify-content: flex-start;
 }

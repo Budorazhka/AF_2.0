@@ -1,8 +1,9 @@
 /* ============================================================
-   AURUM FORT — двуязычие RU / KA (грузинский)
+   AURUM FORT — RU / KA (грузинский) / EN
    ------------------------------------------------------------
-   Русский — базовый язык: он лежит прямо в разметке. Грузинский
-   хранится словарём ниже и подставляется по атрибутам:
+   Русский — базовый язык: он лежит прямо в разметке. KA и EN
+   хранятся отдельными словарями (js/i18n-ka.js, js/i18n-en.js:
+   window.AF_I18N_KA / window.AF_I18N_EN) и подставляются по атрибутам:
 
      data-i18n="key"            → заменяет textContent
      data-i18n-html="key"       → заменяет innerHTML (для <br>, &nbsp;)
@@ -24,15 +25,19 @@
 
   var STORAGE_KEY = "af-lang";
   var DEFAULT_LANG = "ru";
+  var LANGS = ["ru", "ka", "en"];
 
-  /* Словарь: русский → грузинский. Ключ — «плоская» русская строка
-     (переносы <br> заменены пробелом, &nbsp; — обычным пробелом,
-     двойные пробелы схлопнуты). Значение — грузинский перевод в том же
-     виде; переносы/неразрывные пробелы восстанавливаются автоматически
+  /* Словари: русский → (грузинский | английский). Ключ — «плоская» русская
+     строка (переносы <br> заменены пробелом, &nbsp; — обычным пробелом,
+     двойные пробелы схлопнуты). Значение — перевод в том же виде;
+     переносы/неразрывные пробелы восстанавливаются автоматически
      из исходной русской разметки, поэтому в переводе их писать не нужно
      для html-ключей — движок переносит структуру. Но чтобы сохранить
      ручные переносы строк дизайна, для html-строк перевод дан С разметкой. */
-  var RAW_KA = window.AF_I18N_KA || {};
+  var RAW_DICTS = {
+    ka: window.AF_I18N_KA || {},
+    en: window.AF_I18N_EN || {}
+  };
 
   /* ---- нормализация ключа: разметка → плоский текст ----
      Приводим ключ к единому виду независимо от того, записан символ как
@@ -54,15 +59,20 @@
       .trim();
   }
 
-  /* Ключи словаря нормализуем тем же keyOf, что и ключи из разметки —
+  /* Ключи словарей нормализуем тем же keyOf, что и ключи из разметки —
      тогда лишний неразрывный пробел, HTML-сущность или типографский
      апостроф в одной из сторон не ломает совпадение. */
-  var KA = {};
+  var DICTS = { ka: {}, en: {} };
   (function () {
-    for (var k in RAW_KA) {
-      if (Object.prototype.hasOwnProperty.call(RAW_KA, k)) KA[keyOf(k)] = RAW_KA[k];
+    for (var code in RAW_DICTS) {
+      var raw = RAW_DICTS[code], normalized = DICTS[code];
+      for (var k in raw) {
+        if (Object.prototype.hasOwnProperty.call(raw, k)) normalized[keyOf(k)] = raw[k];
+      }
     }
   })();
+  /* Текущий словарь перевода (пуст для "ru" — оригинал живёт в разметке). */
+  function currentDict() { return DICTS[lang] || {}; }
 
   var lang = DEFAULT_LANG;
 
@@ -74,19 +84,18 @@
   }
 
   /* Перевод одной строки-ключа. Для html-значений в словаре лежит уже
-     размеченный грузинский; для plain — плоский. Если перевода нет —
+     размеченный перевод; для plain — плоский. Если перевода нет —
      возвращаем оригинал (грациозная деградация, русский не пропадает). */
   function translate(rawKey) {
     if (lang === "ru") return null;              // русский — как в разметке
-    var flat = keyOf(rawKey);
-    var hit = KA[flat];
+    var hit = currentDict()[keyOf(rawKey)];
     return (hit === undefined) ? null : hit;
   }
 
   /* t(key) — для main.js: вернуть перевод плоской строки или её саму. */
   function t(str) {
     if (lang === "ru") return str;
-    var hit = KA[keyOf(str)];
+    var hit = currentDict()[keyOf(str)];
     return (hit === undefined) ? str : hit;
   }
 
@@ -96,19 +105,21 @@
   function apply(root) {
     root = root || document;
 
+    var dict = currentDict();
+
     // textContent
     root.querySelectorAll("[data-i18n]").forEach(function (el) {
       if (el.dataset.i18nRu === undefined) el.dataset.i18nRu = el.textContent;
       var key = el.getAttribute("data-i18n") || el.dataset.i18nRu;
-      el.textContent = (lang === "ru") ? el.dataset.i18nRu : (KA[keyOf(key)] !== undefined ? KA[keyOf(key)] : el.dataset.i18nRu);
+      el.textContent = (lang === "ru") ? el.dataset.i18nRu : (dict[keyOf(key)] !== undefined ? dict[keyOf(key)] : el.dataset.i18nRu);
     });
 
     // innerHTML (переносы, неразрывные пробелы)
     root.querySelectorAll("[data-i18n-html]").forEach(function (el) {
       if (el.dataset.i18nRuHtml === undefined) el.dataset.i18nRuHtml = el.innerHTML;
       var key = el.getAttribute("data-i18n-html") || el.dataset.i18nRuHtml;
-      var ka = KA[keyOf(key)];
-      el.innerHTML = (lang === "ru") ? el.dataset.i18nRuHtml : (ka !== undefined ? ka : el.dataset.i18nRuHtml);
+      var hit = dict[keyOf(key)];
+      el.innerHTML = (lang === "ru") ? el.dataset.i18nRuHtml : (hit !== undefined ? hit : el.dataset.i18nRuHtml);
     });
 
     // атрибуты: placeholder, aria-label, alt, title, content, data-chapter.
@@ -125,15 +136,15 @@
         var attr = pair.slice(0, i).trim();
         var key = pair.slice(i + 1).trim();
         if (el.__afAttrRu[attr] === undefined) el.__afAttrRu[attr] = el.getAttribute(attr) || "";
-        var ka = KA[keyOf(key)];
-        el.setAttribute(attr, (lang === "ru") ? el.__afAttrRu[attr] : (ka !== undefined ? ka : el.__afAttrRu[attr]));
+        var hit = dict[keyOf(key)];
+        el.setAttribute(attr, (lang === "ru") ? el.__afAttrRu[attr] : (hit !== undefined ? hit : el.__afAttrRu[attr]));
       });
     });
   }
 
   /* Сменить язык: обновить <html lang>, localStorage, кнопки, перевод. */
   function setLang(next, opts) {
-    lang = (next === "ka") ? "ka" : "ru";
+    lang = (LANGS.indexOf(next) !== -1) ? next : "ru";
     document.documentElement.setAttribute("lang", lang);
     if (!opts || opts.persist !== false) persist(lang);
     apply(document);
@@ -166,7 +177,7 @@
   /* Инициализация языка ещё до полной загрузки — чтобы не мигало русским,
      если выбран грузинский. lang на <html> ставим сразу. */
   var initial = stored() || DEFAULT_LANG;
-  lang = (initial === "ka") ? "ka" : "ru";
+  lang = (LANGS.indexOf(initial) !== -1) ? initial : "ru";
   document.documentElement.setAttribute("lang", lang);
 
   function boot() {

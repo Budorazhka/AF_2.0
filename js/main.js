@@ -658,11 +658,21 @@
         }, 4500);
       };
       
+      // Активный слайд — сразу (это первый экран, задержка тут недопустима).
+      // Остальные 5 фонов (до ~7 МБ суммарно) прогреваем в простое браузера,
+      // чтобы они не боролись за полосу с первым экраном, но всё равно
+      // были в кэше к моменту автоматической смены слайда (мигания не будет).
+      const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 200));
       heroSlides.forEach(slide => {
         const bg = slide.getAttribute("data-bg");
-        if (bg) {
+        if (!bg) return;
+        if (slide.classList.contains("is-active")) {
           slide.style.backgroundImage = `url('${bg}')`;
-          const pre = new Image(); pre.src = bg; // прогрев кэша: слайды не должны мигать при смене
+        } else {
+          idle(() => {
+            slide.style.backgroundImage = `url('${bg}')`;
+            const pre = new Image(); pre.src = bg;
+          });
         }
       });
 
