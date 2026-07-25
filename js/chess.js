@@ -475,50 +475,37 @@
     box.setAttribute("aria-hidden", "true");
   }
 
-  /* ---------- события ---------- */
+  /* ---------- события (делегирование: переживает подмену DOM Барбой) ---------- */
   document.addEventListener("click", function (e) {
     if (e.target.closest("[data-panel-close]")) closePanel();
     if (e.target.closest("[data-lightbox-close]")) closeLightbox();
+    if (e.target.closest("[data-chess-reset]")) resetFilters();
+    // клик по подложке лайтбокса (не по картинке) закрывает его
+    if (e.target.classList && e.target.classList.contains("chess-lightbox")) closeLightbox();
   });
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
     closeLightbox();
     closePanel();
   });
-  var lightboxEl = document.getElementById("chessLightbox");
-  if (lightboxEl) {
-    lightboxEl.addEventListener("click", function (e) {
-      if (e.target === lightboxEl) closeLightbox();
-    });
-  }
-
-  var resetBtn;
-  function renderResetHook() {
-    var summary = document.getElementById("chessSummary");
-    if (!summary || resetBtn) return;
-    resetBtn = document.createElement("button");
-    resetBtn.type = "button";
-    resetBtn.className = "chess-filters__reset";
-    resetBtn.textContent = t(UI.reset);
-    resetBtn.addEventListener("click", resetFilters);
-    summary.parentNode.insertBefore(resetBtn, summary);
-  }
 
   /* ---------- перерисовка при смене языка ---------- */
   function rerenderAll() {
     renderFilters();
     renderLegend();
     renderBoard();
-    if (resetBtn) resetBtn.textContent = t(UI.reset);
     var panel = document.getElementById("chessPanel");
     if (panel && panel.classList.contains("is-open")) closePanel();
   }
   window.AF_refreshChess = rerenderAll;
 
-  /* ---------- init ---------- */
+  /* ---------- init ----------
+     Скрипт грузится на каждой странице (см. partials/bottom.html), поэтому
+     молчим, если на странице нет шахматки. Barba не выполняет скрипты
+     подменяемых страниц — переинициализируемся после каждого перехода. */
   function init() {
+    if (!document.getElementById("chessBoard")) return;
     renderFilters();
-    renderResetHook();
     renderLegend();
     renderBoard();
   }
@@ -527,4 +514,12 @@
   } else {
     init();
   }
+  function hookBarba() {
+    if (window.barba && barba.hooks) {
+      barba.hooks.after(function () { init(); });
+    } else {
+      setTimeout(hookBarba, 120); // barba грузится с defer — ждём
+    }
+  }
+  hookBarba();
 })();

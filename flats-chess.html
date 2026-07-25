@@ -18,8 +18,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=57" />
-  <link rel="stylesheet" href="/css/chess.css?v=2" />
+  <link rel="stylesheet" href="/css/styles.css?v=58" />
+  <!-- chess.css подключается глобально в partials/top.html: Barba не трогает head,
+       и при переходе из меню локальный link просто не появился бы -->
 
   <!-- i18n: словарь грузинского грузится ДО движка, движок ДО main.js -->
   <script src="/js/i18n-ka.js?v=1"></script>
@@ -45,19 +46,24 @@
 
         <!-- Filters -->
         <div class="chess-filters reveal" id="chessFilters">
-          <div class="chess-filters__group">
-            <p class="chess-filters__label" data-i18n="Статус">Статус</p>
-            <div class="chess-filters__chips" data-filter-group="status"></div>
+          <div class="chess-filters__groups">
+            <div class="chess-filters__group">
+              <p class="chess-filters__label" data-i18n="Статус">Статус</p>
+              <div class="chess-filters__chips" data-filter-group="status"></div>
+            </div>
+            <div class="chess-filters__group">
+              <p class="chess-filters__label" data-i18n="Планировка">Планировка</p>
+              <div class="chess-filters__chips" data-filter-group="rooms"></div>
+            </div>
+            <div class="chess-filters__group">
+              <p class="chess-filters__label" data-i18n="Вид из окон">Вид из окон</p>
+              <div class="chess-filters__chips" data-filter-group="views"></div>
+            </div>
           </div>
-          <div class="chess-filters__group">
-            <p class="chess-filters__label" data-i18n="Планировка">Планировка</p>
-            <div class="chess-filters__chips" data-filter-group="rooms"></div>
+          <div class="chess-filters__footer">
+            <div class="chess-filters__summary" id="chessSummary"></div>
+            <button type="button" class="chess-filters__reset" data-chess-reset data-i18n="Сбросить">Сбросить</button>
           </div>
-          <div class="chess-filters__group">
-            <p class="chess-filters__label" data-i18n="Вид из окон">Вид из окон</p>
-            <div class="chess-filters__chips" data-filter-group="views"></div>
-          </div>
-          <div class="chess-filters__summary" id="chessSummary"></div>
         </div>
 
         <!-- Legend -->
@@ -69,26 +75,25 @@
       </div>
     </section>
 
+    <!-- Панель деталей и лайтбокс лежат ВНУТРИ barba-контейнера,
+         иначе при переходе через меню Barba их не вставит на страницу -->
+    <!-- ============ APARTMENT DETAILS PANEL ============ -->
+    <div class="chess-panel" id="chessPanel" aria-hidden="true">
+      <div class="chess-panel__backdrop" data-panel-close></div>
+      <div class="chess-panel__dialog" role="dialog" aria-modal="true">
+        <button class="chess-panel__close" data-panel-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
+        <div class="chess-panel__body" id="chessPanelBody"></div>
+      </div>
+    </div>
+
+    <!-- ============ PLAN LIGHTBOX ============ -->
+    <div class="chess-lightbox" id="chessLightbox" aria-hidden="true">
+      <button class="chess-lightbox__close" data-lightbox-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
+      <img class="chess-lightbox__img" id="chessLightboxImg" src="" alt="" />
+    </div>
+
   </main>
 
-  <!-- ============ APARTMENT DETAILS PANEL ============ -->
-  <div class="chess-panel" id="chessPanel" aria-hidden="true">
-    <div class="chess-panel__backdrop" data-panel-close></div>
-    <div class="chess-panel__dialog" role="dialog" aria-modal="true">
-      <button class="chess-panel__close" data-panel-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
-      <div class="chess-panel__body" id="chessPanelBody"></div>
-    </div>
-  </div>
-
-  <!-- ============ PLAN LIGHTBOX ============ -->
-  <div class="chess-lightbox" id="chessLightbox" aria-hidden="true">
-    <button class="chess-lightbox__close" data-lightbox-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
-    <img class="chess-lightbox__img" id="chessLightboxImg" src="" alt="" />
-  </div>
-
   <!--# include virtual="/partials/bottom.html" -->
-
-  <script src="/assets/data/apartments.js?v=1"></script>
-  <script src="/js/chess.js?v=1"></script>
 </body>
 </html>
