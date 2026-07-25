@@ -1957,7 +1957,7 @@ main > section { margin: 0; }
   width: 100%;
   z-index: 1;
   /* высота от фото целиком: море внизу не режется, метка не съезжает */
-  aspect-ratio: 2400 / 1000;
+  aspect-ratio: 2400 / 1705;
 }
 .location-panorama__img {
   display: block;
