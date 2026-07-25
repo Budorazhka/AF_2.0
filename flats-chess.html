@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#14181b" />
+  <title data-i18n="Шахматка квартир — Aurum Fort">Шахматка квартир — Aurum Fort</title>
+  <meta name="description" data-i18n-attr="content:Интерактивная шахматка резиденций Aurum Fort: этажи, площади, цены, статусы и виды из окон. Фильтры по комнатности, статусу и виду." content="Интерактивная шахматка резиденций Aurum Fort: этажи, площади, цены, статусы и виды из окон. Фильтры по комнатности, статусу и виду." />
+  <link rel="canonical" href="/flats-chess" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" data-i18n-attr="content:Шахматка квартир — Aurum Fort" content="Шахматка квартир — Aurum Fort" />
+  <meta property="og:description" data-i18n-attr="content:Интерактивная шахматка резиденций Aurum Fort: этажи, площади, цены, статусы и виды из окон." content="Интерактивная шахматка резиденций Aurum Fort: этажи, площади, цены, статусы и виды из окон." />
+  <meta property="og:image" content="/assets/img/og/og-flats.jpg" />
+  <meta property="og:url" content="/flats-chess" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=57" />
+  <link rel="stylesheet" href="/css/chess.css?v=1" />
+
+  <!-- i18n: словарь грузинского грузится ДО движка, движок ДО main.js -->
+  <script src="/js/i18n-ka.js?v=1"></script>
+  <script src="/js/i18n.js?v=1"></script>
+</head>
+<body>
+  <!--# include virtual="/partials/top.html" -->
+
+  <main data-barba="container" data-barba-namespace="flats-chess" data-chapter-next-title="Выбрать квартиру" data-chapter-next-href="/contacts" data-i18n-attr="data-chapter-next-title:Выбрать квартиру">
+
+    <!-- ============ HERO ============ -->
+    <section class="location-hero" data-chapter="Шахматка квартир" data-i18n-attr="data-chapter:Шахматка квартир">
+      <div class="container location-hero__container reveal">
+        <div class="location-hero__left">
+          <h1 class="location-hero__title" data-i18n-html="Шахматка<br />квартир">Шахматка<br />квартир</h1>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHESS BOARD ============ -->
+    <section class="chess section">
+      <div class="container">
+
+        <!-- Filters -->
+        <div class="chess-filters reveal" id="chessFilters">
+          <div class="chess-filters__group">
+            <p class="chess-filters__label" data-i18n="Статус">Статус</p>
+            <div class="chess-filters__chips" data-filter-group="status"></div>
+          </div>
+          <div class="chess-filters__group">
+            <p class="chess-filters__label" data-i18n="Планировка">Планировка</p>
+            <div class="chess-filters__chips" data-filter-group="rooms"></div>
+          </div>
+          <div class="chess-filters__group">
+            <p class="chess-filters__label" data-i18n="Вид из окон">Вид из окон</p>
+            <div class="chess-filters__chips" data-filter-group="views"></div>
+          </div>
+          <div class="chess-filters__summary" id="chessSummary"></div>
+        </div>
+
+        <!-- Legend -->
+        <div class="chess-legend" id="chessLegend"></div>
+
+        <!-- Grid -->
+        <div class="chess-board" id="chessBoard" aria-live="polite"></div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ APARTMENT DETAILS PANEL ============ -->
+  <div class="chess-panel" id="chessPanel" aria-hidden="true">
+    <div class="chess-panel__backdrop" data-panel-close></div>
+    <div class="chess-panel__dialog" role="dialog" aria-modal="true">
+      <button class="chess-panel__close" data-panel-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
+      <div class="chess-panel__body" id="chessPanelBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ PLAN LIGHTBOX ============ -->
+  <div class="chess-lightbox" id="chessLightbox" aria-hidden="true">
+    <button class="chess-lightbox__close" data-lightbox-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
+    <img class="chess-lightbox__img" id="chessLightboxImg" src="" alt="" />
+  </div>
+
+  <!--# include virtual="/partials/bottom.html" -->
+
+  <script src="/assets/data/apartments.js?v=1"></script>
+  <script src="/js/chess.js?v=1"></script>
+</body>
+</html>

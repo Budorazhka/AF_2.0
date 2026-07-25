@@ -140,6 +140,8 @@
     syncToggle();
     // Пересобрать динамический блок «следующая глава», если main.js это умеет
     if (window.AF_refreshChapterNext) window.AF_refreshChapterNext();
+    // Пересобрать шахматку квартир (её текст рендерится в JS, не через data-i18n)
+    if (window.AF_refreshChess) window.AF_refreshChess();
   }
 
   /* Отрисовать активное состояние переключателей (их может быть несколько:

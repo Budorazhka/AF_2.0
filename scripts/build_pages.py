@@ -75,6 +75,7 @@ PAGES = [
     "architecture.html",
     "infrastructure.html",
     "flats.html",
+    "flats-chess.html",
     "contacts.html",
 ]
 

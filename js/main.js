@@ -24,6 +24,7 @@
     { href: "/architecture",   title: "Архитектура и конструктив" },
     { href: "/infrastructure", title: "Инфраструктура дома" },
     { href: "/flats",          title: "Ваша резиденция" },
+    { href: "/flats-chess",    title: "Шахматка квартир" },
     { href: "/contacts",       title: "Выбрать квартиру" }
   ];
   const NEXT_IMG_FALLBACKS = {
@@ -32,6 +33,7 @@
     "/architecture": "/assets/img/18_1_upscaled.webp?v=2",
     "/infrastructure": "/assets/img/next-infrastructure.webp",
     "/flats": "/assets/img/п12.webp?v=2",
+    "/flats-chess": "/assets/img/next-contacts.webp",
     "/contacts": "/assets/img/next-contacts.webp"
   };
 
