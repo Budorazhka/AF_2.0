@@ -1955,8 +1955,14 @@ main > section { margin: 0; }
 .location-panorama {
   position: relative;
   width: 100%;
-  height: clamp(380px, 68vh, 760px);
   z-index: 1;
+  /* высота от фото целиком: море внизу не режется, метка не съезжает */
+  aspect-ratio: 2400 / 1000;
+}
+.location-panorama__img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .location-panorama__media {
   position: relative;
@@ -1983,24 +1989,23 @@ main > section { margin: 0; }
   height: auto;
 }
 .location-panorama__pin {
+  /* left/top указывают ровно на точку: контейнер размером с саму точку,
+     подпись позиционируется абсолютно и якорь не смещает */
   position: absolute;
   z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  width: 14px;
+  height: 14px;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
 .location-panorama__pin-dot {
-  position: relative;
-  width: 14px;
-  height: 14px;
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
   background: var(--gold);
   border: 2px solid #fff;
   box-shadow: 0 0 0 0 rgba(192,154,80,0.6);
   animation: pin-pulse 2.2s ease-out infinite;
-  flex-shrink: 0;
 }
 @keyframes pin-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(192,154,80,0.55); }
@@ -2008,6 +2013,10 @@ main > section { margin: 0; }
   100% { box-shadow: 0 0 0 0 rgba(192,154,80,0); }
 }
 .location-panorama__pin-label {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
   font-family: var(--serif);
   font-size: clamp(0.85rem, 1.4vw, 1.05rem);
   letter-spacing: 0.04em;
