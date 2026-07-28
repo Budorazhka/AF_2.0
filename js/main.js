@@ -641,7 +641,7 @@
     const heroSlides = $$(".hero__slide");
     if (sliderDots.length > 0 && heroSlides.length > 0) {
       let activeDotIndex = 0;
-      let autoPlayInterval;
+      let autoPlayTimer;
 
       const activateDot = (index) => {
         sliderDots.forEach(d => d.classList.remove("is-active"));
@@ -651,11 +651,17 @@
         activeDotIndex = index;
       };
 
+      // Первый слайд держим дольше остальных: это первый экран, посетителю
+      // нужно время прочитать заголовок до того, как кадр сменится.
+      const SLIDE_MS = 4500;
+      const FIRST_SLIDE_MS = 7000;
+
       const startAutoPlay = () => {
-        clearInterval(autoPlayInterval);
-        autoPlayInterval = setInterval(() => {
+        clearTimeout(autoPlayTimer);
+        autoPlayTimer = setTimeout(() => {
           activateDot((activeDotIndex + 1) % sliderDots.length);
-        }, 4500);
+          startAutoPlay();
+        }, activeDotIndex === 0 ? FIRST_SLIDE_MS : SLIDE_MS);
       };
       
       // Активный слайд — сразу (это первый экран, задержка тут недопустима).
