@@ -81,6 +81,16 @@ PAGES = [
 
 STATIC_DIRS = ["assets", "css", "js"]
 
+# Иконки дублируются в корень сайта: браузеры, краулеры и превью-боты
+# дёргают /favicon.ico и /apple-touch-icon.png напрямую, игнорируя <link>
+# в <head>. Без копии в корне эти запросы отдают 404, и вкладка получает
+# дефолтную заглушку браузера вместо логотипа.
+ROOT_FILES = [
+    ("assets/img/favicon.ico", "favicon.ico"),
+    ("assets/img/favicon.svg", "favicon.svg"),
+    ("assets/img/apple-touch-icon.png", "apple-touch-icon.png"),
+]
+
 
 def resolve_includes(text: str) -> str:
     def repl(match: re.Match[str]) -> str:
@@ -164,6 +174,14 @@ def main() -> None:
             continue
         shutil.copytree(src_dir, OUT / dirname)
         print(f"copied: {dirname}/")
+
+    for src_rel, dst_rel in ROOT_FILES:
+        src_file = ROOT / src_rel
+        if not src_file.is_file():
+            print(f"skip (not found): {src_rel}")
+            continue
+        shutil.copy2(src_file, OUT / dst_rel)
+        print(f"copied: {dst_rel}")
 
     if base_path:
         css_path = OUT / "css" / "styles.css"
