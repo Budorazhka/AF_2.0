@@ -24,7 +24,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна на море и горы",
-    "planImageUrl": "/assets/img/plans/81,8.png",
+    "planImageUrl": "/assets/img/plans/81,8.webp",
     "tags": [
       "corner",
       "panoramic"
@@ -52,7 +52,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/26,1.png",
+    "planImageUrl": "/assets/img/plans/26,1.webp",
     "tags": []
   },
   {
@@ -80,7 +80,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Первая линия",
-    "planImageUrl": "/assets/img/plans/48,5.png",
+    "planImageUrl": "/assets/img/plans/48,5.webp",
     "tags": []
   },
   {
@@ -155,7 +155,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/28,3.png",
+    "planImageUrl": "/assets/img/plans/28,3.webp",
     "tags": []
   },
   {
@@ -183,7 +183,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна",
-    "planImageUrl": "/assets/img/plans/81,8.png",
+    "planImageUrl": "/assets/img/plans/81,8.webp",
     "tags": [
       "corner",
       "panoramic"
@@ -211,7 +211,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/26,1.png",
+    "planImageUrl": "/assets/img/plans/26,1.webp",
     "tags": []
   },
   {
@@ -239,7 +239,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.png",
+    "planImageUrl": "/assets/img/plans/48,5.webp",
     "tags": []
   },
   {
@@ -314,7 +314,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/28,3.png",
+    "planImageUrl": "/assets/img/plans/28,3.webp",
     "tags": []
   },
   {
@@ -342,7 +342,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна",
-    "planImageUrl": "/assets/img/plans/81,8.png",
+    "planImageUrl": "/assets/img/plans/81,8.webp",
     "tags": [
       "corner",
       "panoramic"
@@ -370,7 +370,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/26,1.png",
+    "planImageUrl": "/assets/img/plans/26,1.webp",
     "tags": []
   },
   {
@@ -395,7 +395,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.png",
+    "planImageUrl": "/assets/img/plans/48,5.webp",
     "tags": []
   },
   {
@@ -470,7 +470,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/28,3.png",
+    "planImageUrl": "/assets/img/plans/28,3.webp",
     "tags": []
   },
   {
@@ -498,7 +498,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна, высокий этаж",
-    "planImageUrl": "/assets/img/plans/81,8.png",
+    "planImageUrl": "/assets/img/plans/81,8.webp",
     "tags": [
       "corner",
       "panoramic",
@@ -527,7 +527,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/26,1.png",
+    "planImageUrl": "/assets/img/plans/26,1.webp",
     "tags": []
   },
   {
@@ -552,7 +552,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.png",
+    "planImageUrl": "/assets/img/plans/48,5.webp",
     "tags": []
   },
   {
@@ -627,7 +627,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/28,3.png",
+    "planImageUrl": "/assets/img/plans/28,3.webp",
     "tags": []
   },
   {
@@ -655,7 +655,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна",
-    "planImageUrl": "/assets/img/plans/81,8.png",
+    "planImageUrl": "/assets/img/plans/81,8.webp",
     "tags": [
       "corner",
       "panoramic",
@@ -684,7 +684,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/26,1.png",
+    "planImageUrl": "/assets/img/plans/26,1.webp",
     "tags": []
   },
   {
@@ -709,7 +709,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.png",
+    "planImageUrl": "/assets/img/plans/48,5.webp",
     "tags": []
   },
   {
@@ -765,7 +765,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/28,3.png",
+    "planImageUrl": "/assets/img/plans/28,3.webp",
     "tags": []
   },
   {
@@ -793,7 +793,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна, верхний жилой этаж",
-    "planImageUrl": "/assets/img/plans/81,8.png",
+    "planImageUrl": "/assets/img/plans/81,8.webp",
     "tags": [
       "corner",
       "panoramic",
@@ -822,7 +822,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/26,1.png",
+    "planImageUrl": "/assets/img/plans/26,1.webp",
     "tags": []
   },
   {
@@ -847,7 +847,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Первая линия",
-    "planImageUrl": "/assets/img/plans/48,5.png",
+    "planImageUrl": "/assets/img/plans/48,5.webp",
     "tags": []
   },
   {

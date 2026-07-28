@@ -754,13 +754,16 @@ main > section { margin: 0; }
   gap: clamp(28px, 3vw, 40px);
 }
 
-/* Small landscape image (yacht marina) — horizontal crop */
+/* Small landscape image (yacht marina) — horizontal crop.
+   круг 3: фото опущено под текст (было над заголовком) и прижато к низу колонки,
+   чтобы его нижняя кромка совпадала с большим фото справа. */
 .home-district__thumb-small {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #0d130a;
+  margin-top: auto;
 }
 
 .home-district__title {
