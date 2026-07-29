@@ -145,8 +145,16 @@ def main() -> None:
         print(f"SITE_ORIGIN={origin!r}")
 
     if OUT.exists():
-        shutil.rmtree(OUT)
-    OUT.mkdir(parents=True)
+        for item in OUT.iterdir():
+            if item.is_dir():
+                shutil.rmtree(item, ignore_errors=True)
+            else:
+                try:
+                    item.unlink()
+                except Exception:
+                    pass
+    else:
+        OUT.mkdir(parents=True)
 
     for name in PAGES:
         src = ROOT / name
