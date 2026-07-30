@@ -22,11 +22,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/css/styles.css?v=63" />
+  <link rel="stylesheet" href="/css/styles.css?v=64" />
 
   <!-- i18n: словари KA и EN грузятся ДО движка, движок ДО main.js -->
-  <script src="/js/i18n-ka.js?v=2"></script>
-  <script src="/js/i18n-en.js?v=2"></script>
+  <script src="/js/i18n-ka.js?v=4"></script>
+  <script src="/js/i18n-en.js?v=4"></script>
   <script src="/js/i18n.js?v=1"></script>
 </head>
 <body>
@@ -113,7 +113,26 @@
 
     <!-- ИЗ КВАРТИР ОТКРЫВАЮТСЯ ВИДЫ -->
     <section class="home-views parallax" data-chapter="Виды из окон" data-parallax="0.12" data-i18n-attr="data-chapter:Виды из окон">
-      <img class="parallax__img lazy" data-src="/assets/img/home-views.webp" alt="Панорамные виды на море и горы" data-i18n-attr="alt:Панорамные виды на море и горы" />
+      <!-- Параллакс двигает обёртку .home-views__frame, слайды внутри переключаются
+           по opacity штатным движком .fade-slider — эффекты не спорят за transform.
+           Точки вынесены из обёртки, иначе параллакс уводил бы их вместе с фото. -->
+      <div class="fade-slider home-views__slider">
+        <div class="home-views__frame parallax__img">
+          <div class="fade-slide is-active">
+            <img src="/assets/img/home-views-1.webp" alt="Вид на море и Батуми с балкона резиденции" data-i18n-attr="alt:Вид на море и Батуми с балкона резиденции" />
+          </div>
+          <div class="fade-slide">
+            <img class="lazy" data-src="/assets/img/home-views-2.webp" alt="Вид на горный склон и побережье из окна" data-i18n-attr="alt:Вид на горный склон и побережье из окна" />
+          </div>
+          <div class="fade-slide">
+            <img class="lazy" data-src="/assets/img/home-views-3.webp" alt="Панорама моря и гор с террасы" data-i18n-attr="alt:Панорама моря и гор с террасы" />
+          </div>
+          <div class="fade-slide">
+            <img class="lazy" data-src="/assets/img/home-views-4.webp" alt="Закат над морем с балкона резиденции" data-i18n-attr="alt:Закат над морем с балкона резиденции" />
+          </div>
+        </div>
+        <div class="fade-dots home-views__dots"></div>
+      </div>
       <p class="home-views__text reveal" data-i18n-html="Из квартир открываются<br />панорамные виды<br />на&nbsp;море и&nbsp;горы">Из квартир открываются<br />панорамные виды<br />на&nbsp;море и&nbsp;горы</p>
     </section>
 
