@@ -2040,11 +2040,13 @@ main > section { margin: 0; }
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50%      { transform: translateX(-50%) translateY(-6px); }
 }
+/* Метка стоит на 85% ширины кадра: подпись, центрированная по стрелке,
+   упиралась в правый край и обрезалась на узких экранах — поэтому она
+   выровнена по правому краю и уходит влево от стрелки. */
 .location-panorama__pin-label {
   position: absolute;
-  left: 50%;
+  right: -6px;
   bottom: calc(50% + clamp(46px, 4.6vw, 64px) + 8px);
-  transform: translateX(-50%);
   font-family: var(--serif);
   font-size: clamp(0.85rem, 1.4vw, 1.05rem);
   letter-spacing: 0.04em;
