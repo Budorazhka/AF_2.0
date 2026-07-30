@@ -358,6 +358,22 @@
       lazyImgs.forEach(loadImg);
     }
 
+    // 5.5. Aerial video: click-to-load YouTube embed (avoids loading iframe upfront)
+    $$(".location-aerial__frame").forEach((frame) => {
+      const ytId = frame.getAttribute("data-yt-id");
+      if (!ytId) return;
+      const play = () => {
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`;
+        iframe.title = "Aurum Fort — aerial video";
+        iframe.allow = "accelerated-compositing; encrypted-media; autoplay; picture-in-picture";
+        iframe.allowFullscreen = true;
+        frame.classList.add("is-playing");
+        frame.appendChild(iframe);
+      };
+      frame.addEventListener("click", play, { once: true });
+    });
+
     // 6. Count-up stats
     const counters = $$("[data-count]");
     const runCount = (el) => {

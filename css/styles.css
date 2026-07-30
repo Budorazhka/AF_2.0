@@ -1920,6 +1920,51 @@ main > section { margin: 0; }
   line-height: 1;
 }
 
+/* --- Aerial video (click-to-load YouTube embed) --- */
+.location-aerial { background: var(--white); padding: clamp(50px, 7vw, 100px) 0; }
+.location-aerial__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #ebe8e3;
+  cursor: pointer;
+}
+.location-aerial__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.location-aerial__frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.location-aerial__play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: clamp(64px, 8vw, 96px);
+  height: clamp(64px, 8vw, 96px);
+  border: none;
+  border-radius: 50%;
+  background: rgba(20, 24, 27, 0.55);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.location-aerial__play svg { width: 38%; height: 38%; margin-left: 4%; }
+.location-aerial__frame:hover .location-aerial__play { background: var(--navy); transform: scale(1.06); }
+.location-aerial__frame.is-playing .location-aerial__poster,
+.location-aerial__frame.is-playing .location-aerial__play { display: none; }
+
 /* --- Banner overlays and text for Gonio fortress banner --- */
 .location-banner {
   position: relative;
