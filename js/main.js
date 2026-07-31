@@ -1273,4 +1273,31 @@
     });
   }
 
+  /* ---------- MASTERPLAN FULLSCREEN OVERLAY ---------- */
+  // делегирование на document: переживает Barba-переходы между страницами
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-masterplan-open]")) {
+      const overlay = $("[data-masterplan-overlay]");
+      if (overlay) {
+        overlay.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+    } else if (e.target.closest("[data-masterplan-close]") || e.target.closest("[data-masterplan-overlay]") === e.target) {
+      const overlay = $("[data-masterplan-overlay]");
+      if (overlay && !overlay.hidden) {
+        overlay.hidden = true;
+        document.body.style.overflow = "";
+      }
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const overlay = $("[data-masterplan-overlay]");
+      if (overlay && !overlay.hidden) {
+        overlay.hidden = true;
+        document.body.style.overflow = "";
+      }
+    }
+  });
+
 })();

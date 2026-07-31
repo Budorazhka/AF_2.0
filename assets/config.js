@@ -16,12 +16,12 @@ window.SITE_CONFIG = {
     {
       name: "Магазин Nikora (24/7)",
       coords: [41.5752, 41.5710],
-      time: "7 минут"
+      time: "5 минут"
     },
     {
       name: "Магазин Spar",
       coords: [41.5713, 41.5668],
-      time: "7 минут"
+      time: "5 минут"
     },
     {
       name: "ТЦ Metro City Batumi",
@@ -36,7 +36,7 @@ window.SITE_CONFIG = {
     {
       name: "Школа №30",
       coords: [41.5620, 41.5720],
-      time: "6 минут"
+      time: "3 минуты"
     },
     {
       name: "Аэропорт Батуми",
