@@ -1178,9 +1178,14 @@ main > section { margin: 0; }
   .hero__slide-text--sub { font-size: clamp(0.95rem, 4vw, 1.25rem); }
   /* фон кадрируем ближе к зданию, иначе на вертикальном экране видно только небо */
   .hero__slide { background-position: 62% center; }
-  /* слайд 1 (п3, вечерний кадр с бассейном): широкий пейзажный кадр обрезал
-     террасу и бассейн снизу при cover — сдвигаем фокус ниже, к первому этажу */
-  .hero__slide[data-bg^="/assets/img/п3.webp"] { background-position: 62% 78%; }
+  /* слайд 1 (п3, вечерний кадр с бассейном): вертикальный кроп через cover
+     всё равно резал либо крышу, либо террасу с бассейном — здание высокое,
+     а кадр широкий. На мобильном показываем рендер целиком через contain
+     (с графитовыми полосами сверху/снизу вместо обрезки). */
+  .hero__slide[data-bg^="/assets/img/п3.webp"] {
+    background-size: contain;
+    background-position: center;
+  }
   .hero__slider-nav { width: 190px; top: 62px !important; }
   /* подпись тонула в светлой части фото — добавляем читаемость */
   .hero__scroll {
