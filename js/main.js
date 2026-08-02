@@ -28,7 +28,7 @@
     { href: "/contacts",       title: "Выбрать квартиру" }
   ];
   const NEXT_IMG_FALLBACKS = {
-    "/": "/assets/img/2.webp",
+    "/": "/assets/img/п3.webp?v=4",
     "/location": "/assets/img/6_upscaled.webp?v=2",
     "/architecture": "/assets/img/18_1_upscaled.webp?v=2",
     "/infrastructure": "/assets/img/next-infrastructure.webp",
