@@ -854,12 +854,21 @@
       const routes = cfg.routes || [];
       const fallback = $("#geoFallback");
 
+      /* poi/routes хранят name/time на русском плюс name_ka/time_ka,
+         name_en/time_en — берём нужное поле по текущему языку сайта
+         (js/i18n.js), с откатом на русский, если перевода нет. */
+      const curLang = () => (window.AF_I18N && window.AF_I18N.lang) || "ru";
+      const loc = (item, field) => {
+        const lang = curLang();
+        return (lang !== "ru" && item[field + "_" + lang]) || item[field] || "";
+      };
+
       const cats = $("#geoCats");
       if (cats) {
         cats.innerHTML = poi.map((p, i) =>
           '<button class="geo__route" type="button" data-i="' + i + '">' +
-            '<span class="geo__route-name">' + p.name + '</span>' +
-            '<span class="geo__route-time">' + (p.time || "") + '</span>' +
+            '<span class="geo__route-name">' + loc(p, "name") + '</span>' +
+            '<span class="geo__route-time">' + loc(p, "time") + '</span>' +
           '</button>'
         ).join("");
       }
@@ -868,8 +877,8 @@
       if (routesWrap) {
         routesWrap.innerHTML = routes.map((r, i) =>
           '<button class="geo__route" type="button" data-i="' + i + '">' +
-            '<span class="geo__route-name">' + r.name + '</span>' +
-            '<span class="geo__route-time">' + (r.time || "") + '</span>' +
+            '<span class="geo__route-name">' + loc(r, "name") + '</span>' +
+            '<span class="geo__route-time">' + loc(r, "time") + '</span>' +
           '</button>'
         ).join("");
       }
@@ -935,11 +944,12 @@
             }
           }, { passive: false });
 
+          const clubHouseLabel = (window.AF_I18N && window.AF_I18N.t("Клубный дом")) || "Клубный дом";
           const home = new ymaps.Placemark(b.coords,
             {
               iconContent: b.label || "AURUM FORT",
-              hintContent: "Клубный дом" + (b.label ? " " + b.label : ""),
-              balloonContent: b.address || "Клубный дом"
+              hintContent: clubHouseLabel + (b.label ? " " + b.label : ""),
+              balloonContent: b.address || clubHouseLabel
             },
             labelOpts(homeIconOpts, "home")
           );
@@ -947,8 +957,8 @@
 
           const infraCol = new ymaps.GeoObjectCollection();
           poi.forEach((p) => infraCol.add(new ymaps.Placemark(p.coords, {
-            iconContent: p.name,
-            balloonContent: p.name + (p.time ? " — " + p.time : ""), hintContent: p.name
+            iconContent: loc(p, "name"),
+            balloonContent: loc(p, "name") + (loc(p, "time") ? " — " + loc(p, "time") : ""), hintContent: loc(p, "name")
           }, labelOpts(poiIconOpts))));
           collections.infra = infraCol;
           ymap.geoObjects.add(infraCol);
@@ -956,8 +966,8 @@
           /* п. 16: на вкладке «Маршруты» точки тоже подписаны — как на вкладке «Инфраструктура» */
           const routesCol = new ymaps.GeoObjectCollection();
           routes.forEach((r) => routesCol.add(new ymaps.Placemark(r.coords, {
-            iconContent: r.name,
-            balloonContent: r.name + (r.time ? " — " + r.time : ""), hintContent: r.name
+            iconContent: loc(r, "name"),
+            balloonContent: loc(r, "name") + (loc(r, "time") ? " — " + loc(r, "time") : ""), hintContent: loc(r, "name")
           }, labelOpts(poiIconOpts))));
           collections.routes = routesCol;
 
@@ -1015,7 +1025,7 @@
           strokeColor: "#af8c5e", strokeWidth: 5, opacity: 0.95
         }));
         routeLayer.add(new ymaps.Placemark(r.coords, {
-          hintContent: r.name, balloonContent: r.name + (r.time ? " — " + r.time : "")
+          hintContent: loc(r, "name"), balloonContent: loc(r, "name") + (loc(r, "time") ? " — " + loc(r, "time") : "")
         }, poiIconOpts));
         ymap.geoObjects.add(routeLayer);
       };
@@ -1076,15 +1086,61 @@
       };
       $$(".geo__tab").forEach((tab) => tab.addEventListener("click", () => switchTab(tab.getAttribute("data-tab"))));
 
+      /* Яндекс.Карты не поддерживают грузинский как lang API (только ru_RU,
+         en_US, tr_TR, uk_UA) — на грузинской версии сайта показываем подложку
+         карты на английском, на русской и английской версии — соответственно. */
+      const mapApiLang = curLang() === "ru" ? "ru_RU" : "en_US";
+
       if (typeof window.ymaps !== "undefined") {
         initMap();
       } else {
         const s = document.createElement("script");
-        s.src = "https://api-maps.yandex.ru/2.1/?" + (apiKey ? "apikey=" + encodeURIComponent(apiKey) + "&" : "") + "lang=ru_RU";
+        s.src = "https://api-maps.yandex.ru/2.1/?" + (apiKey ? "apikey=" + encodeURIComponent(apiKey) + "&" : "") + "lang=" + mapApiLang;
         s.onload = initMap;
         s.onerror = showFallback;
         document.head.appendChild(s);
       }
+
+      /* Список точек и подписи на карте пересобираем при смене языка на лету
+         (сама подложка карты Яндекса меняет lang только при новой загрузке
+         скрипта API — переключится корректно после перехода/перезагрузки страницы).
+         AF_refreshGeo вызывается из js/i18n.js:setLang(), а не навешивается
+         здесь как отдельный click-listener — initPage() перезапускается при
+         каждом Barba-переходе, и document-listener накапливался бы дублями. */
+      window.AF_refreshGeo = () => {
+        if (cats) {
+          cats.innerHTML = poi.map((p, i) =>
+            '<button class="geo__route" type="button" data-i="' + i + '">' +
+              '<span class="geo__route-name">' + loc(p, "name") + '</span>' +
+              '<span class="geo__route-time">' + loc(p, "time") + '</span>' +
+            '</button>'
+          ).join("");
+          wireAccordion();
+        }
+        if (routesWrap) {
+          routesWrap.innerHTML = routes.map((r, i) =>
+            '<button class="geo__route" type="button" data-i="' + i + '">' +
+              '<span class="geo__route-name">' + loc(r, "name") + '</span>' +
+              '<span class="geo__route-time">' + loc(r, "time") + '</span>' +
+            '</button>'
+          ).join("");
+          wireRoutes();
+        }
+        if (ymap && collections.infra) {
+          collections.infra.each((obj, i) => {
+            const p = poi[i];
+            if (!p) return;
+            obj.properties.set({ iconContent: loc(p, "name"), hintContent: loc(p, "name"), balloonContent: loc(p, "name") + (loc(p, "time") ? " — " + loc(p, "time") : "") });
+          });
+        }
+        if (ymap && collections.routes) {
+          collections.routes.each((obj, i) => {
+            const r = routes[i];
+            if (!r) return;
+            obj.properties.set({ iconContent: loc(r, "name"), hintContent: loc(r, "name"), balloonContent: loc(r, "name") + (loc(r, "time") ? " — " + loc(r, "time") : "") });
+          });
+        }
+      };
     }
 
     // 18. Page specific inline forms

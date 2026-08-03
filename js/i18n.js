@@ -153,6 +153,8 @@
     if (window.AF_refreshChapterNext) window.AF_refreshChapterNext();
     // Пересобрать шахматку квартир (её текст рендерится в JS, не через data-i18n)
     if (window.AF_refreshChess) window.AF_refreshChess();
+    // Пересобрать список точек/подписи на карте Яндекса (тоже рендерится в JS)
+    if (window.AF_refreshGeo) window.AF_refreshGeo();
   }
 
   /* Отрисовать активное состояние переключателей (их может быть несколько:

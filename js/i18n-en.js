@@ -53,6 +53,7 @@ window.AF_I18N_EN = {
   "Крытый бассейн, хаммам, сауна, баня у горного ручья.": "An indoor pool, hammam, sauna, and a bathhouse by the mountain stream.",
   "Безопасность": "Security",
   "Закрытая охраняемая территория 24/7.": "A gated, guarded 24/7 territory.",
+  "Закрытая охраняемая территория 24/7, отсутствие опасного газового оборудования в резиденциях (газовая инфраструктура вынесена в центральную котельную) и резервные системы жизнеобеспечения.": "A gated, guarded 24/7 territory, no hazardous gas equipment in the residences (gas infrastructure is routed to the central boiler house), and backup life-support systems.",
   "Ресторан и лаунж": "Restaurant and lounge",
   "Ресторан с открытой кухней и терраса на крыше.": "A restaurant with an open kitchen and a rooftop terrace.",
   "Спорт": "Sports",
