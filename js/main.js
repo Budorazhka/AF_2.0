@@ -1263,32 +1263,9 @@
     barba.init({
       sync: false,
       transitions: [{
-        name: 'cover-transition',
+        name: 'instant-transition',
         leave(data) {
-          const done = this.async();
-          const transition = $("#pageTransition");
-          if (transition) {
-            transition.classList.remove("is-leaving");
-            transition.classList.add("is-active");
-            // круг 2, п. 34: анимируем золотое лого на шторке перехода — как в прелоадере
-            // (fillOpacity 0→1 + лёгкий scale со stagger). Показываем на всех страницах.
-            const logoPaths = transition.querySelectorAll(".page-transition__mark svg path");
-            if (logoPaths.length && typeof gsap !== "undefined") {
-              gsap.killTweensOf(logoPaths);
-              gsap.set(logoPaths, { fillOpacity: 0, scale: 0.94, transformOrigin: "center center" });
-              gsap.to(logoPaths, {
-                fillOpacity: 1,
-                scale: 1,
-                duration: 0.55,
-                ease: "power2.out",
-                stagger: 0.006
-              });
-            }
-            // Ждём, пока шторка накроет экран (0.5s CSS) + успеет проявиться лого
-            setTimeout(done, 650);
-          } else {
-            done();
-          }
+          // Без анимации шторки и загрузки при серфинге по страницам/вкладкам
         },
         enter(data) {
           // Kill old triggers and reset scroll instantly
@@ -1316,12 +1293,6 @@
             ScrollTrigger.refresh();
           }
 
-          // Drop cover
-          const transition = $("#pageTransition");
-          if (transition) {
-            transition.classList.remove("is-active");
-            transition.classList.add("is-leaving");
-          }
           // Close mobile menu if it was open on page click
           closeMenu();
         }
