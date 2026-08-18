@@ -1930,6 +1930,17 @@ main > section { margin: 0; }
 
 /* --- Aerial video (click-to-load YouTube embed) --- */
 .location-aerial { background: var(--white); padding: clamp(50px, 7vw, 100px) 0; }
+.location-aerial__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--navy);
+  font-size: clamp(1.7rem, 3.8vw, 3.2rem);
+  line-height: 1.14;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin: 0 0 clamp(28px, 4vw, 52px);
+}
 .location-aerial__frame {
   position: relative;
   width: 100%;

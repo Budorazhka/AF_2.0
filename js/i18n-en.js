@@ -315,5 +315,6 @@ window.AF_I18N_EN = {
   "Квартира продана": "This apartment is sold",
   "Смотреть планировку": "View layout",
   "Позиция на этаже": "Position on floor",
-  "Все": "All"
+  "Все": "All",
+  "Видеообзор": "Video tour"
 };
