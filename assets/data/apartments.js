@@ -734,7 +734,7 @@ window.AF_APARTMENTS = [
     "priceDiscounted": null,
     "pricePerSqm": 4500,
     "bathroomCount": 2,
-    "status": "active",
+    "status": "booked",
     "installmentAvailable": true,
     "comment": "Пентхаус, терраса на крыше",
     "planImageUrl": "/assets/img/plans/113,7.png",
