@@ -17,7 +17,7 @@
   var DICT = {
     status: {
       active: "В продаже",
-      booked: "Бронь",
+      booked: "Забронировано",
       sold: "Продано",
       reserved: "Резерв застройщика",
       unavailable: "Недоступно"
@@ -296,6 +296,7 @@
 
   function renderCell(apt, dimmed) {
     var isSold = apt.status === "sold";
+    var isBooked = apt.status === "booked";
     var isUnavailable = apt.status === "unavailable";
     var effectivePrice = apt.priceDiscounted || apt.priceBase;
 
@@ -330,6 +331,11 @@
       var badge = document.createElement("span");
       badge.className = "chess-cell__badge";
       badge.textContent = dictLabel("status", "sold");
+      cell.appendChild(badge);
+    } else if (isBooked) {
+      var badge = document.createElement("span");
+      badge.className = "chess-cell__badge chess-cell__badge--booked";
+      badge.textContent = dictLabel("status", "booked");
       cell.appendChild(badge);
     }
 

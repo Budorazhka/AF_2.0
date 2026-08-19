@@ -258,6 +258,7 @@ window.AF_I18N_EN = {
   "Вид из окон": "View",
 
   "В продаже": "Available",
+  "Забронировано": "Reserved",
   "Бронь": "Reserved",
   "Продано": "Sold",
   "Резерв застройщика": "Developer's reserve",
