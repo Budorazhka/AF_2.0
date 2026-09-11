@@ -59,6 +59,30 @@
   font-weight: 500;
   color: var(--chess-muted);
 }
+.chess-filters__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.chess-doc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+  padding: 7px 13px;
+  border: 1px solid var(--grey-light);
+  border-radius: 2px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--graphite);
+  background: var(--white);
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+.chess-doc::after { content: "↓"; font-size: 0.8rem; line-height: 1; color: var(--gold-2); }
+.chess-doc:hover { border-color: var(--gold); color: var(--gold-2); }
 .chess-filters__reset {
   font-size: 0.8rem;
   letter-spacing: 0.04em;
@@ -245,6 +269,9 @@
 }
 
 @media (max-width: 720px) {
+  .chess-filters__footer { flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+  /* full row of its own, buttons keep their natural width and wrap when they must */
+  .chess-filters__actions { width: 100%; }
   .chess-board { overflow-x: visible; }
   .chess-row { min-width: 0; flex-wrap: wrap; }
   .chess-row__floor { flex: 0 0 100%; justify-content: flex-start; padding-left: 12px; }
@@ -479,6 +506,10 @@
 .residence-media__thumbs button[aria-pressed="true"] { border-color: var(--gold); color: var(--navy); }
 .residence-media__thumbs img { display: block; width: 100%; aspect-ratio: 1.5; object-fit: cover; margin-bottom: 6px; }
 .residence-media__thumbs span { display: block; font-size: .65rem; line-height: 1.4; }
+.residence-media__slots { display: flex; gap: 8px; }
+.residence-media__slot { flex: 1; min-width: 0; color: var(--chess-muted); }
+.residence-media__slot-frame { display: block; aspect-ratio: 1.5; margin-bottom: 6px; background: #f1efea; border: 1px solid var(--grey-light); }
+.residence-media__slot span { display: block; font-size: .65rem; line-height: 1.4; }
 .residence-media button:focus-visible, .residence-media a:focus-visible, .residence-media [role="tabpanel"]:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
 @media (max-width: 600px) {
   .chess-panel.has-residence-media .chess-panel__body { padding: 58px 20px 30px; }
@@ -488,6 +519,8 @@
   .residence-media__plan { padding: 8px; }
   .residence-media__thumbs { overflow-x: auto; }
   .residence-media__thumbs button { min-width: 72px; }
+  .residence-media__slots { overflow-x: auto; }
+  .residence-media__slot { min-width: 72px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .chess-panel, .chess-panel__dialog, .chess-lightbox { transition: none; }

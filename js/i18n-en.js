@@ -252,6 +252,9 @@ window.AF_I18N_EN = {
   "Шахматка квартир": "Apartment grid",
   "Смотреть шахматку квартир": "View apartment grid",
   "Скачать поэтажный план (PDF)": "Download floor plan (PDF)",
+  "Скачать презентацию (PDF, RU)": "Download presentation (PDF, RU)",
+  "Поэтажный план (PDF)": "Floor plan (PDF)",
+  "Презентация (PDF)": "Presentation (PDF)",
 
   "Статус": "Status",
   "Планировка": "Layout",

@@ -31,6 +31,10 @@ assets/img/*_files/
 # Статическая сборка для GitHub Pages/Vercel (генерируется scripts/build_pages.py)
 /_site/
 
+# Промежуточная сборка 3D-моделей (генерируется apartment-3d/build.py);
+# на сайт попадает только assets/residences/
+/apartment-3d/units-out/
+
 # Инструкция по деплою — только локально, не в публичный репо
 /docs/DEPLOY.md
 
