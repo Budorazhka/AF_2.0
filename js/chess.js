@@ -116,6 +116,8 @@
   }
 
   /* ---------- состояние ---------- */
+  var panelTrigger = null;
+  var lightboxTrigger = null;
   var state = {
     status: [],
     rooms: [],
@@ -353,7 +355,11 @@
     var body = document.getElementById("chessPanelBody");
     if (!panel || !body) return;
 
+    panelTrigger = document.activeElement;
+    panel.classList.toggle("has-residence-media", !!(window.AF_RESIDENCE_MEDIA && window.AF_RESIDENCE_MEDIA.hasMedia(apt)));
     body.innerHTML = buildPanelHtml(apt);
+    if (panel.classList.contains("has-residence-media")) window.AF_RESIDENCE_MEDIA.mount(body.querySelector(".residence-media"), t, openLightbox);
+    panel.querySelector(".chess-panel__dialog").scrollTop = 0;
     panel.classList.add("is-open");
     panel.setAttribute("aria-hidden", "false");
     // Глушим и внешний скроллбар (html — скроллер страницы), и Lenis,
@@ -362,10 +368,11 @@
     document.body.style.overflow = "hidden";
     if (window.AF_lenis) window.AF_lenis.stop();
 
+    panel.querySelector("[data-panel-close].chess-panel__close").focus();
     var planImg = body.querySelector("[data-plan-open]");
     if (planImg) {
       planImg.addEventListener("click", function () {
-        openLightbox(apt.planImageUrl, "№" + apt.apartmentNumber);
+        openLightbox((window.__BASE_PATH__ || "") + apt.planImageUrl, "№" + apt.apartmentNumber);
       });
     }
   }
@@ -375,6 +382,9 @@
     if (!panel) return;
     panel.classList.remove("is-open");
     panel.setAttribute("aria-hidden", "true");
+    var body = document.getElementById("chessPanelBody");
+    if (body) body.innerHTML = "";
+    if (panelTrigger && panelTrigger.isConnected) panelTrigger.focus();
     document.documentElement.style.overflow = "";
     document.body.style.overflow = "";
     if (window.AF_lenis) window.AF_lenis.start();
@@ -393,7 +403,7 @@
 
     var html = "";
     html += '<p class="chess-panel__eyebrow">' + esc(t(UI.apartment)) + '</p>';
-    html += '<h2 class="chess-panel__title">№' + esc(apt.apartmentNumber) + '</h2>';
+    html += '<h2 class="chess-panel__title" id="chessResidenceTitle">№' + esc(apt.apartmentNumber) + '</h2>';
     html += '<div class="chess-panel__meta">';
     html += '<span class="chess-panel__status chess-panel__status--' + apt.status + '">' + esc(dictLabel("status", apt.status)) + '</span>';
     html += '<span class="chess-panel__floor">' + esc(t(UI.floor)) + ' ' + apt.floor + '</span>';
@@ -413,6 +423,9 @@
     }
     html += '</div>';
 
+    if (window.AF_RESIDENCE_MEDIA && window.AF_RESIDENCE_MEDIA.hasMedia(apt)) {
+      html += window.AF_RESIDENCE_MEDIA.render(apt, t);
+    } else {
     html += '<div class="chess-panel__section">';
     html += '<p class="chess-panel__section-title">' + esc(t(UI.floorPlan)) + '</p>';
     if (apt.planImageUrl) {
@@ -424,6 +437,8 @@
       html += '<div class="chess-panel__plan chess-panel__plan--empty"><span>' + esc(t(UI.floorPlanNone)) + '</span></div>';
     }
     html += '</div>';
+
+    }
 
     html += '<div class="chess-panel__section">';
     html += '<p class="chess-panel__section-title">' + esc(t(UI.areas)) + '</p>';
@@ -475,16 +490,19 @@
     var box = document.getElementById("chessLightbox");
     var img = document.getElementById("chessLightboxImg");
     if (!box || !img || !src) return;
+    lightboxTrigger = document.activeElement;
     img.src = src;
     img.alt = alt || "";
     box.classList.add("is-open");
     box.setAttribute("aria-hidden", "false");
+    box.querySelector("[data-lightbox-close]").focus();
   }
   function closeLightbox() {
     var box = document.getElementById("chessLightbox");
     if (!box) return;
     box.classList.remove("is-open");
     box.setAttribute("aria-hidden", "true");
+    if (lightboxTrigger && lightboxTrigger.isConnected) lightboxTrigger.focus();
   }
 
   /* ---------- события (делегирование: переживает подмену DOM Барбой) ---------- */
@@ -496,9 +514,22 @@
     if (e.target.classList && e.target.classList.contains("chess-lightbox")) closeLightbox();
   });
   document.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") {
+      var box = document.getElementById("chessLightbox");
+      var drawer = document.getElementById("chessPanel");
+      var scope = box && box.classList.contains("is-open") ? box : (drawer && drawer.classList.contains("is-open") ? drawer : null);
+      if (scope) {
+        var focusable = Array.from(scope.querySelectorAll('button, a[href], iframe, [tabindex="0"]')).filter(function (el) { return el.getClientRects().length && !el.disabled && el.tabIndex >= 0; });
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+      return;
+    }
     if (e.key !== "Escape") return;
-    closeLightbox();
-    closePanel();
+    var lightbox = document.getElementById("chessLightbox");
+    if (lightbox && lightbox.classList.contains("is-open")) closeLightbox();
+    else closePanel();
   });
 
   /* ---------- перерисовка при смене языка ---------- */

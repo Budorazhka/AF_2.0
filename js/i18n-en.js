@@ -319,3 +319,5 @@ window.AF_I18N_EN = {
   "Все": "All",
   "Видеообзор": "Video tour"
 };
+
+Object.assign(window.AF_I18N_EN, {"Планировка и интерьер": "Layout and interior", "Просмотр квартиры": "Explore the residence", "3D-модель": "3D model", "Вариант ремонта": "Interior concept", "Увеличить": "Enlarge", "Открыть 3D на весь экран": "Open full-screen 3D", "Ар-деко": "Art Deco", "Увеличить изображение": "Enlarge image", "Ракурсы интерьера": "Interior views", "Общий вид": "Overview", "Гостиная": "Living room", "Спальная зона": "Sleeping area", "Кухня": "Kitchen", "3D-модель квартиры": "Residence 3D model"});

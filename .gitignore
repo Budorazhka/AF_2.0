@@ -33,3 +33,11 @@ assets/img/*_files/
 
 # Инструкция по деплою — только локально, не в публичный репо
 /docs/DEPLOY.md
+
+# Local scratch and large raw design files
+canva.pdf
+aurum/
+aurum-handoff-backup-img/
+media/
+tmp/
+_extract.txt

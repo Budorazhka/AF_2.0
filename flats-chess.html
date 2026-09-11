@@ -26,8 +26,8 @@
        и при переходе из меню локальный link просто не появился бы -->
 
   <!-- i18n: словари KA и EN грузятся ДО движка, движок ДО main.js -->
-  <script src="/js/i18n-ka.js?v=6"></script>
-  <script src="/js/i18n-en.js?v=6"></script>
+  <script src="/js/i18n-ka.js?v=7"></script>
+  <script src="/js/i18n-en.js?v=7"></script>
   <script src="/js/i18n.js?v=1"></script>
 </head>
 <body>
@@ -84,7 +84,7 @@
     <!-- ============ APARTMENT DETAILS PANEL ============ -->
     <div class="chess-panel" id="chessPanel" aria-hidden="true">
       <div class="chess-panel__backdrop" data-panel-close></div>
-      <div class="chess-panel__dialog" role="dialog" aria-modal="true" data-lenis-prevent>
+      <div class="chess-panel__dialog" role="dialog" aria-modal="true" aria-labelledby="chessResidenceTitle" data-lenis-prevent>
         <button class="chess-panel__close" data-panel-close aria-label="Закрыть" data-i18n-attr="aria-label:Закрыть">&#215;</button>
         <div class="chess-panel__body" id="chessPanelBody"></div>
       </div>
