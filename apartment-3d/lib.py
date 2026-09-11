@@ -235,10 +235,11 @@ def export(scene, unit):
     embed = re.sub(r'<aside>.*?</aside>', '', embed, flags=re.S)
     embed = re.sub(r'<a href="apartment\.glb".*?</a>', '', embed)
     embed = embed.replace('</style>', (
-        'nav{bottom:12px;max-width:96vw;justify-content:center;gap:4px;padding:5px}'
-        'nav button{padding:10px 11px;font-size:12px}'
+        'nav{bottom:12px;width:calc(100% - 24px);max-width:600px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:5px;white-space:nowrap}'
+        'nav button{min-width:0;padding:10px 4px;font-size:12px;white-space:nowrap}'
         '.hint{bottom:76px;font-size:11px}'
-        '@media(max-width:700px){nav{bottom:12px}.hint{bottom:108px}}</style>'))
+        '@media(max-width:700px){nav{bottom:12px}.hint{bottom:76px}}'
+        '@media(max-width:380px){nav{width:calc(100% - 12px);gap:3px;padding:4px}nav button{padding:9px 2px;font-size:10px}.hint{bottom:70px;font-size:10px}}</style>'))
 
     res = ROOT.parent / 'assets' / 'residences' / unit['slug']
     res.mkdir(parents=True, exist_ok=True)
