@@ -5,17 +5,16 @@
     ['03-bedroom.png', 'Спальная зона'], ['04-kitchen.png', 'Кухня'],
     ['05-bathroom.png', 'Санузел']
   ];
-  // One entry per 3D model folder. `interior` names the finished render set; units
-  // still waiting for renders show placeholder slots instead.
+  // One entry per 3D model folder. Every plan type has a completed Art Deco render set.
   var UNITS = {
-    '26-1': {slug: '26-1'},
-    '28-3': {slug: '28-3'},
+    '26-1': {slug: '26-1', interior: 'Ар-деко'},
+    '28-3': {slug: '28-3', interior: 'Ар-деко'},
     '40-5': {slug: '40-5', interior: 'Ар-деко'},
-    '48-5': {slug: '48-5'},
-    '66': {slug: '66'},
-    '81-8': {slug: '81-8'},
-    '107-1': {slug: '107-1'},
-    '113-7': {slug: '113-7'}
+    '48-5': {slug: '48-5', interior: 'Ар-деко'},
+    '66': {slug: '66', interior: 'Ар-деко'},
+    '81-8': {slug: '81-8', interior: 'Ар-деко'},
+    '107-1': {slug: '107-1', interior: 'Ар-деко'},
+    '113-7': {slug: '113-7', interior: 'Ар-деко'}
   };
   var PLANS = {
     '/assets/img/plans/26,1.webp': '26-1',

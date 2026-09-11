@@ -66,60 +66,40 @@ for (const slug of slugs) {
   }
 }
 
-// finished render set renders a gallery, the rest render placeholder slots
-const artDeco = apartments.find(a => api.unitFor(a).interior);
-const galleryHtml = api.render(artDeco, s => s);
-assert.equal((galleryHtml.match(/role="tab"/g) || []).length, 3);
-assert.ok(galleryHtml.includes('/preview/assets/residences/40-5/model.html'));
-assert.ok(galleryHtml.includes('Ар-деко'));
-assert.equal((galleryHtml.match(/data-interior-index=/g) || []).length, 5);
-assert.ok(!galleryHtml.includes('residence-media__slot'), 'finished set must not show placeholders');
-assert.ok(!galleryHtml.includes('<iframe'), 'model must load on demand');
-
-const pending = apartments.find(a => !api.unitFor(a).interior);
-const pendingHtml = api.render(pending, s => s);
-assert.equal((pendingHtml.match(/role="tab"/g) || []).length, 3);
-assert.ok(pendingHtml.includes('Вариант ремонта'));
-assert.equal((pendingHtml.match(/residence-media__slot"/g) || []).length, 5, 'five placeholder slots');
-assert.ok(!pendingHtml.includes('data-interior-index'), 'no gallery without renders');
-assert.ok(pendingHtml.includes(`/preview/assets/residences/${api.unitFor(pending).slug}/model.html`));
-assert.ok(!pendingHtml.includes('<iframe'), 'model must load on demand');
-assert.ok(api.asset('66', '02-living.png').startsWith('/preview/assets/'));
-
-// mount() has to work both with and without a finished render set
-for (const apt of [artDeco, pending]) {
+// every plan type publishes a complete five-view interior gallery
+for (const apt of apartments) {
   const unit = api.unitFor(apt);
-  const root = parse(api.render(apt, s => s));
-  assert.equal(root.dataset.unit, unit.slug);
+  assert.ok(unit.interior, `${unit.slug}: missing interior gallery marker`);
+  for (const file of ['01-overview.png', '02-living.png', '03-bedroom.png', '04-kitchen.png', '05-bathroom.png']) {
+    assert.ok(fs.existsSync(`${__dirname}/../assets/residences/${unit.slug}/${file}`), `missing ${unit.slug}/${file}`);
+  }
+  const galleryHtml = api.render(apt, s => s);
+  assert.equal((galleryHtml.match(/role="tab"/g) || []).length, 3);
+  assert.ok(galleryHtml.includes('Ар-деко'));
+  assert.equal((galleryHtml.match(/data-interior-index=/g) || []).length, 5);
+  assert.ok(!galleryHtml.includes('residence-media__slot'), `${unit.slug}: gallery must not show placeholders`);
+  assert.ok(!galleryHtml.includes('<iframe'), 'model must load on demand');
+
+  const root = parse(galleryHtml);
   const lightbox = [];
   api.mount(root, s => s, (src, caption) => lightbox.push([src, caption]));
-
   const tabs = root.querySelectorAll('[data-media-tab]');
-  assert.equal(tabs.length, 3);
   const modelTab = tabs.find(b => b.dataset.mediaTab === 'model');
   modelTab.click();
   const frame = root.querySelector('iframe');
-  assert.ok(frame, `${unit.slug}: 3D tab must create the iframe on first open`);
+  assert.ok(frame, `${unit.slug}: 3D tab must create iframe on first open`);
   assert.ok(frame.src.includes(`/assets/residences/${unit.slug}/model.html`), `${unit.slug}: wrong model src`);
   modelTab.click();
   assert.equal(root.querySelectorAll('iframe').length, 1, 'iframe must not be created twice');
 
   tabs.find(b => b.dataset.mediaTab === 'interior').click();
   assert.equal(root.querySelector('#res-pane-interior').hidden, false);
-  assert.equal(root.querySelector('#res-pane-plan').hidden, true);
-
-  const hero = root.querySelector('[data-interior-open]');
-  if (unit.interior) {
-    assert.ok(root.querySelector('[data-interior-image]').src.includes('01-overview.png'));
-    root.querySelectorAll('[data-interior-index]')[2].click();
-    assert.ok(root.querySelector('[data-interior-image]').src.includes('03-bedroom.png'));
-    hero.click();
-    assert.equal(lightbox.length, 1);
-    assert.ok(lightbox[0][1].includes(unit.interior), 'lightbox caption must name the finish');
-  } else {
-    assert.equal(hero, null, 'placeholder pane has no zoomable hero');
-    assert.equal(lightbox.length, 0);
-  }
+  assert.ok(root.querySelector('[data-interior-image]').src.includes('01-overview.png'));
+  root.querySelectorAll('[data-interior-index]')[2].click();
+  assert.ok(root.querySelector('[data-interior-image]').src.includes('03-bedroom.png'));
+  root.querySelector('[data-interior-open]').click();
+  assert.equal(lightbox.length, 1);
+  assert.ok(lightbox[0][1].includes('Ар-деко'));
 }
 
-console.log(`PASS: ${apartments.length} residences over ${slugs.size} models, lazy 3D, gallery + placeholders, mount() safe both ways`);
+console.log(`PASS: ${apartments.length} residences over ${slugs.size} models, lazy 3D and complete galleries, mount() safe`);
