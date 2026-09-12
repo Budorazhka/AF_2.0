@@ -498,6 +498,10 @@
 .residence-media__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 4px 0 14px; }
 .residence-media__heading h3 { font-family: var(--serif); font-size: 1.55rem; font-weight: 400; color: var(--navy); }
 .residence-media__heading span { font-size: .72rem; color: var(--chess-muted); }
+.residence-media__styles { display: flex; flex-wrap: wrap; gap: 8px; margin: -2px 0 16px; }
+.residence-media__styles button { min-height: 34px; padding: 7px 12px; border: 1px solid var(--grey-light); border-radius: 999px; background: #fff; color: var(--chess-muted); font: 500 .76rem var(--sans, sans-serif); cursor: pointer; transition: background .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease); }
+.residence-media__styles button:hover { border-color: var(--gold); color: var(--navy); }
+.residence-media__styles button[aria-pressed="true"] { border-color: var(--navy); background: var(--navy); color: #fff; }
 .residence-media__hero { width: 100%; position: relative; display: block; cursor: zoom-in; background: #efede8; }
 .residence-media__hero img { display: block; width: 100%; height: auto; max-height: 550px; object-fit: contain; }
 .residence-media__caption { font-size: .78rem; color: var(--chess-muted); margin: 12px 0; }

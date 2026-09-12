@@ -66,16 +66,19 @@ for (const slug of slugs) {
   }
 }
 
-// every plan type publishes a complete five-view interior gallery
+// every plan type publishes both complete five-view interior galleries
 for (const apt of apartments) {
   const unit = api.unitFor(apt);
   assert.ok(unit.interior, `${unit.slug}: missing interior gallery marker`);
   for (const file of ['01-overview.png', '02-living.png', '03-bedroom.png', '04-kitchen.png', '05-bathroom.png']) {
     assert.ok(fs.existsSync(`${__dirname}/../assets/residences/${unit.slug}/${file}`), `missing ${unit.slug}/${file}`);
+    assert.ok(fs.existsSync(`${__dirname}/../assets/residences/${unit.slug}/black-sea-modern/${file}`), `missing Black Sea Modern ${unit.slug}/${file}`);
   }
   const galleryHtml = api.render(apt, s => s);
   assert.equal((galleryHtml.match(/role="tab"/g) || []).length, 3);
   assert.ok(galleryHtml.includes('Ар-деко'));
+  assert.ok(galleryHtml.includes('Черноморский модерн'));
+  assert.equal((galleryHtml.match(/data-interior-style=/g) || []).length, 2);
   assert.equal((galleryHtml.match(/data-interior-index=/g) || []).length, 5);
   assert.ok(!galleryHtml.includes('residence-media__slot'), `${unit.slug}: gallery must not show placeholders`);
   assert.ok(!galleryHtml.includes('<iframe'), 'model must load on demand');
@@ -95,11 +98,15 @@ for (const apt of apartments) {
   tabs.find(b => b.dataset.mediaTab === 'interior').click();
   assert.equal(root.querySelector('#res-pane-interior').hidden, false);
   assert.ok(root.querySelector('[data-interior-image]').src.includes('01-overview.png'));
+  const styles = root.querySelectorAll('[data-interior-style]');
+  styles.find(b => b.dataset.interiorStyle === 'black-sea-modern').click();
+  assert.equal(root.querySelector('[data-interior-title]').textContent, 'Черноморский модерн');
+  assert.ok(root.querySelector('[data-interior-image]').src.includes('/black-sea-modern/01-overview.png'));
   root.querySelectorAll('[data-interior-index]')[2].click();
-  assert.ok(root.querySelector('[data-interior-image]').src.includes('03-bedroom.png'));
+  assert.ok(root.querySelector('[data-interior-image]').src.includes('/black-sea-modern/03-bedroom.png'));
   root.querySelector('[data-interior-open]').click();
   assert.equal(lightbox.length, 1);
-  assert.ok(lightbox[0][1].includes('Ар-деко'));
+  assert.ok(lightbox[0][1].includes('Черноморский модерн'));
 }
 
-console.log(`PASS: ${apartments.length} residences over ${slugs.size} models, lazy 3D and complete galleries, mount() safe`);
+console.log(`PASS: ${apartments.length} residences over ${slugs.size} models, lazy 3D and two complete galleries, mount() safe`);

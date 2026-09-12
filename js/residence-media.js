@@ -5,6 +5,10 @@
     ['03-bedroom.png', 'Спальная зона'], ['04-kitchen.png', 'Кухня'],
     ['05-bathroom.png', 'Санузел']
   ];
+  var INTERIORS = [
+    {id: 'art-deco', title: 'Ар-деко', folder: ''},
+    {id: 'black-sea-modern', title: 'Черноморский модерн', folder: 'black-sea-modern'}
+  ];
   // One entry per 3D model folder. Every plan type has a completed Art Deco render set.
   var UNITS = {
     '26-1': {slug: '26-1', interior: 'Ар-деко'},
@@ -32,7 +36,7 @@
   }
   function base() { return window.__BASE_PATH__ || ''; }
   function unitFor(apt) { return (apt && UNITS[PLANS[apt.planImageUrl]]) || null; }
-  function asset(slug, file) { return base() + '/assets/residences/' + slug + '/' + file; }
+  function asset(slug, file, folder) { return base() + '/assets/residences/' + slug + '/' + (folder ? folder + '/' : '') + file; }
   function hasMedia(apt) { return !!unitFor(apt); }
 
   function render(apt, t) {
@@ -50,11 +54,16 @@
 
     html += '<div id="res-pane-interior" class="residence-media__pane" role="tabpanel" aria-labelledby="res-tab-interior" tabindex="0" hidden>';
     if (unit.interior) {
-      html += '<div class="residence-media__heading"><h3>' + esc(t(unit.interior)) + '</h3><span>' + esc(t('Вариант ремонта')) + '</span></div>';
+      html += '<div class="residence-media__heading"><h3 data-interior-title>' + esc(t(unit.interior)) + '</h3><span>' + esc(t('Вариант ремонта')) + '</span></div>';
+      html += '<div class="residence-media__styles" role="group" aria-label="' + esc(t('Стили ремонта')) + '">';
+      INTERIORS.forEach(function (interior, i) {
+        html += '<button type="button" data-interior-style="' + esc(interior.id) + '" aria-pressed="' + (i === 0) + '">' + esc(t(interior.title)) + '</button>';
+      });
+      html += '</div>';
       html += '<button class="residence-media__hero" type="button" data-interior-open aria-label="' + esc(t('Увеличить изображение')) + '"><img data-interior-image alt=""><span class="residence-media__expand">' + esc(t('Увеличить')) + ' ↗</span></button>';
       html += '<div class="residence-media__caption" aria-live="polite" data-interior-caption></div><div class="residence-media__thumbs" role="group" aria-label="' + esc(t('Ракурсы интерьера')) + '">';
       VIEWS.forEach(function (view, i) {
-        html += '<button type="button" data-interior-index="' + i + '" aria-pressed="' + (i === 0) + '"><img data-thumb-src="' + esc(asset(unit.slug, view[0])) + '" alt="" loading="lazy"><span>' + esc(t(view[1])) + '</span></button>';
+        html += '<button type="button" data-interior-index="' + i + '" aria-pressed="' + (i === 0) + '"><img data-thumb-src="' + esc(asset(unit.slug, view[0])) + '" data-interior-thumb alt="" loading="lazy"><span>' + esc(t(view[1])) + '</span></button>';
       });
       html += '</div>';
     } else {
@@ -74,14 +83,25 @@
     var unit = UNITS[slug] || {slug: slug};
     var interior = root.querySelector('[data-interior-image]');
     var current = 0;
+    var activeInterior = INTERIORS[0];
     var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-media-tab]'));
 
     function selectImage(index) {
       current = index;
-      interior.src = asset(slug, VIEWS[index][0]);
-      interior.alt = t(VIEWS[index][1]) + ' · ' + t('Вариант ремонта');
+      interior.src = asset(slug, VIEWS[index][0], activeInterior.folder);
+      interior.alt = t(VIEWS[index][1]) + ' · ' + t(activeInterior.title);
       root.querySelector('[data-interior-caption]').textContent = t(VIEWS[index][1]) + ' · ' + (index + 1) + ' / ' + VIEWS.length;
       root.querySelectorAll('[data-interior-index]').forEach(function (btn) { btn.setAttribute('aria-pressed', Number(btn.dataset.interiorIndex) === index); });
+    }
+    function selectInterior(id) {
+      activeInterior = INTERIORS.find(function (item) { return item.id === id; }) || INTERIORS[0];
+      root.querySelector('[data-interior-title]').textContent = t(activeInterior.title);
+      root.querySelectorAll('[data-interior-style]').forEach(function (btn) { btn.setAttribute('aria-pressed', btn.dataset.interiorStyle === activeInterior.id); });
+      root.querySelectorAll('[data-interior-thumb]').forEach(function (img, index) {
+        img.src = asset(slug, VIEWS[index][0], activeInterior.folder);
+        img.removeAttribute('data-thumb-src');
+      });
+      selectImage(current);
     }
     function select(tab) {
       tabs.forEach(function (btn) {
@@ -97,8 +117,7 @@
         root.querySelector('[data-model-host]').appendChild(frame);
       }
       if (tab.dataset.mediaTab === 'interior' && interior) {
-        root.querySelectorAll('[data-thumb-src]').forEach(function (img) { img.src = img.dataset.thumbSrc; img.removeAttribute('data-thumb-src'); });
-        selectImage(current);
+        selectInterior(activeInterior.id);
       }
     }
     tabs.forEach(function (tab, index) {
@@ -113,14 +132,17 @@
       });
     });
     if (interior) {
+      root.querySelectorAll('[data-interior-style]').forEach(function (button) {
+        button.addEventListener('click', function () { selectInterior(button.dataset.interiorStyle); });
+      });
       root.querySelectorAll('[data-interior-index]').forEach(function (button) {
         button.addEventListener('click', function () { selectImage(Number(button.dataset.interiorIndex)); });
       });
       root.querySelector('[data-interior-open]').addEventListener('click', function () {
-        openLightbox(asset(slug, VIEWS[current][0]), t(VIEWS[current][1]) + ' · ' + t(unit.interior || 'Вариант ремонта'));
+        openLightbox(asset(slug, VIEWS[current][0], activeInterior.folder), t(VIEWS[current][1]) + ' · ' + t(activeInterior.title));
       });
     }
   }
 
-  window.AF_RESIDENCE_MEDIA = {hasMedia: hasMedia, render: render, mount: mount, asset: asset, unitFor: unitFor, images: VIEWS, units: UNITS, plans: PLANS};
+  window.AF_RESIDENCE_MEDIA = {hasMedia: hasMedia, render: render, mount: mount, asset: asset, unitFor: unitFor, images: VIEWS, interiors: INTERIORS, units: UNITS, plans: PLANS};
 })();
