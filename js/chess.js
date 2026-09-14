@@ -74,9 +74,11 @@
     floorPlanNone: "Планировка предоставляется по запросу",
     areas: "Площади",
     totalArea: "Общая площадь",
+    interiorArea: "Внутренняя площадь",
     livingArea: "Жилая площадь",
     kitchenArea: "Площадь кухни",
     balconyArea: "Площадь балкона",
+    terraceArea: "Площадь террасы",
     bathroom: "Санузел",
     bathrooms: "Санузла",
     bathroomsMany: "Санузлов",
@@ -444,8 +446,10 @@
     html += '<p class="chess-panel__section-title">' + esc(t(UI.areas)) + '</p>';
     html += '<div class="chess-panel__areas">';
     html += areaBox(t(UI.totalArea), apt.areaTotal);
+    if (apt.areaInterior) html += areaBox(t(UI.interiorArea), apt.areaInterior);
     if (apt.areaLiving) html += areaBox(t(UI.livingArea), apt.areaLiving);
     if (apt.areaKitchen) html += areaBox(t(UI.kitchenArea), apt.areaKitchen);
+    if (apt.terraceArea) html += areaBox(t(UI.terraceArea), apt.terraceArea);
     if (apt.balconyArea) html += areaBox(t(UI.balconyArea), apt.balconyArea);
     html += '</div></div>';
 

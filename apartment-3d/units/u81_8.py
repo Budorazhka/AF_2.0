@@ -14,12 +14,12 @@ UNIT = dict(
     title='Квартира 81,8 м²',
     eyebrow='AURUM FORT / РЕЗИДЕНЦИЯ 81,8',
     summary='70,1 м² интерьер · терраса 10,7 м² · балкон 1,0 м²<br>Объёмная реконструкция · метры',
-    notes=('<p>Контур снят с поэтажного плана IV этажа (резиденция №401). Внутренняя площадь 70,1 м², '
+    notes=('<p>Контур и проёмы сверены по поэтажному плану IV этажа (резиденция №401) и фотосъёмке готового каркаса. Внутренняя площадь 70,1 м², '
            'терраса 10,7 м², балкон 1,0 м², общая 81,8 м².</p>'
            '<p>Высота потолков 2,80 м, дверей 2,20 м. Несущие колонны 40×40 см, внешние стены 20 см.</p>'
-           '<p>Две изолированные спальни выходят в холл напротив входа, санузел с душевой — за первой '
-           'спальней. Кухня Г-образная вдоль северной и западной стен гостиной; терраса огибает '
-           'юго-восточный угол.</p>'),
+           '<p>Две изолированные спальни выходят в центральный холл, санузел с окном — между первой '
+           'спальней и кухней. У первой спальни есть малый балкон со стороны склона, у второй — широкое '
+           'панорамное остекление. Гостиная раскрыта на угловую террасу двумя большими проёмами.</p>'),
 )
 
 FOOTPRINT = [
@@ -58,19 +58,24 @@ def build():
     s.door_leaf('Entrance open door', 3.11, 0.00, 3.15, 0.95)
 
     s.wall('West exterior north', -0.20, 0.20, 0.00, 0.30)
-    s.lintel('West balcony lintel', -0.20, 0.30, 0.00, 1.20)
-    s.wall('West exterior mid', -0.20, 1.20, 0.00, 5.51)
+    s.lintel('West bedroom opening lintel', -0.20, 0.30, 0.00, 1.75)
+    s.rect('West bedroom window sill', -0.20, 0.30, 0.00, 1.23, 0.92, 'wall', 0, 'walls')
+    s.wall('West exterior bedroom', -0.20, 1.75, 0.00, 3.64)
+    s.wall('West exterior bathroom north', -0.20, 3.84, 0.00, 4.20)
+    s.lintel('Bathroom window lintel', -0.20, 4.20, 0.00, 4.82, 2.05)
+    s.rect('Bathroom window sill', -0.20, 4.20, 0.00, 4.82, 1.18, 'wall', 0, 'walls')
+    s.wall('West exterior bathroom south', -0.20, 4.82, 0.00, 5.51)
     s.wall('West exterior south', -0.20, 5.91, 0.00, 8.51)
 
-    s.wall('East exterior bedroom', 7.01, 0.20, 7.21, 2.60)
-    s.wall('East exterior stub', 7.01, 4.60, 7.21, 5.51)
+    s.wall('East exterior bedroom north', 7.01, 0.20, 7.21, 2.05)
+    s.wall('East exterior bedroom south', 7.01, 4.78, 7.21, 5.51)
     s.wall('Step wall', 7.21, 5.71, 7.81, 5.91)
-    s.wall('East exterior living north', 7.81, 5.91, 8.01, 7.20)
-    s.lintel('Terrace door lintel', 7.81, 7.20, 8.01, 8.02)
-    s.wall('East exterior living south', 7.81, 8.02, 8.01, 9.71)
-    s.door_leaf('Terrace open door', 7.79, 7.22, 7.83, 8.00, 'metal')
+    s.wall('East exterior living north', 7.81, 5.91, 8.01, 6.42)
+    s.lintel('Terrace slider lintel', 7.81, 6.42, 8.01, 8.22)
+    s.wall('East exterior living south', 7.81, 8.22, 8.01, 9.71)
 
-    s.wall('South exterior west', 2.00, 9.91, 6.27, 10.11)
+    s.wall('South exterior west', 2.00, 9.91, 3.52, 10.11)
+    s.lintel('Living panorama lintel', 3.52, 9.91, 7.47, 10.11)
     s.wall('South exterior east', 7.47, 9.91, 7.61, 10.11)
     s.wall('South-west return', 1.60, 8.91, 1.80, 9.71)
     s.wall('South-west wall', 0.00, 8.71, 1.60, 8.91)
@@ -93,9 +98,15 @@ def build():
     s.door_leaf('Bedroom 2 open door', 4.32, 0.02, 5.32, 0.06)
 
     # -- glazing ---------------------------------------------------------
-    s.glazing('Bedroom 2 window', 7.06, 2.60, 7.16, 4.60, mullions=[2.60, 3.58, 4.56])
-    s.glazing('Living south glazing', 6.27, 9.96, 7.47, 10.06, mullions=[6.27, 6.87, 7.43])
-    s.rect('West balcony open door', -0.03, 0.32, 0.01, 1.18, 2.20, 'metal', group='glazing')
+    s.glazing('Bedroom 2 panorama', 7.06, 2.05, 7.16, 4.78, mullions=[2.05, 2.94, 3.84, 4.74])
+    s.glazing('Living south panorama', 3.52, 9.96, 7.47, 10.06, mullions=[3.52, 4.49, 5.47, 6.45, 7.43])
+    s.rect('Living south transom', 3.52, 9.95, 7.47, 10.07, 0.045, 'dark', 2.22, 'glazing')
+    s.glazing('Terrace two-panel slider', 7.86, 6.42, 7.96, 8.22, mullions=[6.42, 7.31, 8.18])
+    s.glazing('West bedroom balcony door', -0.15, 1.23, -0.05, 1.75, mullions=[1.23, 1.71])
+    s.glazing('West bedroom window', -0.15, 0.30, -0.05, 1.23, mullions=[0.30, 0.76, 1.19])
+    s.rect('West bedroom window rail', -0.16, 0.30, -0.04, 1.23, 0.05, 'dark', 0.92, 'glazing')
+    s.glazing('Bathroom window', -0.15, 4.20, -0.05, 4.82, mullions=[4.20, 4.78])
+    s.rect('Bathroom window rail', -0.16, 4.20, -0.04, 4.82, 0.05, 'dark', 1.18, 'glazing')
 
     # west balcony rail
     s.glass_panel('West balcony glass', [(-0.80, 0.25), (-0.78, 0.25), (-0.78, 1.71), (-0.80, 1.71)])
@@ -123,8 +134,10 @@ def build():
     s.rect('Bed 1 pillow south', 2.16, 2.38, 2.48, 2.98, 0.13, 'white', 0.56)
     s.rect('Bed 1 nightstand north', 2.28, 1.08, 2.68, 1.48, 0.48, 'wood')
     s.rect('Bed 1 nightstand south', 2.28, 3.16, 2.68, 3.56, 0.48, 'wood')
-    s.rect('Wardrobe 1', 0.05, 0.28, 0.65, 2.00, 2.40, 'white')
-    s.rect('Wardrobe 1 seam', 0.05, 1.13, 0.63, 1.15, 2.38, 'dark', 0.01)
+    # The plan keeps the west facade completely free for the balcony window/door.
+    # Storage sits on the short inner wall above the bed, not across that opening.
+    s.rect('Wardrobe 1', 2.08, 0.28, 2.68, 1.28, 2.40, 'white')
+    s.rect('Wardrobe 1 seam', 2.10, 0.77, 2.66, 0.79, 2.38, 'dark', 0.01)
     s.oval('Bedroom 1 rug', 1.45, 2.35, 1.05, 0.95, 0.0, 0.018, 'rug')
 
     # -- bedroom 2 ---------------------------------------------------------
@@ -141,12 +154,14 @@ def build():
     s.oval('Bedroom 2 rug', 5.55, 2.95, 1.05, 0.95, 0.0, 0.018, 'rug')
 
     # -- bathroom ------------------------------------------------------------
-    arc = [(0.95 * math.cos(t * math.pi / 24), 3.84 + 0.95 * math.sin(t * math.pi / 24)) for t in range(13)]
-    s.slab('Shower tray', [(0.00, 3.84)] + arc, -0.02, 0.06, 'white', 'furniture')
-    inner = [(0.91 * math.cos(t * math.pi / 24), 3.84 + 0.91 * math.sin(t * math.pi / 24)) for t in range(12, -1, -1)]
-    s.slab('Shower screen', arc + inner, 0.06, 1.89, 'glass', 'glazing')
-    s.objects[-1]['alpha'] = 0.5
-    s.rect('Shower mixer', 0.02, 4.10, 0.06, 4.32, 0.30, 'metal', 1.05)
+    # Official plan: all fixtures line the south wall shared with the kitchen —
+    # corner bathtub at west, then WC, then vanity at east.
+    tub_arc = [(0.95 * math.cos(t * math.pi / 24), 5.53 - 0.95 * math.sin(t * math.pi / 24)) for t in range(13)]
+    s.slab('Corner bathtub shell', [(0.00, 5.53)] + tub_arc, 0.00, 0.50, 'white', 'furniture')
+    basin_arc = [(0.12 + 0.70 * math.cos(t * math.pi / 24), 5.41 - 0.70 * math.sin(t * math.pi / 24)) for t in range(13)]
+    s.slab('Corner bathtub basin', [(0.12, 5.41)] + basin_arc, 0.50, 0.025, 'glass', 'furniture')
+    s.objects[-1]['alpha'] = 0.72
+    s.rect('Bathtub mixer', 0.03, 5.07, 0.08, 5.29, 0.22, 'metal', 0.54)
     s.rect('WC cistern', 1.10, 4.87, 1.48, 5.05, 0.78, 'white')
     s.oval('WC pedestal', 1.29, 5.23, 0.18, 0.14, 0.0, 0.38, 'white')
     s.oval('WC seat', 1.29, 5.26, 0.22, 0.16, 0.38, 0.055, 'white')
@@ -179,23 +194,23 @@ def build():
         s.oval('Dining chair base', dx, dz, 0.06, 0.06, 0.0, 0.44, 'dark')
 
     # -- living room ------------------------------------------------------------
-    s.rect('Living rug', 2.55, 6.95, 6.60, 9.10, 0.018, 'rug')
-    s.rect('Sofa base', 3.59, 6.86, 5.63, 7.71, 0.30, 'wood')
-    s.rect('Sofa back', 3.59, 6.86, 5.63, 7.00, 0.78, 'fabric')
+    s.rect('Living rug', 2.55, 6.72, 6.82, 9.18, 0.018, 'rug')
+    s.rect('Sofa base', 3.59, 8.30, 5.63, 9.15, 0.30, 'wood')
+    s.rect('Sofa back', 3.59, 9.01, 5.63, 9.15, 0.78, 'fabric')
     for x in (3.66, 4.33, 5.00):
-        s.rect('Sofa cushion', x, 7.02, x + 0.60, 7.66, 0.18, 'fabric', 0.30)
-    s.rect('Sofa west arm', 3.47, 6.86, 3.59, 7.71, 0.62, 'fabric')
-    s.rect('Sofa east arm', 5.63, 6.86, 5.75, 7.71, 0.62, 'fabric')
-    s.rect('Coffee table top', 3.93, 8.18, 5.19, 8.62, 0.05, 'wood', 0.36)
+        s.rect('Sofa cushion', x, 8.35, x + 0.60, 8.99, 0.18, 'fabric', 0.30)
+    s.rect('Sofa west arm', 3.47, 8.30, 3.59, 9.15, 0.62, 'fabric')
+    s.rect('Sofa east arm', 5.63, 8.30, 5.75, 9.15, 0.62, 'fabric')
+    s.rect('Coffee table top', 3.93, 7.38, 5.19, 7.82, 0.05, 'wood', 0.36)
     for x in (3.97, 5.11):
-        s.rect('Coffee table leg', x, 8.22, x + 0.05, 8.27, 0.36, 'dark')
-        s.rect('Coffee table leg', x, 8.53, x + 0.05, 8.58, 0.36, 'dark')
-    for ax in (2.58, 5.70):
-        s.rect('Armchair base', ax, 7.93, ax + 0.75, 8.72, 0.30, 'wood')
-        s.rect('Armchair seat', ax + 0.06, 7.99, ax + 0.69, 8.66, 0.16, 'fabric', 0.30)
-    s.rect('Armchair back west', 2.58, 7.93, 2.70, 8.72, 0.72, 'fabric')
-    s.rect('Armchair back east', 6.33, 7.93, 6.45, 8.72, 0.72, 'fabric')
-    s.rect('Media console', 3.20, 9.55, 5.40, 9.91, 0.45, 'wood')
-    s.rect('TV panel', 3.75, 9.87, 4.85, 9.91, 0.66, 'dark', 0.55)
+        s.rect('Coffee table leg', x, 7.42, x + 0.05, 7.47, 0.36, 'dark')
+        s.rect('Coffee table leg', x, 7.73, x + 0.05, 7.78, 0.36, 'dark')
+    for ax in (2.58, 5.92):
+        s.rect('Armchair base', ax, 7.30, ax + 0.75, 8.09, 0.30, 'wood')
+        s.rect('Armchair seat', ax + 0.06, 7.36, ax + 0.69, 8.03, 0.16, 'fabric', 0.30)
+    s.rect('Armchair back west', 2.58, 7.30, 2.70, 8.09, 0.72, 'fabric')
+    s.rect('Armchair back east', 6.55, 7.30, 6.67, 8.09, 0.72, 'fabric')
+    s.rect('Media console', 4.58, 5.73, 6.68, 6.05, 0.45, 'wood')
+    s.rect('TV panel', 5.12, 5.73, 6.38, 5.77, 0.72, 'dark', 0.55)
 
     return s
