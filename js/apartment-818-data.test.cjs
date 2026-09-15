@@ -15,6 +15,8 @@ for (const unit of units) {
   assert.equal(unit.bathroomCount, 1, `${unit.id}: bathroom count`);
   assert.equal(unit.areaLiving, undefined, `${unit.id}: remove unverified living area`);
   assert.equal(unit.areaKitchen, undefined, `${unit.id}: remove unverified kitchen area`);
+  assert.equal(unit.planImageUrl, '/assets/img/plans/81,8-corrected.png', `${unit.id}: replace the old partitioned bathroom image`);
+  assert.ok(fs.existsSync(__dirname + '/..' + unit.planImageUrl), `${unit.id}: corrected plan asset exists`);
 }
 
 console.log('PASS: 81.8 m² cards match the IV-floor plan');

@@ -16,7 +16,8 @@ UNIT = dict(
     summary='70,1 м² интерьер · терраса 10,7 м² · балкон 1,0 м²<br>Объёмная реконструкция · метры',
     notes=('<p>Контур и проёмы сверены по поэтажному плану IV этажа (резиденция №401) и фотосъёмке готового каркаса. Внутренняя площадь 70,1 м², '
            'терраса 10,7 м², балкон 1,0 м², общая 81,8 м².</p>'
-           '<p>Высота потолков 2,80 м, дверей 2,20 м. Несущие колонны 40×40 см, внешние стены 20 см.</p>'
+           '<p>Для модели приняты высота потолков 2,80 м, дверей 2,20 м, колонны 40×40 см и внешние стены 20 см. '
+           'Размеры проёмов и мебели ориентировочные: это визуализация, не обмерный проект.</p>'
            '<p>Две изолированные спальни выходят в центральный холл, санузел с окном — между первой '
            'спальней и кухней. У первой спальни есть малый балкон со стороны склона, у второй — широкое '
            'панорамное остекление. Гостиная раскрыта на угловую террасу двумя большими проёмами.</p>'),
@@ -58,13 +59,16 @@ def build():
     s.door_leaf('Entrance open door', 3.11, 0.00, 3.15, 0.95)
 
     s.wall('West exterior north', -0.20, 0.20, 0.00, 0.30)
-    s.lintel('West bedroom opening lintel', -0.20, 0.30, 0.00, 1.75)
-    s.rect('West bedroom window sill', -0.20, 0.30, 0.00, 1.23, 0.92, 'wall', 0, 'walls')
-    s.wall('West exterior bedroom', -0.20, 1.75, 0.00, 3.64)
-    s.wall('West exterior bathroom north', -0.20, 3.84, 0.00, 4.20)
-    s.lintel('Bathroom window lintel', -0.20, 4.20, 0.00, 4.82, 2.05)
-    s.rect('Bathroom window sill', -0.20, 4.20, 0.00, 4.82, 1.18, 'wall', 0, 'walls')
-    s.wall('West exterior bathroom south', -0.20, 4.82, 0.00, 5.51)
+    # Photo 0075: when looking west, the door is on the RIGHT (north),
+    # followed southward by three window panels above a solid sill.
+    s.lintel('West bedroom opening lintel', -0.20, 0.30, 0.00, 3.34)
+    s.rect('West bedroom window sill', -0.20, 1.05, 0.00, 3.34, 0.92, 'wall', 0, 'walls')
+    s.wall('West exterior bedroom', -0.20, 3.34, 0.00, 3.64)
+    # Photo 0080: one high window near the north corner, not at floor level.
+    s.wall('West exterior bathroom north', -0.20, 3.84, 0.00, 3.95)
+    s.lintel('Bathroom window lintel', -0.20, 3.95, 0.00, 4.57, 2.05)
+    s.rect('Bathroom window sill', -0.20, 3.95, 0.00, 4.57, 1.18, 'wall', 0, 'walls')
+    s.wall('West exterior bathroom south', -0.20, 4.57, 0.00, 5.51)
     s.wall('West exterior south', -0.20, 5.91, 0.00, 8.51)
 
     s.wall('East exterior bedroom north', 7.01, 0.20, 7.21, 2.05)
@@ -90,7 +94,7 @@ def build():
     s.lintel('Bathroom door lintel', 2.70, 4.00, 2.85, 4.80)
     s.wall('Bathroom east wall south', 2.70, 4.80, 2.85, 5.73)
     s.wall('Bathroom south wall', 0.00, 5.53, 2.70, 5.73)
-    s.door_leaf('Bathroom open door', 2.66, 4.02, 2.70, 4.78, 'white')
+    s.door_leaf('Bathroom open door', 1.92, 4.00, 2.70, 4.04, 'white')
 
     s.lintel('Bedroom 2 door lintel', 4.17, 0.00, 4.32, 1.00)
     s.wall('Bedroom 2 west wall', 4.17, 1.00, 4.32, 5.73)
@@ -102,11 +106,20 @@ def build():
     s.glazing('Living south panorama', 3.52, 9.96, 7.47, 10.06, mullions=[3.52, 4.49, 5.47, 6.45, 7.43])
     s.rect('Living south transom', 3.52, 9.95, 7.47, 10.07, 0.045, 'dark', 2.22, 'glazing')
     s.glazing('Terrace two-panel slider', 7.86, 6.42, 7.96, 8.22, mullions=[6.42, 7.31, 8.18])
-    s.glazing('West bedroom balcony door', -0.15, 1.23, -0.05, 1.75, mullions=[1.23, 1.71])
-    s.glazing('West bedroom window', -0.15, 0.30, -0.05, 1.23, mullions=[0.30, 0.76, 1.19])
-    s.rect('West bedroom window rail', -0.16, 0.30, -0.04, 1.23, 0.05, 'dark', 0.92, 'glazing')
-    s.glazing('Bathroom window', -0.15, 4.20, -0.05, 4.82, mullions=[4.20, 4.78])
-    s.rect('Bathroom window rail', -0.16, 4.20, -0.04, 4.82, 0.05, 'dark', 1.18, 'glazing')
+    def west_frame(name, z1, z2, bottom, top, divisions):
+        # Local helper: unlike panorama glazing, these frames stop at their lintels.
+        s.rect(name + ' base', -.15, z1, -.05, z2, .04, 'dark', bottom, 'glazing')
+        s.rect(name + ' head', -.15, z1, -.05, z2, .04, 'dark', top - .04, 'glazing')
+        for z in divisions:
+            s.rect(name + ' mullion', -.15, z, -.05, z + .035, top - bottom, 'dark', bottom, 'glazing')
+
+    west_frame('West bedroom balcony door', .30, 1.05, .02, 2.20, [.30, 1.015])
+    # Open glazed leaf lies alongside the north wall, not across the threshold.
+    s.rect('Balcony open leaf bottom', -.05, .30, .69, .34, .04, 'dark', .04, 'glazing')
+    s.rect('Balcony open leaf top', -.05, .30, .69, .34, .04, 'dark', 2.14, 'glazing')
+    s.rect('Balcony open leaf edge', .65, .30, .69, .34, 2.10, 'dark', .04, 'glazing')
+    west_frame('West bedroom window', 1.05, 3.34, .92, 2.20, [1.05, 1.81, 2.57, 3.305])
+    west_frame('Bathroom window', 3.95, 4.57, 1.18, 2.05, [3.95, 4.535])
 
     # west balcony rail
     s.glass_panel('West balcony glass', [(-0.80, 0.25), (-0.78, 0.25), (-0.78, 1.71), (-0.80, 1.71)])
@@ -134,10 +147,7 @@ def build():
     s.rect('Bed 1 pillow south', 2.16, 2.38, 2.48, 2.98, 0.13, 'white', 0.56)
     s.rect('Bed 1 nightstand north', 2.28, 1.08, 2.68, 1.48, 0.48, 'wood')
     s.rect('Bed 1 nightstand south', 2.28, 3.16, 2.68, 3.56, 0.48, 'wood')
-    # The plan keeps the west facade completely free for the balcony window/door.
-    # Storage sits on the short inner wall above the bed, not across that opening.
-    s.rect('Wardrobe 1', 2.08, 0.28, 2.68, 1.28, 2.40, 'white')
-    s.rect('Wardrobe 1 seam', 2.10, 0.77, 2.66, 0.79, 2.38, 'dark', 0.01)
+    # Keep the north side open from the hall door to the balcony, as in the plan.
     s.oval('Bedroom 1 rug', 1.45, 2.35, 1.05, 0.95, 0.0, 0.018, 'rug')
 
     # -- bedroom 2 ---------------------------------------------------------
@@ -154,18 +164,22 @@ def build():
     s.oval('Bedroom 2 rug', 5.55, 2.95, 1.05, 0.95, 0.0, 0.018, 'rug')
 
     # -- bathroom ------------------------------------------------------------
-    # Official plan: all fixtures line the south wall shared with the kitchen —
-    # corner bathtub at west, then WC, then vanity at east.
+    # Furnishing concept follows the south-wall fixture row in the supplied plan.
+    # The shell photos show ONE rectangular room; there are no interior partitions.
     tub_arc = [(0.95 * math.cos(t * math.pi / 24), 5.53 - 0.95 * math.sin(t * math.pi / 24)) for t in range(13)]
-    s.slab('Corner bathtub shell', [(0.00, 5.53)] + tub_arc, 0.00, 0.50, 'white', 'furniture')
     basin_arc = [(0.12 + 0.70 * math.cos(t * math.pi / 24), 5.41 - 0.70 * math.sin(t * math.pi / 24)) for t in range(13)]
-    s.slab('Corner bathtub basin', [(0.12, 5.41)] + basin_arc, 0.50, 0.025, 'glass', 'furniture')
-    s.objects[-1]['alpha'] = 0.72
+    outer = list(reversed([(0.00, 5.53)] + tub_arc))
+    inner = list(reversed([(0.12, 5.41)] + basin_arc))
+    s.slab('Corner bathtub shell', outer, 0.00, 0.12, 'white', 'furniture')
+    for i in range(len(outer)):
+        j = (i + 1) % len(outer)
+        s.slab('Corner bathtub rim', [outer[i], outer[j], inner[j], inner[i]], .12, .43, 'white', 'furniture')
+    s.slab('Corner bathtub basin', inner, .12, .025, 'tile', 'furniture')
     s.rect('Bathtub mixer', 0.03, 5.07, 0.08, 5.29, 0.22, 'metal', 0.54)
-    s.rect('WC cistern', 1.10, 4.87, 1.48, 5.05, 0.78, 'white')
-    s.oval('WC pedestal', 1.29, 5.23, 0.18, 0.14, 0.0, 0.38, 'white')
-    s.oval('WC seat', 1.29, 5.26, 0.22, 0.16, 0.38, 0.055, 'white')
-    s.oval('WC opening', 1.29, 5.27, 0.15, 0.10, 0.436, 0.005, 'dark')
+    s.rect('WC cistern', 1.10, 5.35, 1.48, 5.53, 0.78, 'white')
+    s.oval('WC pedestal', 1.29, 5.17, 0.18, 0.14, 0.0, 0.38, 'white')
+    s.oval('WC seat', 1.29, 5.11, 0.22, 0.23, 0.38, 0.055, 'white')
+    s.oval('WC opening', 1.29, 5.10, 0.15, 0.15, 0.436, 0.005, 'dark')
     s.rect('Vanity', 1.90, 5.03, 2.66, 5.53, 0.75, 'wood')
     s.oval('Washbasin', 2.28, 5.28, 0.22, 0.17, 0.75, 0.12, 'white')
     s.rect('Mirror', 1.90, 5.50, 2.66, 5.52, 0.85, 'glass', 1.15)

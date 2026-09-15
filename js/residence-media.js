@@ -16,7 +16,7 @@
     '40-5': {slug: '40-5', interior: 'Ар-деко'},
     '48-5': {slug: '48-5', interior: 'Ар-деко'},
     '66': {slug: '66', interior: 'Ар-деко'},
-    '81-8': {slug: '81-8', interior: 'Ар-деко'},
+    '81-8': {slug: '81-8', interior: 'Ар-деко', revision: '20260915-layout-2'},
     '107-1': {slug: '107-1', interior: 'Ар-деко'},
     '113-7': {slug: '113-7', interior: 'Ар-деко'}
   };
@@ -26,7 +26,7 @@
     '/assets/img/plans/40,5.png': '40-5',
     '/assets/img/plans/48,5.webp': '48-5',
     '/assets/img/plans/66.png': '66',
-    '/assets/img/plans/81,8.webp': '81-8',
+    '/assets/img/plans/81,8-corrected.png': '81-8',
     '/assets/img/plans/107,1.png': '107-1',
     '/assets/img/plans/113,7.png': '113-7'
   };
@@ -36,7 +36,10 @@
   }
   function base() { return window.__BASE_PATH__ || ''; }
   function unitFor(apt) { return (apt && UNITS[PLANS[apt.planImageUrl]]) || null; }
-  function asset(slug, file, folder) { return base() + '/assets/residences/' + slug + '/' + (folder ? folder + '/' : '') + file; }
+  function asset(slug, file, folder) {
+    var revision = UNITS[slug] && UNITS[slug].revision;
+    return base() + '/assets/residences/' + slug + '/' + (folder ? folder + '/' : '') + file + (revision ? '?v=' + revision : '');
+  }
   function hasMedia(apt) { return !!unitFor(apt); }
 
   function render(apt, t) {
@@ -86,19 +89,32 @@
     var activeInterior = INTERIORS[0];
     var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-media-tab]'));
 
+    function availableIndices() {
+      // Withhold the superseded coastal bedroom until its replacement is ready.
+      return VIEWS.map(function (_, index) { return index; }).filter(function (index) {
+        return !(slug === '81-8' && activeInterior.id === 'black-sea-modern' && index === 2);
+      });
+    }
+
     function selectImage(index) {
+      var available = availableIndices();
+      if (available.indexOf(index) === -1) index = available[0];
       current = index;
       interior.src = asset(slug, VIEWS[index][0], activeInterior.folder);
       interior.alt = t(VIEWS[index][1]) + ' · ' + t(activeInterior.title);
-      root.querySelector('[data-interior-caption]').textContent = t(VIEWS[index][1]) + ' · ' + (index + 1) + ' / ' + VIEWS.length;
+      root.querySelector('[data-interior-caption]').textContent = t(VIEWS[index][1]) + ' · ' + (available.indexOf(index) + 1) + ' / ' + available.length;
       root.querySelectorAll('[data-interior-index]').forEach(function (btn) { btn.setAttribute('aria-pressed', Number(btn.dataset.interiorIndex) === index); });
     }
     function selectInterior(id) {
       activeInterior = INTERIORS.find(function (item) { return item.id === id; }) || INTERIORS[0];
+      var available = availableIndices();
+      root.querySelectorAll('[data-interior-index]').forEach(function (button) {
+        button.hidden = available.indexOf(Number(button.dataset.interiorIndex)) === -1;
+      });
       root.querySelector('[data-interior-title]').textContent = t(activeInterior.title);
       root.querySelectorAll('[data-interior-style]').forEach(function (btn) { btn.setAttribute('aria-pressed', btn.dataset.interiorStyle === activeInterior.id); });
       root.querySelectorAll('[data-interior-thumb]').forEach(function (img, index) {
-        img.src = asset(slug, VIEWS[index][0], activeInterior.folder);
+        if (available.indexOf(index) !== -1) img.src = asset(slug, VIEWS[index][0], activeInterior.folder);
         img.removeAttribute('data-thumb-src');
       });
       selectImage(current);
@@ -112,7 +128,8 @@
       if (tab.dataset.mediaTab === 'model' && !root.querySelector('iframe')) {
         var frame = document.createElement('iframe');
         frame.title = t('3D-модель квартиры');
-        frame.src = asset(slug, 'model.html') + '?lang=' + encodeURIComponent(window.AF_I18N ? window.AF_I18N.lang : 'ru');
+        var modelUrl = asset(slug, 'model.html');
+        frame.src = modelUrl + (modelUrl.indexOf('?') === -1 ? '?' : '&') + 'lang=' + encodeURIComponent(window.AF_I18N ? window.AF_I18N.lang : 'ru');
         frame.allowFullscreen = true;
         root.querySelector('[data-model-host]').appendChild(frame);
       }

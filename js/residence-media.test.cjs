@@ -92,6 +92,12 @@ for (const apt of apartments) {
   const frame = root.querySelector('iframe');
   assert.ok(frame, `${unit.slug}: 3D tab must create iframe on first open`);
   assert.ok(frame.src.includes(`/assets/residences/${unit.slug}/model.html`), `${unit.slug}: wrong model src`);
+  const frameUrl = new URL(frame.src, 'https://example.test');
+  assert.equal(frameUrl.searchParams.get('lang'), 'ru', 'model language must survive media cache revision');
+  if (unit.slug === '81-8') {
+    assert.equal(frameUrl.searchParams.get('v'), unit.revision, 'updated geometry must bypass previous cached model');
+    assert.ok(galleryHtml.includes('/preview/assets/img/plans/81,8-corrected.png'), 'plan tab must load the corrected master');
+  }
   modelTab.click();
   assert.equal(root.querySelectorAll('iframe').length, 1, 'iframe must not be created twice');
 
@@ -103,10 +109,23 @@ for (const apt of apartments) {
   assert.equal(root.querySelector('[data-interior-title]').textContent, 'Черноморский модерн');
   assert.ok(root.querySelector('[data-interior-image]').src.includes('/black-sea-modern/01-overview.png'));
   root.querySelectorAll('[data-interior-index]')[2].click();
-  assert.ok(root.querySelector('[data-interior-image]').src.includes('/black-sea-modern/03-bedroom.png'));
+  if (unit.slug === '81-8') {
+    assert.equal(root.querySelectorAll('[data-interior-index]')[2].hidden, true);
+    assert.ok(root.querySelector('[data-interior-image]').src.includes('/black-sea-modern/01-overview.png'));
+    assert.ok(root.querySelector('[data-interior-caption]').textContent.endsWith('1 / 4'));
+  } else {
+    assert.ok(root.querySelector('[data-interior-image]').src.includes('/black-sea-modern/03-bedroom.png'));
+  }
   root.querySelector('[data-interior-open]').click();
   assert.equal(lightbox.length, 1);
   assert.ok(lightbox[0][1].includes('Черноморский модерн'));
+  if (unit.revision) {
+    const sources = [lightbox[0][0], root.querySelector('[data-interior-image]').src,
+      ...root.querySelectorAll('[data-interior-thumb]').map(img => img.src)];
+    for (const src of sources) assert.equal(new URL(src, 'https://example.test').searchParams.get('v'), unit.revision);
+  }
+  styles.find(b => b.dataset.interiorStyle === 'art-deco').click();
+  assert.equal(root.querySelectorAll('[data-interior-index]')[2].hidden, false);
 }
 
 console.log(`PASS: ${apartments.length} residences over ${slugs.size} models, lazy 3D and two complete galleries, mount() safe`);

@@ -24,7 +24,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна на море и горы",
-    "planImageUrl": "/assets/img/plans/81,8.webp",
+    "planImageUrl": "/assets/img/plans/81,8-corrected.png",
     "tags": [
       "corner",
       "panoramic"
@@ -183,7 +183,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна",
-    "planImageUrl": "/assets/img/plans/81,8.webp",
+    "planImageUrl": "/assets/img/plans/81,8-corrected.png",
     "tags": [
       "corner",
       "panoramic"
@@ -342,7 +342,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна",
-    "planImageUrl": "/assets/img/plans/81,8.webp",
+    "planImageUrl": "/assets/img/plans/81,8-corrected.png",
     "tags": [
       "corner",
       "panoramic"
@@ -498,7 +498,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна, высокий этаж",
-    "planImageUrl": "/assets/img/plans/81,8.webp",
+    "planImageUrl": "/assets/img/plans/81,8-corrected.png",
     "tags": [
       "corner",
       "panoramic",
@@ -655,7 +655,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна",
-    "planImageUrl": "/assets/img/plans/81,8.webp",
+    "planImageUrl": "/assets/img/plans/81,8-corrected.png",
     "tags": [
       "corner",
       "panoramic",
@@ -793,7 +793,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Угловая, панорамные окна, верхний жилой этаж",
-    "planImageUrl": "/assets/img/plans/81,8.webp",
+    "planImageUrl": "/assets/img/plans/81,8-corrected.png",
     "tags": [
       "corner",
       "panoramic",

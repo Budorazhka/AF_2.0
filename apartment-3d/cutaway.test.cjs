@@ -50,16 +50,22 @@ assert.ok(large.some(o => o.name === 'West bedroom balcony door base'), '81-8: s
 assert.ok(span(large.find(o => o.name === 'Bedroom 2 panorama base'), 2) >= 2.7, '81-8: bedroom panorama too narrow');
 assert.ok(span(large.find(o => o.name === 'Living south panorama base'), 0) >= 3.9, '81-8: living panorama too narrow');
 assert.ok(span(large.find(o => o.name === 'Terrace two-panel slider base'), 2) >= 1.7, '81-8: terrace slider too narrow');
-assert.ok(large.some(o => o.name === 'Corner bathtub shell'), '81-8: plan requires a bathtub');
+assert.ok(large.some(o => o.name === 'Corner bathtub shell'), '81-8: selected bathroom concept includes a corner bath');
 assert.ok(!large.some(o => /^Shower /.test(o.name)), '81-8: shower must not replace the bathtub');
 const bathtub = large.find(o => o.name === 'Corner bathtub shell');
 const bathtubBounds = bounds(bathtub);
 assert.ok(bathtubBounds[4] >= 4.5 && bathtubBounds[5] >= 5.5,
   '81-8: corner bathtub must be against the south kitchen wall, left of the WC');
-const wardrobe1 = large.find(o => o.name === 'Wardrobe 1');
-const wardrobe1Bounds = bounds(wardrobe1);
-assert.ok(wardrobe1Bounds[0] >= 2.0 && wardrobe1Bounds[4] <= 1.4,
-  '81-8: bedroom wardrobe must stay on the inner wall and clear the balcony door');
+const balconyDoor = bounds(large.find(o => o.name === 'West bedroom balcony door base'));
+const bedroomWindow = bounds(large.find(o => o.name === 'West bedroom window base'));
+assert.ok(balconyDoor[5] <= bedroomWindow[4] + .01,
+  '81-8: photo 0075 puts balcony door NORTH of the raised window (right when looking west)');
+assert.ok(balconyDoor[5] - balconyDoor[4] >= .70, '81-8: balcony doorway must have a usable clear opening');
+assert.ok(bedroomWindow[2] >= .90, '81-8: window frame must start on the sill, not at floor level');
+const cistern = bounds(large.find(o => o.name === 'WC cistern'));
+const bowl = bounds(large.find(o => o.name === 'WC seat'));
+assert.ok(cistern[5] >= 5.50 && bowl[5] <= cistern[4],
+  '81-8: WC cistern must back onto kitchen wall, bowl must face bathroom walking space');
 
 // no structure may stand in a hob or sink: that is what put a column through the 66 cooktop
 const box = o => {
@@ -67,6 +73,20 @@ const box = o => {
   return [Math.min(...at(0)), Math.min(...at(1)), Math.min(...at(2)),
           Math.max(...at(0)), Math.max(...at(1)), Math.max(...at(2))];
 };
+// Check occupied volumes, not just furniture names: the bedroom entry must join
+// the balcony threshold, and the bathroom doorway must join a continuous aisle.
+const clearRoutes = [
+  ['bedroom entry to balcony approach', [.05, .08, .38, 2.85, 2.05, 1.00]],
+  ['small balcony threshold', [-.73, .08, .38, .72, 2.05, 1.00]],
+  ['bathroom circulation without invented partitions', [.08, .08, 4.08, 2.85, 2.05, 4.57]],
+];
+for (const [route, volume] of clearRoutes) {
+  for (const object of large.filter(o => ['furniture', 'walls', 'glazing', 'rail'].includes(o.group))) {
+    const occupied = box(object);
+    const overlaps = [0, 1, 2].map(i => Math.min(volume[i + 3], occupied[i + 3]) - Math.max(volume[i], occupied[i]));
+    assert.ok(overlaps.some(value => value <= .005), `81-8: ${object.name} blocks ${route}`);
+  }
+}
 for (const slug of fs.readdirSync(__dirname + '/units-out')) {
   const scene = load(slug);
   const structure = scene.filter(o => o.group === 'walls' || o.group === 'glazing');
