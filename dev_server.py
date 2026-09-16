@@ -2,12 +2,15 @@
 """Локальный превью-сервер с SSI и pretty URLs (как nginx.conf)."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import socket
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+
+from api.server import send_lead, load_env_file
 
 ROOT = Path(__file__).resolve().parent
 INCLUDE_RE = re.compile(
@@ -59,6 +62,34 @@ class Handler(SimpleHTTPRequestHandler):
         self.path = "/" + str(file_path.relative_to(ROOT)).replace(os.sep, "/")
         return super().do_GET()
 
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        path = unquote(parsed.path).rstrip("/")
+        if path == "/api/lead":
+            content_len = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(content_len)
+            try:
+                data = json.loads(raw_body.decode("utf-8"))
+            except Exception:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"ok": false, "error": "Invalid JSON"}')
+                return
+
+            ok, msg = send_lead(data)
+            status_code = 200 if ok else 500
+            res_bytes = json.dumps({"ok": ok, "message": msg}).encode("utf-8")
+
+            self.send_response(status_code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(res_bytes)))
+            self.end_headers()
+            self.wfile.write(res_bytes)
+            return
+
+        self.send_error(404)
+
     def _resolve(self, path: str) -> Path | None:
         rel = path.lstrip("/")
         if not rel or rel.endswith("/"):
@@ -93,6 +124,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main() -> None:
+    load_env_file()
     port = free_port(int(os.environ.get("WEB_PORT", "8090")))
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print(f"http://127.0.0.1:{port}/")

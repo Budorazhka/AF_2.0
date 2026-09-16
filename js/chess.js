@@ -472,7 +472,12 @@
     }
 
     if (apt.status === "active" || apt.status === "reserved") {
-      html += '<button type="button" class="btn btn--gold btn--full chess-panel__cta" data-callback>' + esc(t(UI.submitRequest)) + '</button>';
+      html += '<button type="button" class="btn btn--gold btn--full chess-panel__cta" data-callback' +
+        ' data-apt-number="' + esc(apt.number) + '"' +
+        ' data-apt-floor="' + esc(apt.floor) + '"' +
+        ' data-apt-area="' + esc(apt.area_total) + '"' +
+        (apt.price ? ' data-apt-price="' + esc(apt.price) + '"' : '') +
+        '>' + esc(t(UI.submitRequest)) + '</button>';
     } else if (apt.status === "booked") {
       html += '<div class="chess-panel__cta-note">' + esc(t(UI.apartmentBooked)) + '</div>';
     } else if (apt.status === "sold") {

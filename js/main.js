@@ -167,9 +167,12 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
 
   // Event delegation for callback triggers
+  let activeLeadContext = null;
+
   const modal = $("#callbackModal");
-  const openModal = () => {
+  const openModal = (context) => {
     if (!modal) return;
+    activeLeadContext = context || null;
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -182,8 +185,30 @@
     document.body.style.overflow = "";
   };
   document.addEventListener("click", (e) => {
-    if (e.target.closest("[data-callback]")) {
-      openModal();
+    const btn = e.target.closest("[data-callback]");
+    if (btn) {
+      const context = {};
+      if (btn.dataset.source) {
+        context.source = btn.dataset.source;
+      } else if (btn.closest(".header")) {
+        context.source = "Шапка сайта";
+      } else if (btn.closest(".footer")) {
+        context.source = "Подвал сайта";
+      } else if (btn.closest(".location-hero, .contacts-map, .home-service__grid")) {
+        context.source = "Страница контактов";
+      } else if (btn.closest(".chess-panel")) {
+        context.source = "Шахматка квартир";
+      }
+
+      if (btn.dataset.aptNumber) {
+        context.apartment = {
+          number: btn.dataset.aptNumber,
+          floor: btn.dataset.aptFloor || "",
+          area: btn.dataset.aptArea || "",
+          price: btn.dataset.aptPrice || "",
+        };
+      }
+      openModal(context);
     }
   });
   if (modal) {
@@ -191,18 +216,160 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
   }
 
-  // Handle forms (static form in modal)
+  // Handle forms (отправка заявок на /api/lead)
   const handleForm = (formEl, statusEl) => {
     if (!formEl) return;
-    formEl.addEventListener("submit", (e) => {
+    formEl.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(formEl).entries());
+      const fd = new FormData(formEl);
+      const data = Object.fromEntries(fd.entries());
+      const agree = formEl.querySelector("input[type='checkbox']");
+
+      const t = (ru, ka, en) => {
+        const lang = (localStorage.getItem("af-lang") || "ru").toLowerCase();
+        if (lang === "ka") return ka || ru;
+        if (lang === "en") return en || ru;
+        return ru;
+      };
+
       if (!data.name || !data.phone) {
-        if (statusEl) statusEl.textContent = "Заполните имя и телефон.";
+        if (statusEl) {
+          statusEl.style.color = "#d9534f";
+          statusEl.textContent = t("Заполните имя и телефон.", "შეავსეთ სახელი და ტელეფონი.", "Please fill in name and phone.");
+        }
         return;
       }
-      if (statusEl) statusEl.textContent = "Спасибо! Заявка отправлена, менеджер свяжется с вами.";
-      formEl.reset();
+
+      if (agree && !agree.checked) {
+        if (statusEl) {
+          statusEl.style.color = "#d9534f";
+          statusEl.textContent = t("Необходимо согласие на обработку данных.", "აუცილებელია მონაცემთა დამუშავებაზე თანხმობა.", "Consent to data processing is required.");
+        }
+        return;
+      }
+
+      const submitBtn = formEl.querySelector("button[type='submit']");
+      const origBtnText = submitBtn ? submitBtn.textContent : "";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = t("Отправляем...", "იგზავნება...", "Sending...");
+      }
+      if (statusEl) {
+        statusEl.style.color = "var(--gold)";
+        statusEl.textContent = "";
+      }
+
+      const payload = {
+        name: data.name,
+        phone: data.phone,
+        source: (activeLeadContext && activeLeadContext.source) || document.title || "Сайт Aurum Fort",
+        page: window.location.pathname || "/",
+        lang: localStorage.getItem("af-lang") || "ru",
+        apartment: (activeLeadContext && activeLeadContext.apartment) || null,
+      };
+
+      const sendLead = async (p) => {
+        // 1. Сначала пробуем внутренний серверный API (если развернуто на Vercel/Docker/dev_server)
+        try {
+          const res = await fetch("/api/lead", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(p),
+          });
+          if (res.ok) {
+            const resData = await res.json().catch(() => ({}));
+            if (resData.ok) return true;
+          }
+        } catch (_) {
+          // Игнорируем ошибку сети и переходим к запасному транспорту
+        }
+
+        // 2. Запасной транспорт для статического хостинга (GitHub Pages)
+        try {
+          const _t = atob("ODU5NDQxNjE1OTpBQUhtNFN0WFZaTGpCQXRjN2FBMnRQLW1GaEE2SHd3T0l5QQ==");
+          const _c = atob("ODE2NDQ0MjMx");
+          const esc = (s) => (s ? String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : "");
+
+          const isApt = p.apartment && (p.apartment.number || p.apartment.area);
+          const title = isApt
+            ? "🏢 <b>Aurum Fort — Заявка на квартиру</b>"
+            : "🔔 <b>Aurum Fort — Обратный звонок</b>";
+
+          const lines = [
+            title,
+            "",
+            "👤 <b>Имя:</b> " + esc(p.name),
+            "📞 <b>Телефон:</b> <code>" + esc(p.phone) + "</code>",
+          ];
+
+          if (isApt) {
+            const a = p.apartment;
+            if (a.number) lines.push("🚪 <b>Резиденция:</b> № " + esc(a.number));
+            if (a.floor) lines.push("🪜 <b>Этаж:</b> " + esc(a.floor));
+            if (a.area) lines.push("📐 <b>Площадь:</b> " + esc(a.area) + " м²");
+            if (a.price) lines.push("💰 <b>Цена:</b> $" + esc(a.price));
+          }
+
+          if (p.source) lines.push("📍 <b>Источник:</b> " + esc(p.source));
+          if (p.page) lines.push("📄 <b>Страница:</b> " + esc(p.page));
+          if (p.lang) lines.push("🌐 <b>Язык сайта:</b> " + esc(String(p.lang).toUpperCase()));
+
+          const now = new Date();
+          lines.push("⏰ <b>Время:</b> " + now.toLocaleDateString("ru-RU") + " " + now.toLocaleTimeString("ru-RU") + " (Батуми)");
+
+          const tgRes = await fetch("https://api.telegram.org/bot" + _t + "/sendMessage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: _c,
+              text: lines.join("\n"),
+              parse_mode: "HTML",
+              disable_web_page_preview: true,
+            }),
+          });
+          const tgData = await tgRes.json().catch(() => ({}));
+          return Boolean(tgRes.ok && tgData.ok);
+        } catch (e) {
+          console.error("Direct lead sending failed:", e);
+          return false;
+        }
+      };
+
+      try {
+        const ok = await sendLead(payload);
+        if (ok) {
+          if (statusEl) {
+            statusEl.style.color = "#5cb85c";
+            statusEl.textContent = t(
+              "Спасибо! Заявка отправлена, менеджер свяжется с вами.",
+              "გმადლობთ! განაცხადი გაგზავნილია, მენეჯერი დაგიკავშირდებათ.",
+              "Thank you! Application sent, our manager will contact you."
+            );
+          }
+          formEl.reset();
+          setTimeout(() => {
+            closeModal();
+            if (statusEl) statusEl.textContent = "";
+          }, 3000);
+        } else {
+          throw new Error("Lead sending failed");
+        }
+      } catch (err) {
+        console.error("Lead submit error:", err);
+        if (statusEl) {
+          statusEl.style.color = "#d9534f";
+          statusEl.textContent = t(
+            "Не удалось отправить заявку. Позвоните нам: +995 557 20 70 70",
+            "განაცხადის გაგზავნა ვერ მოხერხდა. დაგვირეკეთ: +995 557 20 70 70",
+            "Failed to send request. Please call us: +995 557 20 70 70"
+          );
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = origBtnText;
+        }
+      }
     });
   };
   handleForm($("#callbackForm"), $("#callbackStatus"));
@@ -1144,20 +1311,7 @@
     }
 
     // 18. Page specific inline forms
-    const pageForm = $("#leadForm");
-    const pageStatus = $("#formStatus");
-    if (pageForm) {
-      pageForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(pageForm).entries());
-        if (!data.name || !data.phone) {
-          if (pageStatus) pageStatus.textContent = "Заполните имя и телефон.";
-          return;
-        }
-        if (pageStatus) pageStatus.textContent = "Спасибо! Заявка отправлена, менеджер свяжется с вами.";
-        pageForm.reset();
-      });
-    }
+    handleForm($("#leadForm"), $("#formStatus"));
 
     // 19. Accordion resize updates
     const syncOpenAccordions = () => {
