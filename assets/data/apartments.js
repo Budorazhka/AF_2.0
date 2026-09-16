@@ -80,7 +80,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Первая линия",
-    "planImageUrl": "/assets/img/plans/48,5.webp",
+    "planImageUrl": "/assets/img/plans/48,5-corrected.png",
     "tags": []
   },
   {
@@ -239,7 +239,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.webp",
+    "planImageUrl": "/assets/img/plans/48,5-corrected.png",
     "tags": []
   },
   {
@@ -395,7 +395,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.webp",
+    "planImageUrl": "/assets/img/plans/48,5-corrected.png",
     "tags": []
   },
   {
@@ -552,7 +552,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.webp",
+    "planImageUrl": "/assets/img/plans/48,5-corrected.png",
     "tags": []
   },
   {
@@ -709,7 +709,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": null,
-    "planImageUrl": "/assets/img/plans/48,5.webp",
+    "planImageUrl": "/assets/img/plans/48,5-corrected.png",
     "tags": []
   },
   {
@@ -847,7 +847,7 @@ window.AF_APARTMENTS = [
     "status": "active",
     "installmentAvailable": true,
     "comment": "Первая линия",
-    "planImageUrl": "/assets/img/plans/48,5.webp",
+    "planImageUrl": "/assets/img/plans/48,5-corrected.png",
     "tags": []
   },
   {
