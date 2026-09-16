@@ -98,6 +98,10 @@ for (const apt of apartments) {
     assert.equal(frameUrl.searchParams.get('v'), unit.revision, 'updated geometry must bypass previous cached model');
     assert.ok(galleryHtml.includes('/preview/assets/img/plans/81,8-corrected.png'), 'plan tab must load the corrected master');
   }
+  if (unit.slug === '48-5') {
+    assert.ok(galleryHtml.includes('/preview/assets/img/plans/48,5-corrected.png'), '48-5: plan tab must load the balcony-corrected master');
+    assert.equal(frameUrl.searchParams.get('v'), unit.revision, '48-5: updated shell must bypass the stale model cache');
+  }
   modelTab.click();
   assert.equal(root.querySelectorAll('iframe').length, 1, 'iframe must not be created twice');
 

@@ -76,6 +76,21 @@ const box = o => {
   return [Math.min(...at(0)), Math.min(...at(1)), Math.min(...at(2)),
           Math.max(...at(0)), Math.max(...at(1)), Math.max(...at(2))];
 };
+// 48.5 m² is photo-checked against the actual black-framed openings.  Its two
+// balconies are shallow exterior strips, not rooms: never allow furniture to
+// migrate outside or block either full-height balcony door again.
+const compact = load('48-5');
+const westSlab = box(compact.find(o => o.name === 'West balcony slab'));
+const eastSlab = box(compact.find(o => o.name === 'East balcony slab'));
+assert.ok(westSlab[3] - westSlab[0] <= 1.21, '48-5: west balcony is a shallow 1.2m exterior strip');
+assert.ok(eastSlab[3] - eastSlab[0] <= 1.41, '48-5: east balcony is a shallow 1.4m exterior strip');
+assert.ok(compact.some(o => o.name === 'West balcony open door'), '48-5: west balcony needs a real door');
+assert.ok(compact.some(o => o.name === 'East balcony open door'), '48-5: east balcony needs a real door');
+for (const object of compact.filter(o => o.group === 'furniture' && !/open door/i.test(o.name))) {
+  const occupied = box(object);
+  assert.ok(occupied[0] >= -.20 && occupied[3] <= 7.21,
+    `48-5: ${object.name} must stay inside; exterior balconies remain unfurnished`);
+}
 // Check occupied volumes, not just furniture names: the bedroom entry must join
 // the balcony threshold, and the bathroom doorway must join a continuous aisle.
 const clearRoutes = [

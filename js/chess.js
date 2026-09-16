@@ -472,11 +472,14 @@
     }
 
     if (apt.status === "active" || apt.status === "reserved") {
+      const ctaAptNum = apt.apartmentNumber || apt.id || "";
+      const ctaAptArea = apt.areaTotal || "";
+      const ctaAptPrice = effectivePrice || apt.priceBase || "";
       html += '<button type="button" class="btn btn--gold btn--full chess-panel__cta" data-callback' +
-        ' data-apt-number="' + esc(apt.number) + '"' +
+        ' data-apt-number="' + esc(ctaAptNum) + '"' +
         ' data-apt-floor="' + esc(apt.floor) + '"' +
-        ' data-apt-area="' + esc(apt.area_total) + '"' +
-        (apt.price ? ' data-apt-price="' + esc(apt.price) + '"' : '') +
+        ' data-apt-area="' + esc(ctaAptArea) + '"' +
+        (ctaAptPrice ? ' data-apt-price="' + esc(ctaAptPrice) + '"' : '') +
         '>' + esc(t(UI.submitRequest)) + '</button>';
     } else if (apt.status === "booked") {
       html += '<div class="chess-panel__cta-note">' + esc(t(UI.apartmentBooked)) + '</div>';
