@@ -14,7 +14,7 @@ UNIT = dict(
     title='Квартира 81,8 м²',
     eyebrow='AURUM FORT / РЕЗИДЕНЦИЯ 81,8',
     summary='70,1 м² интерьер · терраса 10,7 м² · балкон 1,0 м²<br>Объёмная реконструкция · метры',
-    notes=('<p>Контур и проёмы сверены по поэтажному плану IV этажа (резиденция №401) и фотосъёмке готового каркаса. Внутренняя площадь 70,1 м², '
+    notes=('<p>Основа контура — поэтажный план IV этажа (резиденция №401). Проёмы уточняются по фотосъёмке; реконструкция ещё проходит сверку, расположение гардеробной не подтверждено. Внутренняя площадь 70,1 м², '
            'терраса 10,7 м², балкон 1,0 м², общая 81,8 м².</p>'
            '<p>Для модели приняты высота потолков 2,80 м, дверей 2,20 м, колонны 40×40 см и внешние стены 20 см. '
            'Размеры проёмов и мебели ориентировочные: это визуализация, не обмерный проект.</p>'
@@ -85,10 +85,12 @@ def build():
     s.wall('South-west wall', 0.00, 8.71, 1.60, 8.91)
 
     # interior partitions
-    s.lintel('Bedroom 1 door lintel', 2.70, 0.00, 2.85, 1.00)
-    s.wall('Bedroom 1 east wall', 2.70, 1.00, 2.85, 3.84)
+    # Photo 0077 looks towards the bathroom-side end with west windows on right:
+    # the hall opening is on the left, at the SOUTH end of the east partition.
+    s.wall('Bedroom 1 east wall', 2.70, 0.00, 2.85, 2.80)
+    s.lintel('Bedroom 1 door lintel', 2.70, 2.80, 2.85, 3.64)
     s.wall('Bedroom 1 south wall', 0.00, 3.64, 2.70, 3.84)
-    s.door_leaf('Bedroom 1 open door', 1.70, 0.02, 2.70, 0.06)
+    s.door_leaf('Bedroom 1 open door', 1.88, 3.60, 2.70, 3.64)
 
     s.wall('Bathroom east wall north', 2.70, 3.84, 2.85, 4.00)
     s.lintel('Bathroom door lintel', 2.70, 4.00, 2.85, 4.80)
@@ -139,16 +141,16 @@ def build():
     s.rect('Terrace facade pier', 9.60, 5.68, 9.78, 5.86, CEILING, 'white', group='facade')
 
     # -- bedroom 1 ---------------------------------------------------------
-    s.rect('Bed 1 frame', 0.70, 1.53, 2.68, 3.11, 0.32, 'wood')
-    s.rect('Bed 1 headboard', 2.56, 1.48, 2.68, 3.16, 1.05, 'fabric')
-    s.rect('Bed 1 mattress', 0.75, 1.58, 2.56, 3.06, 0.24, 'white', 0.32)
-    s.rect('Bed 1 duvet', 0.77, 1.60, 2.12, 3.04, 0.08, 'fabric', 0.56)
-    s.rect('Bed 1 pillow north', 2.16, 1.66, 2.48, 2.26, 0.13, 'white', 0.56)
-    s.rect('Bed 1 pillow south', 2.16, 2.38, 2.48, 2.98, 0.13, 'white', 0.56)
-    s.rect('Bed 1 nightstand north', 2.28, 1.08, 2.68, 1.48, 0.48, 'wood')
-    s.rect('Bed 1 nightstand south', 2.28, 3.16, 2.68, 3.56, 0.48, 'wood')
-    # Keep the north side open from the hall door to the balcony, as in the plan.
-    s.oval('Bedroom 1 rug', 1.45, 2.35, 1.05, 0.95, 0.0, 0.018, 'rug')
+    # Proposed furniture, not as-built evidence: clear the south entry and west
+    # approach to the existing balcony. Do not invent a wardrobe location.
+    s.rect('Bed 1 frame', 0.70, 1.10, 2.68, 2.68, 0.32, 'wood')
+    s.rect('Bed 1 headboard', 2.56, 1.05, 2.68, 2.73, 1.05, 'fabric')
+    s.rect('Bed 1 mattress', 0.75, 1.15, 2.56, 2.63, 0.24, 'white', 0.32)
+    s.rect('Bed 1 duvet', 0.77, 1.17, 2.12, 2.61, 0.08, 'fabric', 0.56)
+    s.rect('Bed 1 pillow north', 2.16, 1.23, 2.48, 1.83, 0.13, 'white', 0.56)
+    s.rect('Bed 1 pillow south', 2.16, 1.95, 2.48, 2.55, 0.13, 'white', 0.56)
+    s.rect('Bed 1 nightstand north', 2.28, 0.65, 2.68, 1.05, 0.48, 'wood')
+    s.oval('Bedroom 1 rug', 1.45, 1.92, 1.05, 0.95, 0.0, 0.018, 'rug')
 
     # -- bedroom 2 ---------------------------------------------------------
     s.rect('Bed 2 frame', 4.37, 2.14, 6.46, 3.73, 0.32, 'wood')

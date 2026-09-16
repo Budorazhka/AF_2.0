@@ -36,6 +36,9 @@ assert.ok(Math.max(...result(studio, 'Kitchen tall unit', false).heights) > 2.14
 // 81.8 m² openings are photo-verified. These guards prevent the old failure where
 // the model showed a solid wall or a balcony on the wrong side of the camera.
 const large = load('81-8');
+const bedroomEntry = large.find(o => o.name === 'Bedroom 1 door lintel');
+assert.ok(Math.min(...bedroomEntry.v.map(v => v[2])) >= 2.8,
+  '81-8: photo 0077 places the small-balcony bedroom entry at the bathroom-side end');
 const span = (object, axis) => {
   const values = object.v.map(vertex => vertex[axis]);
   return Math.max(...values) - Math.min(...values);
@@ -76,7 +79,8 @@ const box = o => {
 // Check occupied volumes, not just furniture names: the bedroom entry must join
 // the balcony threshold, and the bathroom doorway must join a continuous aisle.
 const clearRoutes = [
-  ['bedroom entry to balcony approach', [.05, .08, .38, 2.85, 2.05, 1.00]],
+  ['bedroom south entry approach', [.05, .08, 2.84, 2.85, 2.05, 3.60]],
+  ['bedroom west passage to balcony', [.05, .08, .38, .65, 2.05, 3.60]],
   ['small balcony threshold', [-.73, .08, .38, .72, 2.05, 1.00]],
   ['bathroom circulation without invented partitions', [.08, .08, 4.08, 2.85, 2.05, 4.57]],
 ];
