@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/styles.css?v=68" />
+  <link rel="stylesheet" href="/css/styles.css?v=69" />
 
   <!-- i18n: словари KA и EN грузятся ДО движка, движок ДО main.js -->
   <script src="/js/i18n-ka.js?v=8"></script>
@@ -39,20 +39,10 @@
       </div>
     </section>
 
-    <!-- ============ CHAPTER 2 · PANORAMA IMAGE (PARALLAX) ============ -->
-    <!-- Фото целиком, без cover-обрезки и параллакса: так видно море внизу,
-         а проценты метки совпадают с фото на любой ширине экрана -->
+    <!-- ============ CHAPTER 2 · PANORAMA IMAGE ============ -->
+    <!-- Фото целиком: метка Aurum Fort уже встроена в панораму -->
     <section class="location-panorama">
-      <img class="lazy location-panorama__img" data-src="/assets/img/7.webp?v=5" alt="Панорама района" data-i18n-attr="alt:Панорама района" />
-      <!-- Стрелка вместо точки: сам корпус на снимке не читается (застройка склона
-           мелкая), поэтому указываем на место, а не обводим контур -->
-      <div class="location-panorama__pin" style="left: 85.2%; top: 29.9%;">
-        <span class="location-panorama__pin-label" data-i18n="Aurum Fort">Aurum Fort</span>
-        <svg class="location-panorama__pin-arrow" viewBox="0 0 24 64" aria-hidden="true" focusable="false">
-          <path d="M12 2 V52" />
-          <path d="M5 44 L12 54 L19 44" />
-        </svg>
-      </div>
+      <img class="lazy location-panorama__img" data-src="/assets/img/location-view.webp?v=1" alt="Панорама района" data-i18n-attr="alt:Панорама района" />
     </section>
 
     <!-- ============ CHAPTER 2.5 · AERIAL VIDEO (YouTube, click-to-load) ============ -->
