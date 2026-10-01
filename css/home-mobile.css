@@ -1,4 +1,52 @@
 /* Главная страница: мобильная композиция, не влияет на остальные маршруты. */
+.home-page .home-wellness-intro {
+  padding: clamp(54px, 7vw, 100px) 0;
+  background-color: var(--beige);
+  background-image:
+    linear-gradient(rgba(210, 205, 202, 0.55), rgba(210, 205, 202, 0.55)),
+    var(--marble-bg);
+  background-size: cover;
+  background-position: center;
+}
+
+.home-page .home-wellness-intro__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 84px);
+}
+
+.home-page .home-wellness-intro__copy p,
+.home-page .home-wellness-intro__note span {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: clamp(1rem, 1.15vw, 1.12rem);
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
+
+.home-page .home-wellness-intro__copy p + p {
+  margin-top: 18px;
+}
+
+.home-page .home-wellness-intro__note {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding-left: 30px;
+  border-left: 1px solid var(--gold);
+}
+
+.home-page .home-wellness-intro__note strong {
+  color: var(--navy);
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 2.1vw, 2rem);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
 @media (max-width: 760px) {
   .home-page {
     overflow-x: clip;
@@ -206,26 +254,35 @@
     text-align: left;
   }
 
-  .home-page .home-service__statement {
-    max-width: 40ch;
-    margin-top: 30px;
-    padding: 0 20px;
-    font-size: 1rem;
-    line-height: 1.7;
-    text-align: left;
+  .home-page .home-wellness-intro {
+    padding: 42px 0 48px;
   }
 
-  .home-page .home-service__statement p + p {
+  .home-page .home-wellness-intro__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .home-page .home-wellness-intro__copy p,
+  .home-page .home-wellness-intro__note span {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .home-page .home-wellness-intro__copy p + p {
     margin-top: 16px;
   }
 
-  .home-page .home-service__statement-note {
-    margin-top: 20px;
-    padding-top: 18px;
+  .home-page .home-wellness-intro__note {
+    gap: 8px;
+    padding: 18px 0 0;
+    border-top: 1px solid rgba(52, 48, 42, 0.16);
+    border-left: 0;
   }
 
-  .home-page .home-service__statement-note strong {
-    margin-bottom: 8px;
+  .home-page .home-wellness-intro__note strong {
     font-size: 1.25rem;
     line-height: 1.35;
   }
@@ -264,11 +321,6 @@
 
   .home-page .hero__slider-nav {
     width: min(170px, calc(100% - 32px));
-  }
-
-  .home-page .home-service__statement {
-    padding-right: 18px;
-    padding-left: 18px;
   }
 
   .home-page .authors__people {
