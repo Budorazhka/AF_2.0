@@ -168,7 +168,7 @@ window.AF_I18N_EN = {
   "ГОЛЬФ-КАРЫ И ЭЛЕКТРОВЕЛОСИПЕДЫ": "GOLF CARTS AND E-BIKES",
   "Электрический гольф-кар курсирует раз в час по маршруту комплекс — пляж Гонио — магазин. До пляжа 5–7 минут. Электровелосипеды доступны для самостоятельных поездок.": "An electric golf cart runs once an hour on the route: complex — Gonio beach — shop. 5–7 minutes to the beach. E-bikes are available for independent trips.",
   "ПАРКОВЫЕ ЗОНЫ ОТДЫХА С ЭЛЕМЕНТАМИ TREEPLACE": "PARK RECREATION AREAS WITH TREEPLACE ELEMENTS",
-  "Подвесные мосты, сетчатые переходы и площадки среди крон деревьев — для прогулок на высоте, отдыха в сетях-гамаках и приключений всей семьёй.": "Suspension bridges, net walkways and platforms among the treetops — for walks at height, lounging in net hammocks and adventures for the whole family.",
+  "Парковые зоны отдыха с элементами Treeplace.": "Park recreation areas with Treeplace elements.",
   "ЗИМНИЙ САД": "WINTER GARDEN",
   "Оазис зелени и света для отдыха в любое время года.": "An oasis of greenery and light for relaxing in any season.",
   "Управляющая компания": "Management company",
