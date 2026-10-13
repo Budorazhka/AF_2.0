@@ -155,6 +155,8 @@ window.AF_I18N_EN = {
   "РУССКАЯ БАНЯ У ГОРНОГО РУЧЬЯ": "RUSSIAN BATHHOUSE BY THE MOUNTAIN STREAM",
   "Бревенчатая баня на берегу настоящего горного ручья — с природной купелью, мангальной зоной и банными церемониями.": "A log bathhouse on the bank of a real mountain stream — with a natural plunge pool, a barbecue area, and bathhouse rituals.",
   "Крытый бассейн с подогревом 12,5×6 м — работает круглый год при температуре воды +28 °С. Мраморный хаммам на 15 человек, финская сауна с каменной печью, открытый сезонный бассейн, джакузи, зона релакса и массажный кабинет.": "A heated indoor pool, 12.5×6 m, operating year-round at a water temperature of +28°C. A marble hammam for 15 people, a Finnish sauna with a stone stove, an open seasonal pool, a jacuzzi, a relaxation area, and a massage room.",
+  "АПИТЕРАПИЯ": "APITHERAPY",
+  "Апитерапия — природная сила пчёл, дарующая здоровье и гармонию организму.": "Apitherapy — the natural power of bees, bringing health and harmony to the body.",
   "СПОРТ": "SPORTS",
   "Тренажёрный зал на территории комплекса. Отдельный зал на сваях с видом на лес — для йоги и единоборств. Горные маршруты начинаются прямо от калитки, электровелосипеды доступны для резидентов.": "A gym on the complex grounds. A separate room on stilts with a forest view — for yoga and martial arts. Mountain trails start right at the gate, and e-bikes are available for residents.",
   "ЕДА И НАПИТКИ": "FOOD AND DRINK",
