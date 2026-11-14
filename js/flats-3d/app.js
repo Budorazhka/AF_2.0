@@ -377,8 +377,9 @@ function createApp(el) {
      landscape behind real photos looked like two different worlds. */
   function showLandscape(on) {
     site.setLandscape(on);
-    if (amenities) { amenities.world.visible = on; amenities.plan.visible = on; }
-    if (building.parkGroup) building.parkGroup.visible = on;
+    // the garden sits on the modelled relief and goes with it; the house's own podium
+    // (car park, pool deck, planters) stays, it is part of the building, not landscape
+    if (amenities) amenities.world.visible = on;
   }
   function leaveWalk() {
     if (state.mode !== 'walk') return;

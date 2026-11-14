@@ -129,7 +129,7 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
       }
       add(vert, mesh(boxes(lv.glass.filter((r) => r[4] < 0), 0, full), mats.glass));
       // balustrades along the drawn terrace fronts (slanted ones stay straight); raster outline where none
-      add(g, mesh(lv.facade && lv.facade.some((e) => e[6]) ? balustradeGeometry(lv.facade, L.floor) : boxes(lv.rails, L.floor, 1.1), mats.rail, false));
+      L.rails = add(g, mesh(lv.facade && lv.facade.some((e) => e[6]) ? balustradeGeometry(lv.facade, L.floor) : boxes(lv.rails, L.floor, 1.1), mats.rail, false));
       add(g, mesh(boxes(lv.units.flatMap((u) => u.decks || []), L.floor, 0.05), mats.deck, false));
     }
     L.vert = vert;
@@ -292,7 +292,7 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
       if (L.plan) L.plan.visible = opened;
       if (L.glow) L.glow.visible = focus === null && hover === L.level;
       if (L.frames) {
-        L.frames.visible = !opened;
+        L.frames.visible = !opened && !(walkPatch && walkPatch.hidden.includes(L.frames));
         const lit = focus === null && hover === L.level;
         // hovered: the floor's frames light up; at night all frames get the soft wash of the evening render
         L.frameMat.emissive.set(lit ? 0x1c4e89 : 0xfff1dc);
@@ -348,28 +348,36 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
   }
   function setWalk(unit) {
     if (walkPatch) {
-      walkPatch.L.walls && (walkPatch.L.walls.visible = true);
-      walkPatch.L.columns && (walkPatch.L.columns.visible = true);
-      walkPatch.L.shell && (walkPatch.L.shell.visible = true);
-      walkPatch.unit.glass && (walkPatch.unit.glass.visible = true);
+      walkPatch.hidden.forEach((o) => { o.visible = true; });
       walkPatch.meshes.forEach((m) => { m.parent.remove(m); m.geometry.dispose(); });
       walkPatch = null;
+      paint();
     }
     if (!unit) return;
     const L = levels.find((l) => l.level === unit.level);
-    const keepOut = (r) => !nearPoly((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, unit.data.poly, 0.35);
+    const above = levels.find((l) => l.level === unit.level + 1);
+    // the flat's own model replaces the massing here: its rooms and its balcony or terrace
+    const areas = [unit.data.poly, ...(unit.data.outdoor || [])];
+    const keepOut = (r) => !areas.some((poly) => nearPoly((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, poly, 0.6));
+    // Up close the massing's facade frames and balustrades are crude: on this floor and the
+    // one above they would stand right in front of the windows, so they go for the walk.
+    const hidden = [L.walls, L.columns, L.shell, unit.glass, L.frames, L.rails, above && above.frames, above && above.rails].filter(Boolean);
+    hidden.forEach((o) => { o.visible = false; });
     const meshes = [];
     const swap = (orig, rects, mat) => {
       if (!orig) return;
-      orig.visible = false;
       const m = mesh(boxes(rects.filter(keepOut), 0, L.full), mat);
       if (m) { L.vert.add(m); meshes.push(m); }
     };
     swap(L.walls, L.data.walls, mats.wall);
     swap(L.shell, L.data.shell || [], mats.shell);
     swap(L.columns, L.data.columns, mats.column);
-    if (unit.glass) unit.glass.visible = false;
-    walkPatch = { L, unit, meshes };
+    // other flats' glazing on this floor stays, minus anything over this flat's balcony
+    const others = L.data.glass.filter((r) => r[4] >= 0 && L.units[r[4]] !== unit && keepOut(r));
+    const glass = mesh(boxes(others, 0, L.full), mats.glass);
+    if (glass) { L.vert.add(glass); meshes.push(glass); }
+    L.units.forEach((u) => { if (u.glass && u !== unit) { u.glass.visible = false; hidden.push(u.glass); } });
+    walkPatch = { L, unit, meshes, hidden };
   }
 
   paint();
