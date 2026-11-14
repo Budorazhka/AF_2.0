@@ -1,0 +1,286 @@
+/* ============================================================
+   AURUM FORT — 3D-выбор квартиры (flats-3d.html, js/flats-3d/)
+   Светлая система сайта: белые панели, графит и navy в тексте,
+   золото только для главного действия. Цвета статусов берутся
+   из переменных шахматки (css/chess.css, :root), чтобы «в продаже»
+   выглядело одинаково в таблице и на модели.
+   Подключается загрузчиком js/flats-3d-boot.js только на этой странице.
+   ============================================================ */
+
+.af3d {
+  --af3d-panel: #fff;
+  --af3d-line: rgba(52, 48, 42, 0.12);
+  --af3d-text: var(--graphite);
+  --af3d-muted: var(--chess-muted, #57524a);
+  --af3d-shadow: 0 10px 34px rgba(30, 36, 44, 0.12);
+  --af3d-gap: clamp(12px, 1.6vw, 20px);
+  position: relative;
+  margin-top: var(--af3d-top, 84px);
+  height: calc(100svh - var(--af3d-top, 84px));
+  min-height: 540px;
+  overflow: hidden;
+  background: #d9e3ec;
+  color: var(--af3d-text);
+  font-family: var(--body);
+  isolation: isolate;
+}
+
+/* экран-приложение: страница под ним не прокручивается (иначе колесо над панелью
+   уводит сцену под шапку и панели обрезаются) */
+html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll-behavior: none; }
+
+/* панели задают display сами, поэтому [hidden] нужно подтвердить явно */
+.af3d [hidden] { display: none !important; }
+
+.af3d__stage { position: absolute; inset: 0; }
+.af3d__canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+.af3d__labels { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.af3d__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- loading ---------- */
+.af3d__loading {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  margin: 0; padding: 14px 22px; background: var(--af3d-panel); box-shadow: var(--af3d-shadow);
+  font-size: 0.95rem; z-index: 6; display: none; max-width: min(420px, 90%); text-align: center;
+}
+.af3d.is-loading .af3d__loading { display: block; }
+
+/* ---------- panels ---------- */
+.af3d__crumb, .af3d__floors-wrap, .af3d__card, .af3d__time, .af3d__walkbar {
+  position: absolute; z-index: 3; background: var(--af3d-panel);
+  border: 1px solid var(--af3d-line); box-shadow: var(--af3d-shadow); border-radius: 4px;
+}
+
+.af3d__crumb {
+  top: var(--af3d-gap); left: var(--af3d-gap);
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+  font-size: 0.9rem;
+}
+.af3d__crumb button, .af3d__crumb span {
+  font: inherit; color: var(--navy); background: none; border: 0; padding: 6px 8px; cursor: pointer;
+}
+.af3d__crumb button[aria-current] { color: var(--af3d-text); cursor: default; }
+.af3d__crumb > span { color: var(--af3d-text); padding: 6px 4px; }
+.af3d__crumb > span[aria-hidden] { color: var(--af3d-muted); padding: 0; }
+
+.af3d__floors-wrap {
+  top: calc(var(--af3d-gap) + 58px); left: var(--af3d-gap);
+  width: 210px; padding: 14px 10px 12px;
+}
+.af3d__floors-title {
+  margin: 0 8px 8px; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 600; color: var(--chess-label, #7a5f2e);
+}
+.af3d__floors { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.af3d__floor {
+  width: 100%; display: grid; grid-template-columns: 26px 1fr; grid-template-rows: auto auto;
+  column-gap: 10px; align-items: center; padding: 8px; border: 0; border-radius: 3px;
+  background: none; text-align: left; cursor: pointer; color: var(--af3d-text); font: inherit;
+  transition: background 0.2s var(--ease);
+}
+.af3d__floor:hover { background: var(--chess-active-bg, #eaf1f9); }
+.af3d__floor[aria-pressed="true"] { background: var(--navy); color: #fff; }
+.af3d__floor-num { grid-row: 1 / span 2; font-family: var(--serif); font-size: 1.35rem; line-height: 1; text-align: center; }
+.af3d__floor-dots { display: flex; gap: 4px; }
+.af3d__floor-free { font-size: 0.8rem; color: var(--af3d-muted); }
+.af3d__floor[aria-pressed="true"] .af3d__floor-free { color: rgba(255, 255, 255, 0.86); }
+.af3d__floor[aria-pressed="true"] .af3d__dot { box-shadow: 0 0 0 1.5px #fff; }
+.af3d__floor[aria-pressed="true"] .af3d__dot--active { background: #fff; }
+
+.af3d__dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--chess-unavailable, #9a9a9a); flex: none; }
+.af3d__dot--active { background: var(--chess-active, #1c4e89); }
+.af3d__dot--booked { background: var(--chess-booked, #9a7a3c); }
+.af3d__dot--sold { background: var(--chess-sold, #a3433a); }
+.af3d__dot--reserved { background: var(--chess-reserved, #6a5a8c); }
+
+.af3d__legend {
+  display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 10px 8px 0; padding-top: 10px;
+  border-top: 1px solid var(--af3d-line); font-size: 0.78rem; color: var(--af3d-muted);
+}
+.af3d__legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- pins over an opened floor ---------- */
+.af3d__pin {
+  position: absolute; left: 0; top: 0; pointer-events: auto; cursor: pointer;
+  min-width: 46px; padding: 5px 9px; border-radius: 3px; border: 0;
+  font: 600 0.82rem/1 var(--body); letter-spacing: 0.04em; color: #fff;
+  background: var(--chess-unavailable, #9a9a9a); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: box-shadow 0.2s var(--ease), outline-color 0.2s;
+  outline: 2px solid transparent; outline-offset: 2px;
+}
+.af3d__pin--active { background: var(--chess-active, #1c4e89); }
+.af3d__pin--booked { background: var(--chess-booked, #9a7a3c); }
+.af3d__pin--sold { background: var(--chess-sold, #a3433a); }
+.af3d__pin--reserved { background: var(--chess-reserved, #6a5a8c); }
+.af3d__pin.is-hover, .af3d__pin:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+.af3d__pin.is-selected { outline-color: var(--gold); }
+.af3d__pin:focus-visible { outline-color: var(--gold); }
+
+/* ---------- tooltip ---------- */
+.af3d__tip {
+  position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;
+  display: grid; gap: 2px; padding: 8px 12px; background: var(--graphite); color: #fff;
+  font-size: 0.85rem; border-radius: 3px; white-space: nowrap;
+}
+.af3d__tip b { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; }
+.af3d__tip-status--active { color: #b9d2ef; }
+.af3d__tip-status--booked { color: #e6cf9f; }
+.af3d__tip-status--sold { color: #efb5ae; }
+
+/* ---------- card ---------- */
+.af3d__card {
+  top: var(--af3d-gap); right: var(--af3d-gap); bottom: calc(var(--af3d-gap) + 96px);
+  width: min(380px, 34vw); padding: 22px 22px 20px; overflow-y: auto; overscroll-behavior: contain;
+}
+.af3d__close {
+  position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; background: none;
+  font-size: 1.6rem; line-height: 1; color: var(--af3d-muted); cursor: pointer; border-radius: 3px;
+}
+.af3d__close:hover { background: var(--grey-light); color: var(--af3d-text); }
+.af3d__eyebrow { margin: 0; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--chess-label, #7a5f2e); }
+.af3d__title { margin: 4px 0 8px; font-family: var(--serif); font-weight: 400; font-size: 2.1rem; line-height: 1.1; }
+.af3d__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 0 14px; font-size: 0.92rem; color: var(--af3d-muted); }
+.af3d__status { padding: 4px 10px; border-radius: 3px; font-size: 0.8rem; font-weight: 600; color: #fff; background: var(--chess-unavailable, #9a9a9a); }
+.af3d__status--active { background: var(--chess-active, #1c4e89); }
+.af3d__status--booked { background: var(--chess-booked, #9a7a3c); }
+.af3d__status--sold { background: var(--chess-sold, #a3433a); }
+.af3d__status--reserved { background: var(--chess-reserved, #6a5a8c); }
+.af3d__price { margin: 0 0 14px; font-family: var(--serif); font-size: 1.6rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.af3d__price span { font-family: var(--body); font-size: 0.86rem; color: var(--af3d-muted); }
+.af3d__areas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 6px; }
+.af3d__areas div { padding: 10px 12px; background: var(--cream-2, #f6f5f4); border-radius: 3px; }
+.af3d__areas dt { font-size: 0.78rem; color: var(--af3d-muted); }
+.af3d__areas dd { margin: 2px 0 0; font-size: 1.02rem; font-weight: 600; }
+
+.af3d__block { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--af3d-line); }
+.af3d__block h3 { margin: 0 0 6px; font: 600 0.86rem/1.35 var(--body); color: var(--af3d-text); text-wrap: balance; }
+.af3d__sun-total { margin: 0 0 10px; font-family: var(--serif); font-size: 1.3rem; }
+.af3d__sunbar { position: relative; height: 10px; margin: 0 0 22px; border-radius: 5px; background: #e4e7ec; }
+.af3d__sunbar i { position: absolute; top: 0; bottom: 0; background: #e9b44c; border-radius: 5px; }
+.af3d__sunbar b { position: absolute; top: -4px; width: 2px; height: 18px; margin-left: -1px; background: var(--graphite); }
+.af3d__sunbar em { position: absolute; top: 14px; transform: translateX(-50%); font-style: normal; font-size: 0.74rem; color: var(--af3d-muted); }
+.af3d__note { margin: 6px 0 0; font-size: 0.78rem; line-height: 1.45; color: var(--af3d-muted); }
+.af3d__views { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.af3d__view { padding: 0; border: 0; background: none; text-align: left; cursor: zoom-in; font: inherit; color: inherit; }
+.af3d__view img { display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; border-radius: 3px; }
+.af3d__view span { display: block; margin-top: 5px; font-size: 0.8rem; color: var(--af3d-muted); }
+.af3d__view:hover img { filter: brightness(1.06); }
+/* the actions stay pinned to the bottom of the card: walking through is the main thing to do */
+.af3d__actions {
+  position: sticky; bottom: -20px; z-index: 1; display: grid; gap: 10px;
+  margin: 18px -22px -20px; padding: 14px 22px 18px;
+  background: var(--af3d-panel); border-top: 1px solid var(--af3d-line);
+  box-shadow: 0 -10px 22px rgba(255, 255, 255, 0.9);
+}
+.af3d__plan-link { display: inline-block; margin-top: 10px; }
+.af3d__walk.btn { padding: 15px 20px; }
+.af3d__secondary {
+  padding: 13px 20px; border: 1px solid var(--navy); background: #fff; color: var(--navy); cursor: pointer;
+  font: 600 0.78rem/1.2 var(--body); letter-spacing: 0.16em; text-transform: uppercase; border-radius: 0;
+}
+.af3d__secondary:hover { background: var(--navy); color: #fff; }
+.af3d__link { justify-self: start; padding: 4px 0; border: 0; background: none; color: var(--navy); font: inherit; font-size: 0.9rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.af3d__cta-note { margin: 0; padding: 12px; text-align: center; background: var(--cream-2, #f6f5f4); font-size: 0.9rem; }
+
+/* ---------- time of day ---------- */
+.af3d__time {
+  left: 50%; bottom: var(--af3d-gap); transform: translateX(-50%);
+  width: min(620px, calc(100% - 2 * var(--af3d-gap))); padding: 10px 14px 8px;
+}
+.af3d.has-card .af3d__time { left: calc((100% - min(380px, 34vw) - var(--af3d-gap)) / 2); width: min(560px, calc(100% - min(380px, 34vw) - 3 * var(--af3d-gap))); }
+.af3d__seasons { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.af3d__seasons button, .af3d__styles button {
+  padding: 6px 11px; border: 1px solid transparent; border-radius: 3px; background: none; cursor: pointer;
+  font: 500 0.84rem/1.2 var(--body); color: var(--af3d-text);
+}
+.af3d__seasons button:hover, .af3d__styles button:hover { background: var(--cream-2, #f6f5f4); }
+.af3d__seasons button[aria-pressed="true"], .af3d__styles button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+.af3d__styles button:disabled { opacity: 0.45; cursor: default; background: none; }
+.af3d__clock-row { display: flex; align-items: center; gap: 12px; }
+.af3d__play {
+  flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--af3d-line); background: #fff; cursor: pointer; position: relative;
+}
+.af3d__play::before { content: ""; position: absolute; left: 13px; top: 10px; width: 10px; height: 14px; background: var(--graphite); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.af3d__play.is-playing::before { left: 11px; width: 4px; clip-path: none; box-shadow: 7px 0 0 var(--graphite); }
+.af3d__range { flex: 1; display: flex; }
+.af3d__range input { width: 100%; accent-color: var(--navy); }
+.af3d__clock { margin: 0; white-space: nowrap; font-size: 0.86rem; color: var(--af3d-muted); }
+.af3d__clock b { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; color: var(--af3d-text); }
+
+/* подсказка в свободном правом верхнем углу; с открытой карточкой не нужна */
+.af3d__hint {
+  position: absolute; z-index: 2; right: var(--af3d-gap); top: var(--af3d-gap); margin: 0;
+  max-width: 300px; padding: 8px 12px; background: rgba(255, 255, 255, 0.92); border-radius: 3px;
+  font-size: 0.8rem; line-height: 1.45; color: var(--af3d-muted);
+}
+.af3d.has-card .af3d__hint { display: none; }
+.af3d[data-mode="walk"] .af3d__hint { top: auto; right: auto; left: var(--af3d-gap); bottom: var(--af3d-gap); }
+.af3d[data-mode="walk"] .af3d__labels { display: none; }
+@media (max-width: 1260px) {
+  .af3d[data-mode="walk"] .af3d__hint { display: none; }
+}
+
+/* ---------- walk ---------- */
+/* left/right + auto margins: with left: 50% the bar only gets half the width and wraps */
+.af3d__walkbar {
+  top: var(--af3d-gap); left: var(--af3d-gap); right: var(--af3d-gap); margin: 0 auto; width: max-content;
+  display: flex; align-items: center; gap: 14px; padding: 8px 10px; max-width: calc(100% - 2 * var(--af3d-gap));
+}
+.af3d__exit { padding: 8px 12px; border: 1px solid var(--af3d-line); border-radius: 3px; background: #fff; cursor: pointer; font: 500 0.88rem var(--body); color: var(--af3d-text); white-space: nowrap; }
+.af3d__exit:hover { border-color: var(--graphite); }
+.af3d__walk-title { margin: 0; font-family: var(--serif); font-size: 1.15rem; white-space: nowrap; }
+.af3d__walk-title span { font-family: var(--body); font-size: 0.82rem; color: var(--af3d-muted); margin-left: 6px; }
+.af3d__styles { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.af3d__styles-label { font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--chess-label, #7a5f2e); margin-right: 4px; }
+.af3d[data-mode="walk"] .af3d__crumb { display: none; }
+.af3d[data-mode="walk"] .af3d__hint { max-width: 330px; }
+
+/* ---------- lightbox ---------- */
+.af3d__lightbox {
+  position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center;
+  padding: 56px 24px 24px; background: rgba(20, 22, 26, 0.88);
+}
+.af3d__lightbox[hidden] { display: none; }
+.af3d__lightbox figure { margin: 0; max-width: min(1400px, 100%); }
+.af3d__lightbox img { display: block; max-width: 100%; max-height: calc(100svh - 140px); margin: 0 auto; background: #fff; }
+.af3d__lightbox figcaption { margin-top: 10px; color: #fff; text-align: center; font-size: 0.92rem; }
+.af3d__lightbox-close { position: absolute; top: 14px; right: 18px; width: 44px; height: 44px; border: 0; background: none; color: #fff; font-size: 2rem; cursor: pointer; }
+
+/* ---------- focus ---------- */
+.af3d button:focus-visible, .af3d input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 860px) {
+  .af3d { min-height: 480px; }
+  .af3d__crumb { top: 10px; left: 10px; right: 10px; padding: 2px 4px; font-size: 0.86rem; }
+  .af3d__floors-wrap {
+    top: 58px; left: 10px; right: 10px; width: auto; padding: 6px; display: flex; align-items: center;
+  }
+  .af3d__floors-title, .af3d__legend { display: none; }
+  .af3d__floors { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .af3d__floor { grid-template-columns: auto; grid-template-rows: auto; padding: 6px 10px; justify-items: center; row-gap: 3px; }
+  .af3d__floor-num { grid-row: auto; font-size: 1.1rem; }
+  .af3d__floor-free { display: none; }
+  .af3d__floor-dots { gap: 3px; }
+  .af3d__floor-dots .af3d__dot { width: 6px; height: 6px; }
+  .af3d__card {
+    top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 64%;
+    border-radius: 10px 10px 0 0; padding: 18px 16px 16px; box-shadow: 0 -10px 34px rgba(30, 36, 44, 0.16);
+  }
+  .af3d__actions { bottom: -16px; margin: 16px -16px -16px; padding: 12px 16px 14px; grid-template-columns: 1fr 1fr; }
+  .af3d__actions .af3d__cta-note { grid-column: 1 / -1; }
+  .af3d.has-card .af3d__time, .af3d.has-card .af3d__hint { display: none; }
+  .af3d__time { width: calc(100% - 20px); bottom: 10px; padding: 8px 10px 6px; }
+  .af3d__seasons { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .af3d__seasons button { white-space: nowrap; }
+  .af3d__hint, .af3d[data-mode="walk"] .af3d__hint { display: block; top: auto; bottom: 118px; left: 10px; right: 10px; max-width: none; }
+  .af3d__walkbar { top: 10px; left: 10px; right: 10px; width: auto; flex-wrap: wrap; gap: 8px; }
+  .af3d__walk-title span { display: none; }
+  .af3d__styles { flex-wrap: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; }
+  .af3d__styles button { white-space: nowrap; }
+  .af3d__styles-label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .af3d *, .af3d *::before { transition: none !important; }
+}

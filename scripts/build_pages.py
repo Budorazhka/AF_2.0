@@ -63,7 +63,7 @@ INCLUDE_RE = re.compile(r'<!--#\s*include\s+virtual="([^"]+)"\s*-->', re.IGNOREC
 ATTR_RE = re.compile(r'(?<![\w-])(href|src|data-src|data-bg|data-fallback|content)="(/[^"]*)"')
 CSS_URL_RE = re.compile(r'url\((["\']?)(/assets/[^)"\']*)\1\)')
 
-ROUTE_PATHS = {"/", "/location", "/architecture", "/infrastructure", "/flats", "/contacts"}
+ROUTE_PATHS = {"/", "/location", "/architecture", "/infrastructure", "/flats", "/contacts", "/flats-3d"}
 SITE_PREFIXES = ("/css/", "/js/", "/assets/")
 
 CANONICAL_RE = re.compile(r'(<link rel="canonical" href=")([^"]*)(")')
@@ -76,6 +76,7 @@ PAGES = [
     "infrastructure.html",
     "flats.html",
     "flats-chess.html",
+    "flats-3d.html",
     "contacts.html",
 ]
 

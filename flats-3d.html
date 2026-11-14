@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#14181b" />
+  <title data-i18n="Выбор резиденции в 3D — Aurum Fort">Выбор резиденции в 3D — Aurum Fort</title>
+  <meta name="description" data-i18n-attr="content:Дом Aurum Fort в 3D на склоне Гонио: этажи и квартиры по статусам, часы прямого солнца в окнах, вид с дрона и прогулка по квартире с вариантами ремонта." content="Дом Aurum Fort в 3D на склоне Гонио: этажи и квартиры по статусам, часы прямого солнца в окнах, вид с дрона и прогулка по квартире с вариантами ремонта." />
+  <link rel="canonical" href="/flats-3d" />
+  <link rel="icon" href="/assets/img/favicon.ico" sizes="any" />
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" data-i18n-attr="content:Выбор резиденции в 3D — Aurum Fort" content="Выбор резиденции в 3D — Aurum Fort" />
+  <meta property="og:description" data-i18n-attr="content:Этажи, квартиры, солнце в окнах и прогулка по резиденции в 3D." content="Этажи, квартиры, солнце в окнах и прогулка по резиденции в 3D." />
+  <meta property="og:image" content="/assets/img/og/og-flats.jpg" />
+  <meta property="og:url" content="/flats-3d" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@400;500;600&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css?v=69" />
+  <!-- css/flats-3d.css подключает js/flats-3d-boot.js: Barba не трогает head -->
+
+  <!-- i18n: словари KA и EN грузятся ДО движка, движок ДО main.js -->
+  <script src="/js/i18n-ka.js?v=12"></script>
+  <script src="/js/i18n-en.js?v=12"></script>
+  <script src="/js/i18n.js?v=2"></script>
+</head>
+<body>
+  <!--# include virtual="/partials/top.html" -->
+
+  <main data-barba="container" data-barba-namespace="flats-3d" data-chapter-next-title="Шахматка квартир" data-chapter-next-href="/flats-chess" data-i18n-attr="data-chapter-next-title:Шахматка квартир">
+    <h1 class="af3d__sr" data-i18n="Выбор резиденции в 3D">Выбор резиденции в 3D</h1>
+    <!-- Сцену и интерфейс строит js/flats-3d/app.js -->
+    <section id="af3d" aria-label="Дом Aurum Fort в 3D" data-i18n-attr="aria-label:Дом Aurum Fort в 3D">
+      <p data-af3d-status style="padding: 140px 24px; text-align: center;" data-i18n="Загружаем 3D-модель дома…">Загружаем 3D-модель дома…</p>
+      <noscript><p style="padding: 0 24px 80px; text-align: center;">Для 3D-модели нужен JavaScript. Квартиры также доступны в <a href="/flats-chess">шахматке</a>.</p></noscript>
+    </section>
+  </main>
+
+  <!--# include virtual="/partials/bottom.html" -->
+</body>
+</html>

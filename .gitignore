@@ -45,3 +45,7 @@ aurum-handoff-backup-img/
 media/
 tmp/
 _extract.txt
+
+# Рабочий кэш склейки и дорисовки панорам (apartment-3d/panorama.py, pano_fill.py):
+# кадры, маски, сгенерированные виды. На сайт идут только assets/residences/views/pano-N.webp
+/apartment-3d/pano-work/
