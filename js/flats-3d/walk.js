@@ -224,7 +224,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     parent = p;
     model = prepare(src);
     // 1 cm above the building's slab so the two floor surfaces do not flicker
-    model.position.set(offset[0], floorY + 0.01, offset[1]);
+    model.position.set(offset[0], floorY + 0.03, offset[1]);
     parent.add(model);
     parent.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(model);

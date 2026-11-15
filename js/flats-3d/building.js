@@ -104,7 +104,8 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     const add = (parent, m) => { if (m) { m.userData.level = lv.level; parent.add(m); } return m; };
     // on the flats' floors the slab edge is the white lower band of the frames; the podium is graphite
     const slabColours = { top: 0xe7e4de, side: lv.kind === 'residential' ? 0xe9e9e5 : 0x3a404a };
-    add(g, mesh(boxes(lv.slab, y, SLAB, slabColours), mats.slab));
+    L.slabColours = slabColours;
+    L.slabMesh = add(g, mesh(boxes(lv.slab, y, SLAB, slabColours), mats.slab));
     if (lv.kind === 'spa') {
       // the podium's roof is the lobby-level terrace around the tower
       add(g, mesh(boxes(lv.slab, y + lv.height - SLAB, SLAB, slabColours), mats.slab));
@@ -287,7 +288,11 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     for (const L of levels) {
       const opened = focus !== null && L.level === focus;
       const hidden = focus !== null && L.level > focus;
-      L.group.visible = !hidden;
+      // inside a flat only its own floor and the one above stay (the overhang): the crude
+      // slabs of the floors below and of the podium would show up as grey plates under the
+      // balcony, where the photograph is supposed to be
+      const walkHidden = walkPatch && L.level !== walkPatch.L.level && L.level !== walkPatch.L.level + 1;
+      L.group.visible = !hidden && !walkHidden;
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
       if (L.plan) L.plan.visible = opened;
       if (L.glow) L.glow.visible = focus === null && hover === L.level;
@@ -384,12 +389,22 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     swap(L.shell, L.data.shell || [], mats.shell);
     swap(L.columns, L.data.columns, mats.column);
     swap(L.commonGlass, L.data.glass.filter((r) => r[4] < 0), mats.glass);
+    // The floor slab of the massing lies 1 cm above the model's thin balcony slab and hides
+    // its tiles (seen from the balcony as a flat grey plate with ragged edges): under the
+    // flat and its balcony the model's own floor shows instead.
+    if (L.slabMesh) {
+      L.slabMesh.visible = false;
+      hidden.push(L.slabMesh);
+      const m = mesh(boxes(L.data.slab.flatMap(pieces).filter(keepOut), L.y0, SLAB, L.slabColours), mats.slab);
+      if (m) { L.group.add(m); meshes.push(m); }
+    }
     // other flats' glazing on this floor stays, minus anything over this flat's balcony
     const others = L.data.glass.filter((r) => r[4] >= 0 && L.units[r[4]] !== unit).flatMap(pieces).filter(keepOut);
     const glass = mesh(boxes(others, 0, L.full), mats.glass);
     if (glass) { L.vert.add(glass); meshes.push(glass); }
     L.units.forEach((u) => { if (u.glass && u !== unit) { u.glass.visible = false; hidden.push(u.glass); } });
     walkPatch = { L, unit, meshes, hidden };
+    paint();
   }
 
   paint();
