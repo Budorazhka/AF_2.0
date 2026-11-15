@@ -60,6 +60,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   let furniture = true;
   let walkable = [];           // floor triangles in model space [ax, az, bx, bz, cx, cz]
   let blockers = [];           // AABBs in model space [x0, z0, x1, z1]
+  let furnBlockers = [];       // tall furniture: [x0, z0, x1, z1, mesh]; only counts while the mesh is shown
   const yaw = { v: 0 }, pitch = { v: -0.05 };
   const keys = new Set();
   let glide = null;
@@ -122,6 +123,16 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
       if (bb.min.y > 1.0 || bb.max.y < 0.3) return;           // lintels, sills, fascia bands
       blockers.push([bb.min.x, bb.min.z, bb.max.x, bb.max.z]);
     });
+    // Tall floor-standing furniture (fridge, wardrobe, cabinets, sofa backs, tables) stops the
+    // walker; without this the camera ended up inside a black fridge. Low things (beds, rugs)
+    // and door leaves stay walk-through.
+    furnBlockers = [];
+    g.traverse((o) => {
+      if (!o.isMesh || !o.userData.af || o.userData.af.group !== 'furniture' || /door/i.test(o.name)) return;
+      const bb = o.geometry.boundingBox;
+      if (bb.max.y < 0.6 || bb.min.y > 0.9 || (bb.max.x - bb.min.x) * (bb.max.z - bb.min.z) < 0.06) return;
+      furnBlockers.push([bb.min.x, bb.min.z, bb.max.x, bb.max.z, o]);
+    });
     return g;
   }
 
@@ -159,6 +170,11 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
       const dx = Math.max(b[0] - x, 0, x - b[2]), dz = Math.max(b[1] - z, 0, z - b[3]);
       if (dx * dx + dz * dz < RADIUS * RADIUS) return false;
     }
+    for (const b of furnBlockers) {
+      if (!b[4].visible) continue;
+      const dx = Math.max(b[0] - x, 0, x - b[2]), dz = Math.max(b[1] - z, 0, z - b[3]);
+      if (dx * dx + dz * dz < 0.12 * 0.12) return false;
+    }
     return true;
   }
   function moveBy(dx, dz) {
@@ -181,9 +197,12 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     });
     local.set((best.min.x + best.max.x) / 2, 0, (best.min.z + best.max.z) / 2);
     if (!free(local.x, local.z)) {
-      for (let r = 0.2; r < 3; r += 0.2) {
-        const hit = [[r, 0], [-r, 0], [0, r], [0, -r]].find(([dx, dz]) => free(local.x + dx, local.z + dz));
-        if (hit) { local.x += hit[0]; local.z += hit[1]; break; }
+      // nearest free spot, searched in rings round the middle of the room
+      search: for (let r = 0.2; r < 4; r += 0.2) {
+        for (let a = 0; a < 16; a++) {
+          const dx = r * Math.cos((a * Math.PI) / 8), dz = r * Math.sin((a * Math.PI) / 8);
+          if (free(local.x + dx, local.z + dz)) { local.x += dx; local.z += dz; break search; }
+        }
       }
     }
     yaw.v = facingWorld;
@@ -205,7 +224,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     parent = p;
     model = prepare(src);
     // 1 cm above the building's slab so the two floor surfaces do not flicker
-    model.position.set(offset[0], floorY + 0.01, offset[1]);
+    model.position.set(offset[0], floorY + 0.03, offset[1]);
     parent.add(model);
     parent.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(model);
