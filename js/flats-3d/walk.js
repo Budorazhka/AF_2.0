@@ -8,7 +8,7 @@
    as outside. */
 import * as THREE from './three.js';
 import { GLTFLoader } from './three.js';
-import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js';
+import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
 
 const EYE = 1.6;
 const CEILING = 2.8;
@@ -31,8 +31,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   const loader = new GLTFLoader();
   const glbCache = new Map();
-  const railGlass = new THREE.MeshStandardMaterial({ color: 0xc9dbe3, roughness: 0.05, transparent: true, opacity: 0.18, depthWrite: false });
-  const lamp = new THREE.PointLight(0xffd6a0, 0, 14, 1.4);   // evening light inside
+  const railGlass = new THREE.MeshStandardMaterial({ color: 0xaecad8, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
+  const lamp = new THREE.PointLight(0xffd6a0, 1.2, 16, 1.3);   // warm interior light
+  const fillLight = new THREE.HemisphereLight(0xfffbf4, 0xd8cfc2, 0.42);
 
   let model = null, parent = null;
   const sphere = new THREE.Mesh(
@@ -70,7 +71,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   function loadGlb(slug) {
     if (!glbCache.has(slug)) {
-      glbCache.set(slug, new Promise((resolve, reject) => loader.load(assetUrl(slug, 'apartment.glb'), (g) => resolve(g.scene), undefined, reject)));
+      const url = assetUrl(slug, 'apartment.glb');
+      const vUrl = url + (url.includes('?') ? '&' : '?') + 'v=19';
+      glbCache.set(slug, new Promise((resolve, reject) => loader.load(vUrl, (g) => resolve(g.scene), undefined, reject)));
     }
     return glbCache.get(slug);
   }
@@ -119,8 +122,10 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     g.traverse((o) => {
       if (!o.isMesh || !o.userData.af) return;
       if (!['walls', 'glazing', 'rail', 'facade'].includes(o.userData.af.group)) return;
+      if (/open/i.test(o.name)) return;
       const bb = o.geometry.boundingBox;
-      if (bb.min.y > 1.0 || bb.max.y < 0.3) return;           // lintels, sills, fascia bands
+      const fixedWindowBase = o.userData.af.group === 'glazing' && / base$/i.test(o.name) && !/door|slider|window/i.test(o.name);
+      if (bb.min.y > 1.0 || (bb.max.y < 0.3 && !fixedWindowBase)) return;           // lintels, sills, fascia bands
       blockers.push([bb.min.x, bb.min.z, bb.max.x, bb.max.z]);
     });
     // Tall floor-standing furniture (fridge, wardrobe, cabinets, sofa backs, tables) stops the
@@ -145,7 +150,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
       const m = styled && role && materialFor(style, role, renderer);
       // the model's dark railing glass reads as a blue band across the view; real balustrade glass is clear
       o.material = group === 'rail' && role === 'blue_glass' ? railGlass : m || original || materialFor(style, 'wall', renderer);
-      if (group === 'furniture') o.visible = furniture && style.furniture;
+      if (group === 'furniture') o.visible = (furniture && style.furniture) || /Entrance open door/i.test(o.name);
     });
   }
 
@@ -229,6 +234,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     parent.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(model);
     model.add(lamp);
+    model.add(fillLight);
     applyStyle();
     // azimuth → camera yaw: yaw 0 looks north (-Z) and grows anticlockwise
     spawn(facingAz != null ? (-facingAz * Math.PI) / 180 : 0);
@@ -250,9 +256,10 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   function setSun(dir, altitude) {
     const day = THREE.MathUtils.smoothstep(altitude, -0.1, 0.25);
-    lamp.intensity = 7 * (1 - day);
+    lamp.intensity = 1.2 + 5.8 * (1 - day);
+    fillLight.intensity = 0.25 + 0.22 * day;
     sphere.material.color.setScalar(0.18 + 0.82 * day);
-    renderer.toneMappingExposure = 0.62 + 0.2 * day;
+    renderer.toneMappingExposure = 0.66 + 0.2 * day;
   }
 
   function update(dt) {
@@ -317,7 +324,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     clearKeys() { keys.clear(); glide = null; },
     resize(w, h) { camera.aspect = w / h; camera.updateProjectionMatrix(); },
     dispose() {
-      exit(); railGlass.dispose(); lamp.dispose();
+      exit(); railGlass.dispose(); lamp.dispose(); fillLight.dispose();
       sphere.geometry.dispose(); sphere.material.dispose();
       panoCache.forEach((p) => p.then((t) => t.dispose()).catch(() => {}));
     },

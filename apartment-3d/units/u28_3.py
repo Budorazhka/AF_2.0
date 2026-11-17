@@ -34,8 +34,8 @@ def build():
     s.rect('Studio floor east', 3.56, 1.50, 5.80, 6.00, 0.16, 'floor', -0.16, 'floor')
     s.slab('Wardrobe alcove floor', [(0.58, 0.00), (1.80, 0.00), (1.80, 1.40), (0.00, 1.40), (0.00, 0.59)],
            -0.16, 0.16, 'floor')
-    s.rect('Bathroom tile floor', 3.56, 0.00, 5.80, 1.50, 0.16, 'tile', -0.16, 'floor')
-    s.slab('Balcony slab', [(4.00, 6.20), (5.80, 6.20), (5.80, 7.65), (4.00, 7.06)], -0.20, 0.18, 'tile')
+    s.rect('Bathroom tile floor', 3.36, 0.00, 5.80, 1.50, 0.16, 'tile', -0.16, 'floor')
+    s.slab('Balcony slab', [(4.00, 6.00), (5.80, 6.00), (5.80, 7.65), (4.00, 7.06)], -0.20, 0.18, 'tile')
 
     # -- structure -------------------------------------------------------
     s.column('NE Column', 5.60, -0.20, 6.00, 0.20)
@@ -45,18 +45,18 @@ def build():
     s.wall('North wall west', 0.58, -0.20, 2.00, 0.00)
     s.lintel('Entrance lintel', 2.00, -0.20, 2.93, 0.00)
     s.wall('North wall east', 2.93, -0.20, 5.60, 0.00)
-    s.door_leaf('Entrance open door', 2.02, 0.00, 2.06, 0.90)
+    s.door_leaf('Entrance open door', 1.99, -0.10, 2.94, 0.00)
 
     # chamfered north-west corner
-    s.slab('Chamfer wall', [(0.00, 0.59), (0.58, 0.00), (0.58, -0.20), (-0.20, 0.72)], 0.0, CEILING, 'wall', 'walls')
+    s.slab('Chamfer wall', [(0.00, 0.72), (0.00, 0.59), (0.58, 0.00), (0.58, -0.20), (-0.20, 0.59), (-0.20, 0.72)], 0.0, CEILING, 'wall', 'walls')
     s.wall('West alcove wall', -0.20, 0.72, 0.00, 1.40)
-    s.wall('Alcove south wall', 0.00, 1.40, 1.80, 1.60)
+    s.wall('Alcove south wall', -0.20, 1.40, 1.80, 1.60)
     s.wall('West party wall', 1.60, 1.60, 1.80, 6.00)
 
     s.wall('East wall north', 5.80, 0.00, 6.00, 1.70)
     s.wall('East shaft wall', 5.40, 1.70, 6.00, 2.20)
     s.wall('East wall south', 5.80, 2.20, 6.00, 5.80)
-    s.wall('South wall west', 1.80, 6.00, 1.90, 6.20)
+    s.wall('South wall west', 1.60, 6.00, 1.90, 6.20)
 
     # bathroom shell, door in its west wall at 0.00..0.87
     s.lintel('Bathroom door lintel', 3.36, 0.00, 3.56, 0.87)
@@ -65,16 +65,19 @@ def build():
     s.door_leaf('Bathroom open door', 3.58, 0.02, 4.42, 0.06, 'white')
 
     # -- glazing ---------------------------------------------------------
-    s.glazing('South glazing', 1.90, 6.05, 5.60, 6.15, mullions=[1.90, 2.85, 3.80, 4.70, 5.56])
-    s.rect('Balcony open door', 5.58, 5.30, 5.62, 6.05, 2.20, 'metal', group='glazing')
+    s.glazing('South glazing', 1.90, 6.05, 4.74, 6.15, mullions=[1.90, 2.85, 3.80, 4.70])
+    s.lintel('Balcony door lintel', 4.70, 6.00, 5.60, 6.20)
+    s.glazed_door_leaf('Balcony open door', 5.54, 5.26, 5.58, 5.98, 'metal')
 
     for x0, x1 in [(4.10, 5.05), (5.15, 5.75)]:
         z0 = 7.06 + (x0 - 4.00) / 1.80 * 0.59
         z1 = 7.06 + (x1 - 4.00) / 1.80 * 0.59
         s.glass_panel('Balcony glass', [(x0, z0), (x1, z1), (x1, z1 + 0.02), (x0, z0 + 0.02)])
-    s.glass_panel('Balcony side glass', [(4.02, 6.30), (4.04, 6.30), (4.04, 7.05), (4.02, 7.05)])
+    s.glass_panel('Balcony side glass', [(4.02, 6.22), (4.04, 6.22), (4.04, 7.05), (4.02, 7.05)])
+    s.glass_panel('Balcony east side glass', [(5.76, 6.22), (5.78, 6.22), (5.78, 7.64), (5.76, 7.64)])
     s.slab('Balcony handrail', [(4.05, 7.08), (5.78, 7.65), (5.78, 7.68), (4.05, 7.11)], 1.10, 0.025, 'metal', 'rail')
-    s.rect('Balcony side rail', 4.00, 6.30, 4.06, 7.08, 0.025, 'metal', 1.10, 'rail')
+    s.rect('Balcony side rail', 4.00, 6.20, 4.06, 7.08, 0.025, 'metal', 1.10, 'rail')
+    s.rect('Balcony east side rail', 5.74, 6.20, 5.80, 7.65, 0.025, 'metal', 1.10, 'rail')
 
     s.slab('White balcony fascia', [(3.95, 7.02), (5.82, 7.63), (5.82, 7.77), (3.95, 7.16)], -0.24, 0.24, 'white', 'facade')
     s.slab('Balcony soffit', [(3.95, 7.02), (5.82, 7.63), (5.82, 7.77), (3.95, 7.16)], CEILING, 0.24, 'white', 'facade')

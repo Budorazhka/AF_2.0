@@ -37,10 +37,10 @@ export function groundHeight(x, z) {
   h += 750 * (1 - Math.exp(-m / 750));                   // mountains behind, capped like the real ridge
   h += 70 * smooth(260, 900, z) * smooth(-900, -100, x); // ridge down to the sea south of the house
   h += smooth(0, 80, d) * (7 * Math.sin(x / 83 + z / 140) + 5 * Math.sin(z / 61 - x / 230) + 3 * Math.sin((x + z) / 37));
-  // building terrace cut into the slope; the spa podium opens to the west
+  // building terrace cut into the slope; the spa podium, pool deck and playground open to the west (y = -4.6)
   const r = Math.hypot(x, z);
-  const pad = 1 - smooth(26, 75, r);
-  return h * (1 - pad) + (-0.35 - 4.2 * smooth(-8, -26, x)) * pad;
+  const pad = 1 - smooth(32, 82, r);
+  return h * (1 - pad) + (-0.25 - 4.45 * smooth(6, -8, x)) * pad;
 }
 
 /* -- relief ------------------------------------------------------------------ */
@@ -51,7 +51,7 @@ function relief() {
   const map = (u) => Math.sign(u) * R * Math.abs(u) ** k;
   const pos = [], col = [], idx = [];
   const c = new THREE.Color();
-  const forest = new THREE.Color(0x4c6838), deep = new THREE.Color(0x3b5530), lawn = new THREE.Color(0x8e9f72);
+  const forest = new THREE.Color(0x3d5e2b), deep = new THREE.Color(0x2d4a20), lawn = new THREE.Color(0x4b6b35);
   const sand = new THREE.Color(0xd8ccb0), town = new THREE.Color(0x9a9d8e), rock = new THREE.Color(0x6b745c);
   const noise = rng(11);
   for (let j = 0; j <= n; j++) {
@@ -88,10 +88,10 @@ function relief() {
 /* Seasons: the slopes of Gonio are a mix of evergreens (laurel, pine, tea) and
    deciduous chestnut, alder and hornbeam. Only the deciduous part turns. */
 const SEASON = {
-  spring: { leaves: [0x86ad4c, 0x93b95a, 0x7aa346, 0xe9b9c9, 0xf3e7ea], ground: [0, 0.03, 0], snow: 0 },
-  summer: { leaves: [0x4a6a33, 0x56763a, 0x3c5a2c, 0x62803f], ground: [0, 0, 0], snow: 0 },
-  autumn: { leaves: [0xd7a838, 0xc9772c, 0xb98a2f, 0xa8452c, 0xe0b94a, 0x8f8a3a], ground: [0.05, 0.01, -0.03], snow: 0 },
-  winter: { leaves: [0x7d7466, 0x8a8174, 0x6f675b], ground: [0.02, -0.02, -0.02], snow: 1 },
+  spring: { leaves: [0x4c7834, 0x58863c, 0x3e682a, 0x649244, 0x457030], ground: [0, 0.02, 0], snow: 0 },
+  summer: { leaves: [0x385e26, 0x466d30, 0x2e5020, 0x527a38], ground: [0, 0, 0], snow: 0 },
+  autumn: { leaves: [0x3c6228, 0x486e30, 0x335522, 0x547c38, 0x627e36], ground: [0.01, 0.01, -0.01], snow: 0 },
+  winter: { leaves: [0x365825, 0x42642d, 0x2d4c1f], ground: [0.01, -0.01, -0.01], snow: 0.4 },
 };
 export function seasonOf(month) {
   return month <= 1 || month === 11 ? 'winter' : month <= 4 ? 'spring' : month <= 7 ? 'summer' : 'autumn';
@@ -132,11 +132,11 @@ function distToPath(x, z, path) {
   return best;
 }
 
-const GREENS = [0x3c5a2c, 0x4a6a33, 0x56763a, 0x35502a, 0x62803f, 0x456331, 0x6e8a48];
+const GREENS = [0x2f5422, 0x3b6329, 0x467231, 0x26471b, 0x527d38, 0x355c25, 0x5d8942];
 
 function forest({ keepOut, road, houses, paths = [] }) {
   const geo = treeGeometry();
-  const mat = new THREE.MeshStandardMaterial({ roughness: 0.92, flatShading: false });
+  const mat = new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: false });
   const random = rng(42);
   const place = (count, rMin, rMax, sMin, sMax) => {
     const out = [];
@@ -147,16 +147,18 @@ function forest({ keepOut, road, houses, paths = [] }) {
       const h = groundHeight(x, z);
       if (h < SEA_LEVEL + 7) continue;                                        // beach and sea
       if (z < -2600 && x - coastX(z) < 3000) continue;                         // Batumi lowland
-      if (blocked(x, z, keepOut, r < 120 ? 11 : 4)) continue;          // a garden ring round the house
-      if (distToPath(x, z, road) < 8) continue;
-      if (r < 120 && paths.some((p) => distToPath(x, z, p) < 3)) continue;
+      if (blocked(x, z, keepOut, r < 120 ? 3.5 : 3)) continue;                 // hug the podium closely like фасад 2
+      // keep the camera sightline from the west-south-west (x < -18, -14 < z < 20) open to the pool & facade
+      if (x < -18 && x > -58 && z > -14 && z < 16) continue;
+      if (distToPath(x, z, road) < 7) continue;
+      if (r < 120 && paths.some((p) => distToPath(x, z, p) < 2.8)) continue;
       if (houses.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + 3)) continue;
-      out.push({ x, y: h - 0.3, z, s: sMin + (sMax - sMin) * random(), a: random() * Math.PI * 2, c: GREENS[Math.floor(random() * GREENS.length)], deciduous: random() < 0.48, pick: random() });
+      out.push({ x, y: h - 0.3, z, s: sMin + (sMax - sMin) * random(), a: random() * Math.PI * 2, c: GREENS[Math.floor(random() * GREENS.length)], deciduous: random() < 0.35, pick: random() });
     }
     return out;
   };
-  // geometry is ~1.6 units tall: 5–10 m trees near the house, bigger canopy further off
-  const near = place(2400, 22, 330, 3.2, 6.4);
+  // geometry is ~1.6 units tall: lush 6–11 m trees right around the house, bigger canopy further off
+  const near = [...place(700, 14, 75, 3.8, 7.2), ...place(2400, 50, 340, 3.5, 6.8)];
   const far = place(4600, 330, 1400, 4.8, 8.5);
   const build = (list, shadows) => {
     const im = new THREE.InstancedMesh(geo, mat, list.length);

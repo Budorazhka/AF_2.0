@@ -36,16 +36,16 @@ def build():
     s = Scene()
 
     # -- floors ----------------------------------------------------------
-    s.rect('Bedroom 1 floor', 0.00, 0.00, 2.70, 3.64, 0.16, 'floor', -0.16, 'floor')
-    s.rect('Bathroom tile floor', 0.00, 3.84, 2.70, 5.53, 0.16, 'tile', -0.16, 'floor')
+    s.rect('Bedroom 1 floor', 0.00, 0.00, 2.85, 3.64, 0.16, 'floor', -0.16, 'floor')
+    s.rect('Bathroom tile floor', 0.00, 3.84, 2.85, 5.53, 0.16, 'tile', -0.16, 'floor')
     s.rect('Hallway floor', 2.70, 0.00, 4.32, 5.73, 0.16, 'floor', -0.16, 'floor')
     s.rect('Bedroom 2 floor', 4.32, 0.00, 7.01, 5.53, 0.16, 'floor', -0.16, 'floor')
     s.rect('Living room floor', 0.00, 5.73, 7.81, 8.71, 0.16, 'floor', -0.16, 'floor')
     s.rect('Living south bay floor', 1.80, 8.71, 7.81, 9.91, 0.16, 'floor', -0.16, 'floor')
-    s.rect('West balcony slab', -0.82, 0.21, -0.20, 1.75, 0.18, 'tile', -0.20, 'floor')
+    s.rect('West balcony slab', -0.82, 0.21, 0.00, 1.75, 0.18, 'tile', -0.20, 'floor')
     # L-shaped terrace, split so each cap stays convex
-    s.slab('Terrace slab east', [(8.01, 5.71), (9.71, 5.71), (9.11, 11.02), (8.01, 11.21)], -0.20, 0.18, 'tile')
-    s.slab('Terrace slab south', [(5.55, 10.11), (8.01, 10.11), (8.01, 11.21), (5.55, 11.62)], -0.20, 0.18, 'tile')
+    s.slab('Terrace slab east', [(7.81, 5.71), (9.71, 5.71), (9.11, 11.02), (7.81, 11.21)], -0.20, 0.18, 'tile')
+    s.slab('Terrace slab south', [(3.45, 9.91), (7.81, 9.91), (7.81, 11.21), (3.45, 11.62)], -0.20, 0.18, 'tile')
 
     # -- structure -------------------------------------------------------
     for name, x, z in [('NW', -0.20, -0.20), ('NE', 6.81, -0.20), ('West-mid', -0.20, 5.51),
@@ -56,7 +56,7 @@ def build():
     s.wall('North exterior west', 0.20, -0.20, 3.09, 0.00)
     s.lintel('Entrance lintel', 3.09, -0.20, 4.08, 0.00)
     s.wall('North exterior east', 4.08, -0.20, 6.81, 0.00)
-    s.door_leaf('Entrance open door', 3.11, 0.00, 3.15, 0.95)
+    s.door_leaf('Entrance open door', 3.08, -0.10, 4.09, 0.00)
 
     s.wall('West exterior north', -0.20, 0.20, 0.00, 0.30)
     # Photo 0075: when looking west, the door is on the RIGHT (north),
@@ -73,7 +73,7 @@ def build():
 
     s.wall('East exterior bedroom north', 7.01, 0.20, 7.21, 2.05)
     s.wall('East exterior bedroom south', 7.01, 4.78, 7.21, 5.51)
-    s.wall('Step wall', 7.21, 5.71, 7.81, 5.91)
+    s.wall('Step wall', 7.21, 5.71, 8.01, 5.91)
     s.wall('East exterior living north', 7.81, 5.91, 8.01, 6.42)
     s.lintel('Terrace slider lintel', 7.81, 6.42, 8.01, 8.22)
     s.wall('East exterior living south', 7.81, 8.22, 8.01, 9.71)
@@ -82,14 +82,14 @@ def build():
     s.lintel('Living panorama lintel', 3.52, 9.91, 7.47, 10.11)
     s.wall('South exterior east', 7.47, 9.91, 7.61, 10.11)
     s.wall('South-west return', 1.60, 8.91, 1.80, 9.71)
-    s.wall('South-west wall', 0.00, 8.71, 1.60, 8.91)
+    s.wall('South-west wall', 0.00, 8.71, 1.80, 8.91)
 
     # interior partitions
     # Photo 0077 looks towards the bathroom-side end with west windows on right:
     # the hall opening is on the left, at the SOUTH end of the east partition.
     s.wall('Bedroom 1 east wall', 2.70, 0.00, 2.85, 2.80)
     s.lintel('Bedroom 1 door lintel', 2.70, 2.80, 2.85, 3.64)
-    s.wall('Bedroom 1 south wall', 0.00, 3.64, 2.70, 3.84)
+    s.wall('Bedroom 1 south wall', -0.20, 3.64, 2.85, 3.84)
     s.door_leaf('Bedroom 1 open door', 1.88, 3.60, 2.70, 3.64)
 
     s.wall('Bathroom east wall north', 2.70, 3.84, 2.85, 4.00)
@@ -107,7 +107,8 @@ def build():
     s.glazing('Bedroom 2 panorama', 7.06, 2.05, 7.16, 4.78, mullions=[2.05, 2.94, 3.84, 4.74])
     s.glazing('Living south panorama', 3.52, 9.96, 7.47, 10.06, mullions=[3.52, 4.49, 5.47, 6.45, 7.43])
     s.rect('Living south transom', 3.52, 9.95, 7.47, 10.07, 0.045, 'dark', 2.22, 'glazing')
-    s.glazing('Terrace two-panel slider', 7.86, 6.42, 7.96, 8.22, mullions=[6.42, 7.31, 8.18])
+    s.glazing('Terrace two-panel slider', 7.86, 6.42, 7.96, 8.22, mullions=[6.42, 8.18])
+    s.glazed_door_leaf('Terrace open slider leaf', 7.81, 6.44, 7.85, 7.32, 'dark')
     def west_frame(name, z1, z2, bottom, top, divisions):
         # Local helper: unlike panorama glazing, these frames stop at their lintels.
         s.rect(name + ' base', -.15, z1, -.05, z2, .04, 'dark', bottom, 'glazing')
@@ -128,13 +129,18 @@ def build():
     s.glass_panel('West balcony north glass', [(-0.80, 0.23), (-0.22, 0.23), (-0.22, 0.25), (-0.80, 0.25)])
     s.glass_panel('West balcony south glass', [(-0.80, 1.71), (-0.22, 1.71), (-0.22, 1.73), (-0.80, 1.73)])
     s.rect('West balcony handrail', -0.84, 0.22, -0.76, 1.74, 0.025, 'metal', 1.10, 'rail')
+    s.rect('West balcony north handrail', -0.84, 0.22, -0.20, 0.27, 0.025, 'metal', 1.10, 'rail')
+    s.rect('West balcony south handrail', -0.84, 1.69, -0.20, 1.74, 0.025, 'metal', 1.10, 'rail')
     s.rect('West balcony fascia', -0.94, 0.15, -0.78, 1.81, 0.24, 'white', -0.24, 'facade')
     s.rect('West balcony soffit', -0.94, 0.15, -0.78, 1.81, 0.24, 'white', CEILING, 'facade')
 
-    # terrace rail follows the faceted edge
-    edge = [(9.71, 5.71), (9.11, 11.02), (5.55, 11.62)]
+    # terrace rail follows the full outer perimeter (north return, east, south, west return)
+    edge = [(8.01, 5.71), (9.71, 5.71), (9.11, 11.02), (3.45, 11.62), (3.45, 10.11)]
     for a, b in zip(edge, edge[1:]):
-        s.glass_panel('Terrace glass', [(a[0], a[1]), (b[0], b[1]), (b[0] - 0.03, b[1] - 0.03), (a[0] - 0.03, a[1] - 0.03)])
+        dx, dz = b[0] - a[0], b[1] - a[1]
+        length = math.hypot(dx, dz) or 1
+        nx, nz = dz / length * 0.025, -dx / length * 0.025
+        s.glass_panel('Terrace glass', [(a[0], a[1]), (b[0], b[1]), (b[0] + nx, b[1] + nz), (a[0] + nx, a[1] + nz)])
     s.band('Terrace handrail', edge, -0.04, 1.10, 0.025, 'metal', 'rail')
     s.band('Terrace white fascia', edge, 0.15, -0.24, 0.24, 'white')
     s.band('Terrace soffit', edge, 0.15, CEILING, 0.24, 'white')

@@ -12,11 +12,11 @@
    Texts go through AF_I18N.t(): the Russian string is the dictionary key. */
 import * as THREE from './three.js';
 import { OrbitControls, RoomEnvironment } from './three.js';
-import { createSite, groundHeight } from './site.js';
-import { createBuilding, STATUS_COLORS } from './building.js';
-import { createWalk } from './walk.js';
-import { createAmenities } from './amenities.js';
-import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js';
+import { createSite, groundHeight } from './site.js?v=22';
+import { createBuilding, STATUS_COLORS } from './building.js?v=22';
+import { createWalk } from './walk.js?v=22';
+import { createAmenities } from './amenities.js?v=22';
+import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=22';
 
 const t = (s) => (window.AF_I18N && window.AF_I18N.t ? window.AF_I18N.t(s) : s);
 const base = () => window.__BASE_PATH__ || '';
@@ -108,7 +108,7 @@ function createApp(el) {
 
   // -- camera moves ---------------------------------------------------------
   let fly = null;
-  const VIEW_AZ = 232;   // look at the house from the south-west: sea facade and terraces in view
+  const VIEW_AZ = 258;   // look at the house from the sea side (west-south-west), matching render фасад 2
   function orbitPose(target, distance, elevationDeg, azDeg = VIEW_AZ) {
     const az = (azDeg * Math.PI) / 180, el2 = (elevationDeg * Math.PI) / 180;
     const dir = new THREE.Vector3(Math.sin(az) * Math.cos(el2), Math.sin(el2), -Math.cos(az) * Math.cos(el2));
@@ -314,7 +314,7 @@ function createApp(el) {
     state.mode = 'overview'; state.level = null; state.unit = null;
     building.setFocus(null); building.setSelected(null); building.setHover(null);
     controls.minDistance = 30;
-    flyTo(orbitPose(new THREE.Vector3(0, 10, 0), 86, 15, keepAzimuth()));
+    flyTo(orbitPose(new THREE.Vector3(0, 8.5, 2), 76, 12, keepAzimuth()));
     renderAll();
   }
   function toFloor(level, { keepUnit = false } = {}) {
@@ -630,13 +630,13 @@ function createApp(el) {
       scene.add(building.object);
       // pool, roof restaurant, garden first: the forest has to leave room for them
       amenities = createAmenities(building, data, groundHeight);
-      building.inner.add(amenities.plan);
+      building.attachToLevel(1, amenities.plan);
       building.attachToLevel(8, amenities.roof);
       scene.add(amenities.world);
       site = createSite(scene, renderer, { keepOut: [...building.keepOut, ...amenities.keepOut], roadFrom: building.roadFrom, paths: amenities.paths });
       site.setShadowFocus(new THREE.Vector3(0, 8, 0), 60);
-      // pose before the first frame: from the sea side, slightly above the roof line
-      const start = orbitPose(new THREE.Vector3(0, 10, 0), 86, 15);
+      // pose before the first frame: from the sea side, matching the main facade render
+      const start = orbitPose(new THREE.Vector3(0, 8.5, 2), 76, 12);
       camera.position.copy(start.pos);
       controls.target.copy(start.target);
       resize();
