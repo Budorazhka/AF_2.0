@@ -72,15 +72,32 @@ class Scene:
     def door_leaf(self, name, x1, z1, x2, z2, c='wood'):
         return self.rect(name, x1, z1, x2, z2, DOOR_H, c, 0, 'furniture')
 
+    def glazed_door_leaf(self, name, x1, z1, x2, z2, c='dark', h=DOOR_H):
+        """Open glazed balcony/terrace door leaf: perimeter frame so it never reads as a solid wall."""
+        xa, xb = min(x1, x2), max(x1, x2)
+        za, zb = min(z1, z2), max(z1, z2)
+        horiz = (xb - xa) >= (zb - za)
+        self.rect(name, xa, za, xb, zb, 0.05, c, 0.02, 'glazing')
+        self.rect(name + ' top', xa, za, xb, zb, 0.05, c, h - 0.06, 'glazing')
+        if horiz:
+            self.rect(name + ' hinge', xa, za, min(xb, xa + 0.04), zb, h - 0.08, c, 0.07, 'glazing')
+            self.rect(name + ' stile', max(xa, xb - 0.04), za, xb, zb, h - 0.08, c, 0.07, 'glazing')
+        else:
+            self.rect(name + ' hinge', xa, za, xb, min(zb, za + 0.04), h - 0.08, c, 0.07, 'glazing')
+            self.rect(name + ' stile', xa, max(za, zb - 0.04), xb, zb, h - 0.08, c, 0.07, 'glazing')
+
     def slab(self, name, pts, y, h, c, group='floor'):
         n = len(pts)
+        signed = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n))
+        if signed < 0:
+            pts = list(reversed(pts))
         v = [[x, yy, z] for yy in (y, y + h) for x, z in pts]
         idx = []
         for j in range(1, n - 1):
             idx.extend([n, n + j + 1, n + j, 0, j, j + 1])
         for j in range(n):
             k = (j + 1) % n
-            idx.extend([j, k, n + k, j, n + k, n + j])
+            idx.extend([j, n + k, k, j, n + j, n + k])
         return self.mesh(name, v, idx, c, group)
 
     def band(self, name, pts, width, y, h, c, group='facade'):
@@ -127,7 +144,7 @@ class Scene:
     def clashes(self, tolerance=0.02, min_volume=0.004):
         """Furniture that pushes into structure. Catches 'a column stands in the cooktop'."""
         structural = [o for o in self.objects if o['group'] in ('walls', 'glazing')]
-        loose = [o for o in self.objects if o['group'] == 'furniture']
+        loose = [o for o in self.objects if o['group'] == 'furniture' and o['name'] != 'Entrance open door']
         out = []
         for a in loose:
             ax0, ay0, az0, ax1, ay1, az1 = self.bounds(a)
@@ -144,7 +161,7 @@ class Scene:
         """Furniture whose centre falls outside the habitable footprint polygons."""
         out = []
         for o in self.objects:
-            if o['group'] != 'furniture':
+            if o['group'] != 'furniture' or o['name'] == 'Entrance open door':
                 continue
             x0, _, z0, x1, _, z1 = self.bounds(o)
             cx, cz = (x0 + x1) / 2, (z0 + z1) / 2

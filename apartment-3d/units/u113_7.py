@@ -4,6 +4,8 @@ Interior outline from the VI floor plan: 0.00..8.41 x 0.00..8.00 with the corrid
 biting a 1.00 x 2.00 notch out of the north-west corner. The terrace wraps the whole
 east side and returns along the south; the small balcony belongs to the west bedroom.
 """
+import math
+
 from lib import Scene, CEILING
 
 UNIT = dict(
@@ -32,16 +34,16 @@ def build():
     s = Scene()
 
     # -- floors ----------------------------------------------------------
-    s.rect('Entrance hall floor', 1.00, 0.00, 4.20, 1.80, 0.16, 'floor', -0.16, 'floor')
+    s.rect('Entrance hall floor', 1.00, 0.00, 4.40, 2.00, 0.16, 'floor', -0.16, 'floor')
     s.rect('Bedroom 1 floor', 4.40, 0.00, 8.41, 3.02, 0.16, 'floor', -0.16, 'floor')
-    s.rect('Bathroom tile floor', 0.00, 2.00, 2.84, 4.02, 0.16, 'tile', -0.16, 'floor')
-    s.rect('Bedroom 2 floor', 0.00, 4.22, 2.84, 8.00, 0.16, 'floor', -0.16, 'floor')
+    s.rect('Bathroom tile floor', 0.00, 2.00, 3.04, 4.02, 0.16, 'tile', -0.16, 'floor')
+    s.rect('Bedroom 2 floor', 0.00, 4.22, 3.04, 8.00, 0.16, 'floor', -0.16, 'floor')
     s.rect('Hall floor', 2.84, 1.80, 4.40, 3.22, 0.16, 'floor', -0.16, 'floor')
     s.rect('Living room floor', 3.04, 3.22, 8.41, 8.00, 0.16, 'floor', -0.16, 'floor')
-    s.slab('Balcony slab', [(0.00, 8.20), (4.03, 8.20), (4.03, 9.30), (0.00, 9.14)], -0.20, 0.18, 'tile')
+    s.slab('Balcony slab', [(0.00, 8.00), (4.03, 8.00), (4.03, 9.30), (0.00, 9.14)], -0.20, 0.18, 'tile')
     # L-shaped terrace, split so each cap stays convex
-    s.slab('Terrace slab east', [(8.61, -0.20), (12.62, -0.20), (12.62, 9.11), (8.61, 9.55)], -0.20, 0.18, 'tile')
-    s.slab('Terrace slab south', [(4.21, 8.20), (8.61, 8.20), (8.61, 9.55), (4.21, 9.11)], -0.20, 0.18, 'tile')
+    s.slab('Terrace slab east', [(8.41, -0.20), (12.62, -0.20), (12.62, 9.11), (8.41, 9.55)], -0.20, 0.18, 'tile')
+    s.slab('Terrace slab south', [(4.21, 8.00), (8.41, 8.00), (8.41, 9.55), (4.21, 9.11)], -0.20, 0.18, 'tile')
 
     # -- structure -------------------------------------------------------
     for name, x, z in [('NW', -0.40, -0.20), ('N-Mid', 4.01, -0.20), ('NE', 8.21, -0.20),
@@ -49,43 +51,43 @@ def build():
                        ('SW', -0.40, 7.81), ('S-Mid', 4.01, 7.81), ('SE', 8.21, 7.81)]:
         s.column(f'{name} Column', x, z, x + 0.40, z + 0.40)
 
-    s.wall('North exterior west', 1.00, -0.20, 4.01, 0.00)
+    s.wall('North exterior west', 0.80, -0.20, 4.01, 0.00)
     s.wall('North exterior east', 4.41, -0.20, 8.21, 0.00)
     s.wall('Corridor notch wall', 0.80, 0.00, 1.00, 0.30)
     s.lintel('Entrance lintel', 0.80, 0.30, 1.00, 1.15)
     s.wall('Corridor notch wall south', 0.80, 1.15, 1.00, 1.80)
     s.wall('Notch return wall', 0.00, 1.80, 1.00, 2.00)
-    s.door_leaf('Entrance open door', 1.00, 0.32, 1.04, 1.13)
+    s.door_leaf('Entrance open door', 0.90, 0.29, 1.00, 1.16)
 
     s.wall('West exterior north', -0.20, 2.00, 0.00, 7.81)
     s.wall('East exterior north', 8.41, 0.00, 8.61, 3.90)
     s.lintel('Terrace east door lintel', 8.41, 3.90, 8.61, 4.70)
     s.wall('East exterior south', 8.41, 4.70, 8.61, 7.81)
-    s.door_leaf('Terrace east open door', 8.37, 3.92, 8.41, 4.68, 'metal')
+    s.glazed_door_leaf('Terrace east open door', 8.64, 3.90, 9.38, 3.94, 'metal')
 
     s.wall('South exterior west', 0.00, 8.00, 0.80, 8.20)
     s.lintel('Balcony door lintel', 0.80, 8.00, 1.70, 8.20)
     s.wall('South exterior mid', 1.70, 8.00, 4.60, 8.20)
     s.lintel('Terrace south door lintel', 4.60, 8.00, 5.50, 8.20)
     s.wall('South exterior east', 5.50, 8.00, 8.41, 8.20)
-    s.door_leaf('Balcony open door', 0.82, 7.96, 1.68, 8.00, 'metal')
-    s.door_leaf('Terrace south open door', 4.62, 7.96, 5.48, 8.00, 'metal')
+    s.glazed_door_leaf('Balcony open door', 0.80, 8.23, 0.84, 8.98, 'metal')
+    s.glazed_door_leaf('Terrace south open door', 4.60, 8.23, 4.64, 8.98, 'metal')
 
     # interior partitions
-    s.wall('Hall south wall', 1.00, 1.80, 2.84, 2.00)
+    s.wall('Hall south wall', 1.00, 1.80, 3.04, 2.00)
     s.wall('Bathroom east wall north', 2.84, 2.00, 3.04, 2.40)
     s.lintel('Bathroom door lintel', 2.84, 2.40, 3.04, 3.20)
     s.wall('Bathroom east wall south', 2.84, 3.20, 3.04, 6.90)
     s.lintel('Bedroom 2 door lintel', 2.84, 6.90, 3.04, 7.70)
     s.wall('Bedroom 2 east stub', 2.84, 7.70, 3.04, 8.00)
-    s.door_leaf('Bathroom open door', 2.80, 2.42, 2.84, 3.18, 'white')
-    s.door_leaf('Bedroom 2 open door', 2.04, 6.92, 2.08, 7.68)
+    s.door_leaf('Bathroom open door', 3.07, 2.40, 3.80, 2.44, 'white')
+    s.door_leaf('Bedroom 2 open door', 2.08, 7.66, 2.81, 7.70)
     s.wall('Bathroom south wall', 0.00, 4.02, 3.04, 4.22)
 
     s.wall('Bedroom 1 west wall north', 4.20, 0.00, 4.40, 2.10)
     s.lintel('Bedroom 1 door lintel', 4.20, 2.10, 4.40, 2.90)
     s.wall('Bedroom 1 west stub', 4.20, 2.90, 4.40, 3.22)
-    s.door_leaf('Bedroom 1 open door', 4.42, 2.12, 4.46, 2.88)
+    s.door_leaf('Bedroom 1 open door', 4.43, 2.86, 5.16, 2.90)
     s.wall('Kitchen back wall', 4.40, 3.02, 8.41, 3.22)
 
     # -- glazing ---------------------------------------------------------
@@ -97,14 +99,18 @@ def build():
     s.glass_panel('Balcony glass', [(0.10, 9.14), (3.95, 9.28), (3.95, 9.30), (0.10, 9.16)])
     s.glass_panel('Balcony side glass', [(0.04, 8.30), (0.06, 8.30), (0.06, 9.14), (0.04, 9.14)])
     s.band('Balcony handrail', [(0.08, 9.13), (3.97, 9.27)], 0.03, 1.10, 0.025, 'metal', 'rail')
+    s.rect('Balcony side handrail', 0.03, 8.20, 0.08, 9.14, 0.025, 'metal', 1.10, 'rail')
     s.band('Balcony fascia', [(0.02, 9.18), (4.03, 9.32)], 0.14, -0.24, 0.24, 'white')
     s.band('Balcony soffit', [(0.02, 9.18), (4.03, 9.32)], 0.14, CEILING, 0.24, 'white')
-    s.rect('Balcony divider', 4.03, 8.20, 4.17, 9.34, CEILING, 'white', group='facade')
+    s.wall('Balcony divider', 4.03, 8.20, 4.17, 9.34)
 
-    # terrace rail follows the faceted outer edge
-    edge = [(12.62, -0.20), (12.62, 9.11), (8.41, 9.60), (4.21, 9.11)]
+    # terrace rail follows the full outer perimeter (including north edge 8.61..12.62)
+    edge = [(8.61, -0.20), (12.62, -0.20), (12.62, 9.11), (8.41, 9.60), (4.21, 9.11)]
     for a, b in zip(edge, edge[1:]):
-        s.glass_panel('Terrace glass', [(a[0], a[1]), (b[0], b[1]), (b[0] - 0.03, b[1] - 0.03), (a[0] - 0.03, a[1] - 0.03)])
+        dx, dz = b[0] - a[0], b[1] - a[1]
+        length = math.hypot(dx, dz) or 1
+        nx, nz = dz / length * 0.025, -dx / length * 0.025
+        s.glass_panel('Terrace glass', [(a[0], a[1]), (b[0], b[1]), (b[0] + nx, b[1] + nz), (a[0] + nx, a[1] + nz)])
     s.band('Terrace handrail', edge, -0.04, 1.10, 0.025, 'metal', 'rail')
     s.band('Terrace fascia', edge, 0.15, -0.24, 0.24, 'white')
     s.band('Terrace soffit', edge, 0.15, CEILING, 0.24, 'white')

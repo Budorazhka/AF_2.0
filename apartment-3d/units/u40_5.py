@@ -37,4 +37,15 @@ def build():
         if o['name'] == 'Kitchen return':
             for v in o['v']:
                 v[0] = max(v[0], 6.03)
+        elif o['name'] == 'Balcony slab':
+            for v in o['v']:
+                if abs(v[2] - 6.13) < 0.02:
+                    v[2] = 6.00
+        elif o['name'] in ('West exterior', 'Living east exterior'):
+            for v in o['v']:
+                if abs(v[2] - 6.00) < 0.02:
+                    v[2] = 6.128
+    s.objects = [o for o in s.objects if o['name'] not in ('Entrance open door', 'Balcony open door')]
+    s.door_leaf('Entrance open door', 2.99, -0.10, 4.02, 0.00)
+    s.glazed_door_leaf('Balcony open door', 3.90, 5.33, 3.94, 5.98, 'metal')
     return s

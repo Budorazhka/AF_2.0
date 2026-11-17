@@ -1,19 +1,33 @@
-/* What the renders and the masterplan show but the floor plans do not:
-   - the roof terrace with the restaurant (render п6-pool): deck, pool with
-     loungers, dining tables under umbrellas and a pergola, planters, a bar and
-     a glass balustrade along the real roof outline;
-   - the pool with its deck in front of the spa podium (render п3);
-   - planters on the podium roof beside the car park;
-   - the garden on the quiet north side (masterplan): pavilions, a fire-pit
-     circle and paths winding through the lawn;
-   - lamps for the evening.
-   Placement is read off the pictures, not surveyed. Plan-space pieces go into
-   the building's own group; the garden lives in world space on the relief. */
+/* What the renders (фасад 2 / 16.png) and the masterplan show around the tower:
+   - the lobby-level restaurant terrace: 3 beige retractable awnings under the
+     right wing, a dark steel pergola draped in lush green vines, white café
+     umbrellas and dining tables;
+   - the spa podium with 4 large dark-framed spa windows, a glazed left pavilion,
+     and the exterior staircase descending on the left to the pool deck;
+   - the dark-stone pool deck: turquoise swimming pool with white coping, row of
+     white loungers and 3 umbrellas on the right, white lounge sofas with an
+     umbrella on the left, and the wooden children's playground in front;
+   - the roof terrace and Level-7 penthouse pergola & umbrellas;
+   - the garden on the north side and evening lighting. */
 import * as THREE from './three.js';
 import { mergeGeometries } from './three.js';
 import { createLamps, alongPath } from './lights.js';
 
-const COLOURS = { white: 0xf1efe9, dark: 0x34373c, wood: 0xa97f56, cloth: 0xf4f0e6, roof: 0x6f5a45, stone: 0xd2cbbd, leaf: 0x58763c, bar: 0x2b2d31 };
+const COLOURS = {
+  white: 0xf3f2ee,
+  dark: 0x232830,
+  slate: 0x3b4556,
+  wood: 0xa67c52,
+  cloth: 0xf4f1e8,
+  awning: 0xdfd3be,
+  roof: 0x6f5a45,
+  stone: 0xd2cbbd,
+  sand: 0xc8a97e,
+  leaf: 0x3f6628,
+  bar: 0x364050,
+  spaGlass: 0x13202d,
+  glass: 0x8cb4cc,
+};
 
 function inRects(x, z, rects, pad = 0) {
   return rects.some((r) => x > r[0] - pad && x < r[2] + pad && z > r[1] - pad && z < r[3] + pad);
@@ -45,8 +59,19 @@ class Bins {
       list.forEach((g) => { if (g.attributes.uv) g.deleteAttribute('uv'); });
       const geo = mergeGeometries(list, false);
       list.forEach((g) => g.dispose());
-      const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: COLOURS[key], roughness: key === 'cloth' ? 0.9 : 0.7, flatShading: key === 'leaf' || key === 'cloth' }));
-      m.castShadow = true;
+      const isGlass = key === 'spaGlass';
+      const isRail = key === 'glass';
+      const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+        color: COLOURS[key],
+        roughness: isGlass || isRail ? 0.06 : key === 'cloth' || key === 'awning' ? 0.88 : 0.72,
+        metalness: isGlass ? 0.7 : isRail ? 0.2 : key === 'dark' ? 0.35 : 0.04,
+        transparent: isRail,
+        opacity: isRail ? 0.38 : 1,
+        depthWrite: !isRail,
+        side: isRail ? THREE.DoubleSide : THREE.FrontSide,
+        flatShading: key === 'leaf' || key === 'cloth',
+      }));
+      m.castShadow = !isRail;
       m.receiveShadow = true;
       target.add(m);
       made.push(m);
@@ -58,27 +83,52 @@ class Bins {
 /* -- pieces ------------------------------------------------------------------- */
 const box = (w, h, d, x, y, z, rot = 0) => new THREE.BoxGeometry(w, h, d).rotateY(rot).translate(x, y + h / 2, z);
 
-function umbrella(b, x, y, z) {
-  b.add('cloth', new THREE.ConeGeometry(1.5, 0.45, 8).translate(x, y + 2.45, z));
-  b.add('dark', new THREE.CylinderGeometry(0.035, 0.035, 2.4, 6).translate(x, y + 1.2, z));
+function umbrella(b, x, y, z, r = 1.65) {
+  b.add('cloth', new THREE.ConeGeometry(r, 0.42, 8).translate(x, y + 2.38, z));
+  b.add('dark', new THREE.CylinderGeometry(0.035, 0.035, 2.35, 6).translate(x, y + 1.18, z));
 }
 function tableSet(b, x, y, z, withUmbrella) {
-  b.add('white', new THREE.CylinderGeometry(0.45, 0.45, 0.04, 16).translate(x, y + 0.74, z));
+  b.add('white', new THREE.CylinderGeometry(0.46, 0.46, 0.04, 16).translate(x, y + 0.74, z));
   b.add('dark', new THREE.CylinderGeometry(0.04, 0.04, 0.72, 6).translate(x, y + 0.36, z));
-  for (const [dx, dz] of [[0.75, 0], [-0.75, 0], [0, 0.75], [0, -0.75]]) b.add('wood', box(0.42, 0.45, 0.42, x + dx, y, z + dz));
-  if (withUmbrella) umbrella(b, x, y, z);
+  for (const [dx, dz] of [[0.72, 0], [-0.72, 0], [0, 0.72], [0, -0.72]]) b.add('dark', box(0.42, 0.44, 0.42, x + dx, y, z + dz));
+  if (withUmbrella) umbrella(b, x, y, z, 1.55);
 }
-function lounger(b, x, y, z, rot) { b.add('white', box(0.7, 0.32, 1.9, x, y, z, rot)); }
+function lounger(b, x, y, z, rot = 0) {
+  b.add('white', box(1.85, 0.26, 0.68, x, y, z, rot));
+  b.add('white', box(0.55, 0.38, 0.64, x - 0.62 * Math.cos(rot), y + 0.12, z + 0.62 * Math.sin(rot), rot));
+}
 function planter(b, x, y, z, s = 1) {
   b.add('dark', new THREE.CylinderGeometry(0.45 * s, 0.38 * s, 0.6 * s, 10).translate(x, y + 0.3 * s, z));
-  b.add('leaf', new THREE.IcosahedronGeometry(0.6 * s, 1).translate(x, y + 0.95 * s, z));
+  b.add('leaf', new THREE.IcosahedronGeometry(0.62 * s, 1).translate(x, y + 0.95 * s, z));
 }
-function pergola(b, x0, z0, x1, z1, y) {
-  const h = 2.8;
-  for (const [x, z] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]]) b.add('wood', box(0.14, h, 0.14, x, y, z));
-  b.add('wood', box(x1 - x0 + 0.3, 0.16, 0.12, (x0 + x1) / 2, y + h, z0));
-  b.add('wood', box(x1 - x0 + 0.3, 0.16, 0.12, (x0 + x1) / 2, y + h, z1));
-  for (let x = x0; x <= x1 + 0.01; x += 0.45) b.add('wood', box(0.06, 0.1, z1 - z0 + 0.4, x, y + h + 0.12, (z0 + z1) / 2));
+function pergola(b, x0, z0, x1, z1, y, { vines = false, colour = 'wood' } = {}) {
+  const h = 2.75;
+  for (const x of [x0, (x0 + x1) / 2, x1]) {
+    for (const z of [z0, z1]) b.add(colour, box(0.14, h, 0.14, x, y, z));
+  }
+  b.add(colour, box(x1 - x0 + 0.24, 0.16, 0.14, (x0 + x1) / 2, y + h, z0));
+  b.add(colour, box(x1 - x0 + 0.24, 0.16, 0.14, (x0 + x1) / 2, y + h, z1));
+  for (let x = x0; x <= x1 + 0.01; x += 0.55) {
+    b.add(colour, box(0.07, 0.12, z1 - z0 + 0.3, x, y + h + 0.1, (z0 + z1) / 2));
+  }
+  if (vines) {
+    // Lush green vine canopy along the top and front beam of the restaurant pergola (фасад 2)
+    for (let x = x0 - 0.2; x <= x1 + 0.2; x += 0.9) {
+      b.add('leaf', new THREE.IcosahedronGeometry(0.68, 1).scale(1.2, 0.45, 1.1).translate(x, y + h + 0.22, z1));
+      b.add('leaf', new THREE.IcosahedronGeometry(0.58, 1).scale(1.1, 0.4, 1.0).translate(x, y + h + 0.2, z0 + (z1 - z0) * 0.45));
+    }
+    for (const x of [x0, (x0 + x1) / 2, x1]) {
+      b.add('leaf', new THREE.CylinderGeometry(0.28, 0.22, h * 0.75, 7).translate(x, y + h * 0.55, z1));
+    }
+  }
+}
+function awning(b, x0, x1, y, z0, z1) {
+  const w = x1 - x0, d = z1 - z0;
+  const slope = new THREE.BoxGeometry(w, 0.08, d);
+  slope.rotateX(0.22);
+  slope.translate((x0 + x1) / 2, y - 0.22, (z0 + z1) / 2);
+  b.add('awning', slope);
+  b.add('awning', box(w, 0.18, 0.06, (x0 + x1) / 2, y - 0.48, z1));
 }
 function pavilion(b, x, y, z, a) {
   b.add('wood', box(5, 0.3, 5, x, y, z, a));
@@ -112,51 +162,149 @@ export function createAmenities(building, data, height) {
     return m;
   };
 
-  // -- pool and deck on the sea side of the spa level --------------------------
   const spaFloor = L(-1).floor;
-  const sx0 = Math.min(...spa.slab.map((r) => r[0])), sx1 = Math.max(...spa.slab.map((r) => r[2]));
-  const sz1 = Math.max(...spa.slab.map((r) => r[3]));
-  const dx0 = sx0 + 2, dx1 = Math.min(sx0 + 24, sx1 - 2), dz0 = sz1 + 0.2, dz1 = sz1 + 11;
-  const base = solid(new THREE.BoxGeometry(dx1 - dx0, 5, dz1 - dz0), 0x3f454e);
-  base.position.set((dx0 + dx1) / 2, spaFloor - 2.5, (dz0 + dz1) / 2);
-  const deck = solid(new THREE.BoxGeometry(dx1 - dx0, 0.12, dz1 - dz0), 0xb48d66, { roughness: 0.8 });
-  deck.position.set((dx0 + dx1) / 2, spaFloor + 0.06, (dz0 + dz1) / 2);
-  const px = (dx0 + dx1) / 2, pz = (dz0 + dz1) / 2 + 0.6;
-  const coping = solid(new THREE.BoxGeometry(13.8, 0.1, 6), 0xece9e2, { roughness: 0.6 });
-  coping.position.set(px, spaFloor + 0.08, pz);
-  const poolMat = new THREE.MeshStandardMaterial({ color: 0x3fb3d9, roughness: 0.05, metalness: 0.1, emissive: 0x2aa6d6, emissiveIntensity: 0 });
-  mats.push(poolMat);
-  const water = new THREE.Mesh(new THREE.BoxGeometry(13, 0.1, 5.2), poolMat);
-  water.position.set(px, spaFloor + 0.1, pz);
-  plan.add(base, deck, coping, water);
-  for (let i = 0; i < 6; i++) lounger(P, px - 6 + i * 2.4, spaFloor + 0.12, pz - 4.1, 0);
-  for (const k of [-4.8, 0, 4.8]) umbrella(P, px + k, spaFloor + 0.12, pz - 4.6);
-  for (const [x, z] of [[dx0 + 0.6, dz0 + 0.6], [dx1 - 0.6, dz0 + 0.6], [dx0 + 0.6, dz1 - 0.6], [dx1 - 0.6, dz1 - 0.6]]) lampPlan.push([x, spaFloor + 0.12, z]);
-  worldBox(dx0, dz0, dx1, dz1, 3);
-
-  // -- podium roof: planters where neither the tower, the lobby nor the car park is --
-  const covered = [...lobby.slab, ...lv(2).slab];
-  const bays = data.parking || [];
-  const carPark = bays.length ? [[Math.min(...bays.map((b) => b[0])) - 1, Math.min(...bays.map((b) => b[1])) - 7, Math.max(...bays.map((b) => b[2])) + 1, Math.max(...bays.map((b) => b[3])) + 1]] : [];
   const podiumY = L(1).y0;
-  let planted = 0;
-  for (let z = sz1 - 1.2; z > 0 && planted < 14; z -= 2.6) {
-    for (let x = sx0 + 1.2; x < sx1 - 1 && planted < 14; x += 2.6) {
-      if (inRects(x, z, spa.slab, -0.6) && !inRects(x, z, covered, 0.8) && !inRects(x, z, carPark, 0.5)) { planter(P, x, podiumY, z, 1.2); planted++; }
+
+  // -- 1. Solid tower podium, spa podium, left glass pavilion, exterior stairs & restaurant terrace (фасад 2) --
+  // Solid slate-graphite podium base directly under the Left Wing (x = 3.9..13.55, z = 9.6..29.25)
+  // and front terrace walkway (x = 3.9..9.8, z = 28.4..30.6) so no upper column or wall ever hangs in mid-air
+  const leftPodH = podiumY - spaFloor + 0.3;
+  const leftWingBase = solid(new THREE.BoxGeometry(9.65, leftPodH, 19.65), 0x3b4556, { roughness: 0.78 });
+  leftWingBase.position.set(8.725, (spaFloor + podiumY) / 2, 19.425);
+  const leftWalkBase = solid(new THREE.BoxGeometry(5.9, leftPodH, 2.2), 0x3b4556, { roughness: 0.78 });
+  leftWalkBase.position.set(6.85, (spaFloor + podiumY) / 2, 29.5);
+  const leftWalkDeck = solid(new THREE.BoxGeometry(5.9, 0.16, 2.2), 0x434d5e, { roughness: 0.82 });
+  leftWalkDeck.position.set(6.85, podiumY + 0.02, 29.5);
+
+  // Spa podium block under the restaurant terrace (x = 9.8..26.2, z = 19.35..30.6)
+  const podBase = solid(new THREE.BoxGeometry(16.4, leftPodH, 11.25), 0x3b4556, { roughness: 0.78 });
+  podBase.position.set(18.0, (spaFloor + podiumY) / 2, 24.975);
+  const podDeck = solid(new THREE.BoxGeometry(16.4, 0.16, 11.25), 0x434d5e, { roughness: 0.82 });
+  podDeck.position.set(18.0, podiumY + 0.02, 24.975);
+  plan.add(leftWingBase, leftWalkBase, leftWalkDeck, podBase, podDeck);
+
+  // Parapet along the front and right side of the restaurant terrace
+  P.add('slate', box(16.4, 0.78, 0.32, 18.0, podiumY, 30.44));
+  P.add('slate', box(0.32, 0.78, 11.25, 26.04, podiumY, 24.975));
+
+  // 4 large dark-framed spa windows along the front wall facing the pool (z = 30.62)
+  for (let i = 0; i < 4; i++) {
+    const wx = 11.9 + i * 4.0;
+    P.add('spaGlass', box(3.2, 2.5, 0.14, wx, spaFloor + 0.15, 30.62));
+    P.add('dark', box(3.3, 0.1, 0.2, wx, spaFloor + 2.62, 30.64));
+    P.add('dark', box(0.08, 2.5, 0.2, wx - 1.6, spaFloor + 0.15, 30.64));
+    P.add('dark', box(0.08, 2.5, 0.2, wx, spaFloor + 0.15, 30.64));
+    P.add('dark', box(0.08, 2.5, 0.2, wx + 1.6, spaFloor + 0.15, 30.64));
+  }
+
+  // Left glazed spa/gym pavilion wing (x = 1.4..8.0, z = 24.0..30.6) with rooftop terrace & glass balustrade
+  const pavH = podiumY - spaFloor;
+  P.add('dark', box(6.6, 0.24, 6.6, 4.7, spaFloor + pavH - 0.12, 27.3));
+  P.add('spaGlass', box(6.3, pavH - 0.2, 6.3, 4.7, spaFloor + 0.05, 27.3));
+  for (const x of [1.55, 3.1, 4.7, 6.3, 7.85]) P.add('dark', box(0.08, pavH - 0.1, 0.08, x, spaFloor + 0.05, 30.5));
+  // Glass balustrade on top of the left pavilion roof terrace (y = podiumY)
+  P.add('glass', box(6.6, 1.05, 0.04, 4.7, podiumY + 0.08, 30.55));
+  P.add('glass', box(0.04, 1.05, 6.6, 1.45, podiumY + 0.08, 27.3));
+
+  // Exterior staircase descending in the open air (x = 8.0..9.8, z = 29.3..33.1) from the front terrace (podiumY) to the pool deck (spaFloor)
+  const steps = 12;
+  for (let s = 0; s < steps; s++) {
+    const t = s / steps;
+    const sy = spaFloor + (1 - t) * (podiumY - spaFloor);
+    const sz = 29.3 + t * 3.8;
+    P.add('slate', box(1.75, 0.28, 0.38, 8.9, sy - 0.28, sz));
+  }
+  for (const x of [8.05, 9.75]) {
+    const rGeo = new THREE.BoxGeometry(0.06, 0.06, 4.3);
+    rGeo.rotateX(Math.atan2(podiumY - spaFloor, 3.8));
+    rGeo.translate(x, (spaFloor + podiumY) / 2 + 0.85, 31.2);
+    P.add('dark', rGeo);
+  }
+
+  // 3 cream/beige retractable awnings under the 2nd-floor right wing (x = 16.0..28.2, z = 19.35..22.15)
+  for (let i = 0; i < 3; i++) {
+    const ax0 = 16.0 + i * 4.1, ax1 = ax0 + 3.8;
+    awning(P, ax0, ax1, L(2).y0 - 0.05, 19.35, 22.15);
+  }
+
+  // Vine-covered dark steel pergola on the open restaurant terrace (x = 13.85..23.6, z = 25.8..30.2 — 100% clear of the left wing!)
+  pergola(P, 13.85, 25.8, 23.6, 30.2, podiumY, { vines: true, colour: 'dark' });
+  // Continuous green vine planter along the front parapet to the left of the pergola (x = 10.2..13.5, z = 30.2)
+  for (let x = 10.4; x <= 13.4; x += 0.85) {
+    P.add('leaf', new THREE.IcosahedronGeometry(0.55, 1).scale(1.15, 0.5, 0.9).translate(x, podiumY + 0.95, 30.35));
+  }
+
+  // Dining tables and white café umbrellas on the open lobby restaurant terrace
+  for (const [tx, tz, umb] of [
+    [15.6, 28.0, false], [18.7, 28.0, false], [21.8, 28.0, false],
+    [16.8, 23.6, true], [20.6, 23.6, true], [24.4, 23.8, true],
+  ]) {
+    tableSet(P, tx, podiumY, tz, umb);
+  }
+
+  // -- 2. Pool deck, swimming pool, loungers, lounge corner & playground (фасад 2) --
+  const dx0 = 4.6, dx1 = 25.8, dz0 = 30.6, dz1 = 38.4;
+  const base = solid(new THREE.BoxGeometry(dx1 - dx0, 5.2, dz1 - dz0), 0x363e4b);
+  base.position.set((dx0 + dx1) / 2, spaFloor - 2.6, (dz0 + dz1) / 2);
+  const deck = solid(new THREE.BoxGeometry(dx1 - dx0, 0.14, dz1 - dz0), 0x3b424d, { roughness: 0.84 });
+  deck.position.set((dx0 + dx1) / 2, spaFloor + 0.07, (dz0 + dz1) / 2);
+
+  // Turquoise swimming pool with crisp white stone coping (centred in front of the 4 spa windows)
+  const px = 16.0, pz = 34.5, pw = 9.6, pd = 4.2;
+  const coping = solid(new THREE.BoxGeometry(pw + 0.8, 0.12, pd + 0.8), 0xeeebe3, { roughness: 0.55 });
+  coping.position.set(px, spaFloor + 0.10, pz);
+  const poolMat = new THREE.MeshStandardMaterial({ color: 0x38b5d6, roughness: 0.05, metalness: 0.12, emissive: 0x269ec2, emissiveIntensity: 0.12 });
+  mats.push(poolMat);
+  const water = new THREE.Mesh(new THREE.BoxGeometry(pw, 0.12, pd), poolMat);
+  water.position.set(px, spaFloor + 0.13, pz);
+  plan.add(base, deck, coping, water);
+
+  // Row of 6 white sun loungers + 3 white umbrellas on the right of the pool
+  for (let i = 0; i < 6; i++) {
+    lounger(P, 22.8, spaFloor + 0.14, 31.6 + i * 1.12, 0);
+  }
+  for (const uz of [32.2, 34.5, 36.8]) {
+    umbrella(P, 23.5, spaFloor + 0.14, uz, 1.5);
+  }
+
+  // Left lounge area at the foot of the stairs (white L-sofa, coffee table, white umbrella)
+  P.add('white', box(2.3, 0.42, 0.8, 7.2, spaFloor + 0.14, 34.2));
+  P.add('white', box(0.8, 0.42, 1.7, 6.2, spaFloor + 0.14, 35.3));
+  P.add('white', new THREE.CylinderGeometry(0.5, 0.5, 0.34, 16).translate(7.5, spaFloor + 0.31, 35.4));
+  umbrella(P, 6.9, spaFloor + 0.14, 33.8, 1.65);
+
+  // Children's wooden playground in front of the pool deck (x = 7.5..18.5, z = 38.6..42.8)
+  const playY = spaFloor - 0.65;
+  P.add('sand', box(11.0, 0.18, 4.2, 13.5, playY - 0.1, 40.6));
+  for (const [tx, tz] of [[10.0, 40.4], [13.7, 40.7], [17.0, 40.3]]) {
+    P.add('wood', box(1.15, 0.12, 1.15, tx, playY + 1.05, tz));
+    for (const [ox, oz] of [[-0.48, -0.48], [0.48, -0.48], [-0.48, 0.48], [0.48, 0.48]]) {
+      P.add('wood', box(0.11, 2.0, 0.11, tx + ox, playY, tz + oz));
     }
   }
-  // lamps along the car park's driving lane
-  if (carPark.length) {
-    const [cx0, cz0, cx1] = carPark[0];
-    for (let x = cx0 + 3; x < cx1; x += 9) lampPlan.push([x, podiumY, cz0 + 0.6]);
+  P.add('wood', box(3.5, 0.08, 0.65, 11.85, playY + 1.0, 40.55));
+  P.add('wood', box(3.1, 0.08, 0.65, 15.35, playY + 1.0, 40.5));
+
+  for (const [x, z] of [[dx0 + 0.6, dz0 + 0.6], [dx1 - 0.6, dz0 + 0.6], [dx0 + 0.6, dz1 - 0.6], [dx1 - 0.6, dz1 - 0.6]]) lampPlan.push([x, spaFloor + 0.14, z]);
+  worldBox(dx0 - 2, dz0 - 2, dx1 + 2, dz1 + 5, 4);
+  worldBox(24.5, 19.0, 43.0, 33.5, 4);
+
+  // -- 3. Level 7 penthouse pergola & umbrellas + Roof terrace (Level 8) --
+  // Placed in RF (attached to Level 8) so they hide whenever any floor 2..7 is opened!
+  if (L(7)) {
+    const y7 = L(7).floor;
+    // Sleek dark steel pergola over the left wing Level-7 corner terrace (фасад 2)
+    pergola(RF, 9.8, 24.2, 13.4, 29.1, y7, { vines: false, colour: 'dark' });
+    // 3 white umbrellas along the right wing Level-7 terrace
+    for (const ux of [16.2, 18.6, 21.0]) {
+      umbrella(RF, ux, y7, 18.6, 1.45);
+    }
   }
 
-  // -- roof terrace and restaurant (render п6-pool) -------------------------------
   if (roof && roof.outline) {
     const R = L(8), y = R.floor;
     const outline = roof.outline;
     const housing = roof.walls || [], pool = roof.pool || [];
-    // deck over the whole roof, the pool and the stair/lift housings excepted
     const deckRects = [];
     const xs = outline.map((p) => p[0]), zs = outline.map((p) => p[1]);
     for (let x = Math.min(...xs); x < Math.max(...xs); x += 1) {
@@ -166,61 +314,51 @@ export function createAmenities(building, data, height) {
       }
     }
     deckRects.forEach(([x, z]) => RF.add('wood', box(1, 0.06, 1, x + 0.5, y, z + 0.5)));
-    // housings clad like the tower, with a glazed bar front
+    // Taller slate-graphite elevator/stair tower housing (visible at the top of фасад 2)
     housing.forEach((r) => {
       const w = r[2] - r[0], d = r[3] - r[1];
       if (w * d < 1.5) return;
-      RF.add('bar', box(w, 2.9, d, (r[0] + r[2]) / 2, y, (r[1] + r[3]) / 2));
+      RF.add('bar', box(w, 3.2, d, (r[0] + r[2]) / 2, y, (r[1] + r[3]) / 2));
     });
     const free = (x, z, pad) => inPoly(x, z, outline) && distToPoly(x, z, outline) > pad && !inRects(x, z, housing, pad) && !inRects(x, z, pool, pad + 0.6);
-    // loungers beside the pool
     pool.forEach((r) => {
       if ((r[2] - r[0]) * (r[3] - r[1]) < 4) return;
       for (let x = r[0] + 0.6; x < r[2] - 0.4; x += 1.4) {
-        for (const z of [r[1] - 1.4, r[3] + 1.4]) if (free(x, z, 0.5)) lounger(RF, x, y + 0.06, z, 0);
+        for (const z of [r[1] - 1.4, r[3] + 1.4]) if (free(x, z, 0.5)) lounger(RF, x, y + 0.06, z, Math.PI / 2);
       }
       roofLamps.push({ x: (r[0] + r[2]) / 2, y: y + 0.06, z: r[1] - 0.5 });
     });
-    // dining: tables on a 3 m grid where there is room, pergola over the first rows
     const seats = [];
     for (let x = Math.min(...xs) + 1.6; x < Math.max(...xs); x += 3) {
       for (let z = Math.min(...zs) + 1.6; z < Math.max(...zs); z += 3) {
         if (free(x, z, 1.4) && [[1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]].every(([ox, oz]) => free(x + ox, z + oz, 0.3))) seats.push([x, z]);
       }
     }
-    seats.slice(0, 16).forEach(([x, z], i) => {
-      tableSet(RF, x, y + 0.06, z, i % 3 !== 0);
-      if (i % 3 === 0) pergola(RF, x - 1.4, z - 1.4, x + 1.4, z + 1.4, y + 0.06);
+    seats.slice(0, 8).forEach(([x, z], i) => {
+      if (z < 18.0) tableSet(RF, x, y + 0.06, z, i % 2 === 0);
     });
-    // a bar counter against the biggest housing
     const big = housing.slice().sort((a, b) => (b[2] - b[0]) * (b[3] - b[1]) - (a[2] - a[0]) * (a[3] - a[1]))[0];
     if (big && free((big[0] + big[2]) / 2, big[3] + 1.2, 0.3)) RF.add('white', box(Math.min(4, big[2] - big[0]), 1.1, 0.6, (big[0] + big[2]) / 2, y + 0.06, big[3] + 0.9));
-    // planters and soft wall lights along the parapet
+    // Clean architectural slate-graphite parapet along the roof front (16.png & фасад 2)
     for (let i = 0; i < outline.length; i++) {
       const [ax, az] = outline[i], [bx, bz] = outline[(i + 1) % outline.length];
       const len = Math.hypot(bx - ax, bz - az);
-      const nx = (bz - az) / len, nz = -(bx - ax) / len;               // one of the two normals
-      const inward = inPoly((ax + bx) / 2 + nx * 0.8, (az + bz) / 2 + nz * 0.8, outline) ? 1 : -1;
-      for (let t = 1.5; t < len - 1; t += 3.5) {
-        const x = ax + ((bx - ax) * t) / len + nx * inward * 0.7, z = az + ((bz - az) * t) / len + nz * inward * 0.7;
-        if (free(x, z, 0.2)) { planter(RF, x, y + 0.06, z, 0.8); wallLights.push({ x, y: y + 0.06, z }); }
-      }
-      // glass balustrade panel on the edge
-      const g = new THREE.BoxGeometry(len, 1.1, 0.03);
-      g.rotateY(-Math.atan2(bz - az, bx - ax)).translate((ax + bx) / 2, y + 0.55, (az + bz) / 2);
-      RF.add('glass', g);
+      const isFront = az > 17.5 || bz > 17.5;
+      const g = new THREE.BoxGeometry(len, isFront ? 0.95 : 1.05, isFront ? 0.28 : 0.04);
+      g.rotateY(-Math.atan2(bz - az, bx - ax)).translate((ax + bx) / 2, y + 0.48, (az + bz) / 2);
+      RF.add(isFront ? 'slate' : 'glass', g);
     }
   }
 
-  // -- garden on the north side ---------------------------------------------------
+  // -- 4. Garden on the north-east side (behind the building, clear of the west/south podium) --
   const at = (azDeg, r) => ({ x: r * Math.sin((azDeg * Math.PI) / 180), z: -r * Math.cos((azDeg * Math.PI) / 180) });
   const garden = [
-    { kind: 'pavilion', p: at(315, 46), a: 0.4 },
-    { kind: 'pavilion', p: at(350, 54), a: -0.3 },
-    { kind: 'pavilion', p: at(28, 46), a: 0.2 },
-    { kind: 'fire', p: at(337, 31) },
+    { kind: 'pavilion', p: at(25, 48), a: 0.4 },
+    { kind: 'pavilion', p: at(55, 54), a: -0.3 },
+    { kind: 'pavilion', p: at(82, 48), a: 0.2 },
+    { kind: 'fire', p: at(42, 34) },
   ];
-  const start = at(340, 19);
+  const start = at(48, 22);
   for (const g of garden) {
     const y = height(g.p.x, g.p.z);
     if (g.kind === 'pavilion') pavilion(W, g.p.x, y, g.p.z, g.a);
@@ -264,16 +402,15 @@ export function createAmenities(building, data, height) {
   }
 
   // -- build ----------------------------------------------------------------------
-  COLOURS.glass = 0xcfe0e8;
+  COLOURS.glass = 0x8cb4cc;
   const roofGroup = new THREE.Group();
   P.build(plan);
   RF.build(roofGroup).filter((m) => m.material.color.getHex() === new THREE.Color(COLOURS.glass).getHex()).forEach((m) => {
-    Object.assign(m.material, { transparent: true, opacity: 0.25, depthWrite: false, roughness: 0.05 });
+    Object.assign(m.material, { transparent: true, opacity: 0.38, depthWrite: false, roughness: 0.05 });
     m.castShadow = false;
   });
   W.build(world);
 
-  // lamps live in the space of what they light: plan space for the podium and roof
   const planLamps = createLamps(lampPlan.map(([x, y, z]) => ({ x, y, z })));
   const roofPosts = createLamps(roofLamps);
   const roofWall = createLamps(wallLights, { post: false, radius: 2.6 });
@@ -287,7 +424,7 @@ export function createAmenities(building, data, height) {
     plan, roof: roofGroup, world, keepOut, paths,
     setNight(f) {
       lamps.forEach((l) => l.setNight(f));
-      poolMat.emissiveIntensity = 0.9 * f;
+      poolMat.emissiveIntensity = 0.08 + 0.85 * f;
     },
     dispose() {
       [plan, roofGroup, world].forEach((g) => g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); }));

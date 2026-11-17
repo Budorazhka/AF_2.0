@@ -6,7 +6,7 @@
    `outer` turns the sheet so that its "down" faces the real azimuth (the sea). */
 import * as THREE from './three.js';
 import { mergeGeometries } from './three.js';
-import { frameGeometry, balustradeGeometry, carPark } from './facade.js';
+import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=20';
 
 export const SLAB = 0.3;
 const CUT = 1.25;          // wall height left standing when a floor is opened
@@ -60,17 +60,19 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
   outer.add(inner);
   outer.rotation.y = Math.PI - (data.planDownAzimuth * Math.PI) / 180;
 
-  // colours taken from the renders: graphite body, white faceted frames, dark glass
+  // colours taken from 16.png & фасад 2: deep slate-graphite body, crisp white origami frames, dark reflective glass
   const mats = {
-    slab: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 }),
-    wall: new THREE.MeshStandardMaterial({ color: 0xe6e2da, roughness: 0.9 }),
-    shell: new THREE.MeshStandardMaterial({ color: 0x3a404a, roughness: 0.7, metalness: 0.05 }),
-    column: new THREE.MeshStandardMaterial({ color: 0xe9e6e0, roughness: 0.8 }),
-    frame: new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.5, metalness: 0, side: THREE.DoubleSide }),
-    glass: new THREE.MeshStandardMaterial({ color: 0x1b2836, roughness: 0.06, metalness: 0.65, transparent: true, opacity: 0.86, envMapIntensity: 1.6 }),
-    rail: new THREE.MeshStandardMaterial({ color: 0xcfe0e8, roughness: 0.05, transparent: true, opacity: 0.26, depthWrite: false }),
-    pool: new THREE.MeshStandardMaterial({ color: 0x4aa6da, roughness: 0.08, metalness: 0.1 }),
-    deck: new THREE.MeshStandardMaterial({ color: 0xb99671, roughness: 0.85 }),
+    slab: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78 }),
+    wall: new THREE.MeshStandardMaterial({ color: 0x455164, roughness: 0.82 }),
+    wallCut: new THREE.MeshStandardMaterial({ color: 0xe6e2da, roughness: 0.9 }),
+    shell: new THREE.MeshStandardMaterial({ color: 0x3b4556, roughness: 0.72, metalness: 0.08 }),
+    column: new THREE.MeshStandardMaterial({ color: 0x424d5f, roughness: 0.78 }),
+    frame: new THREE.MeshStandardMaterial({ color: 0xf7f8fa, roughness: 0.36, metalness: 0.02, side: THREE.DoubleSide }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x162433, roughness: 0.05, metalness: 0.76, transparent: true, opacity: 0.88, envMapIntensity: 2.0 }),
+    mullion: new THREE.MeshStandardMaterial({ color: 0x1a2029, roughness: 0.4, metalness: 0.35 }),
+    rail: new THREE.MeshStandardMaterial({ color: 0x8cb4cc, roughness: 0.05, metalness: 0.25, transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide }),
+    pool: new THREE.MeshStandardMaterial({ color: 0x3cb4d4, roughness: 0.06, metalness: 0.12 }),
+    deck: new THREE.MeshStandardMaterial({ color: 0x9b7c5b, roughness: 0.82 }),
     hall: new THREE.MeshStandardMaterial({ color: 0xe2ded6, roughness: 0.9 }),
   };
   const disposables = [];
@@ -102,14 +104,37 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     const full = lv.height - SLAB;
 
     const add = (parent, m) => { if (m) { m.userData.level = lv.level; parent.add(m); } return m; };
-    // on the flats' floors the slab edge is the white lower band of the frames; the podium is graphite
-    const slabColours = { top: 0xe7e4de, side: lv.kind === 'residential' ? 0xe9e9e5 : 0x3a404a };
+    // light walking surface on top so the floor plan drawing reads clearly when opened; slate-graphite exterior edge
+    const slabColours = { top: 0xe7e4de, side: 0x3b4556 };
     L.slabColours = slabColours;
-    L.slabMesh = add(g, mesh(boxes(lv.slab, y, SLAB, slabColours), mats.slab));
-    if (lv.kind === 'spa') {
-      // the podium's roof is the lobby-level terrace around the tower
-      add(g, mesh(boxes(lv.slab, y + lv.height - SLAB, SLAB, slabColours), mats.slab));
-    }
+    const extraSlab = lv.level === 6
+      ? [[26.20, 14.20, 31.30, 19.55]]
+      : lv.level === 7
+      ? [[21.95, 13.55, 26.20, 19.55]]
+      : lv.level === 1 || lv.level === -1
+      ? [
+          [3.90, 9.60, 13.70, 29.40],
+          [5.50, 28.20, 13.70, 30.00],
+          [13.55, 9.60, 31.55, 19.85],
+        ]
+      : [
+          // Ensure residential slabs reach the exact outer columns under both wings
+          [5.65, 28.20, 13.65, 29.85],
+          ...(lv.level <= 5 ? [[15.30, 18.00, 31.45, 19.65]] : []),
+        ];
+    const baseSlab = lv.kind === 'spa' || lv.kind === 'lobby'
+      ? lv.slab
+          .filter((r) => !(r[0] < 13.8 && r[3] > 18.0))
+          .map((r) => [r[0], r[1], r[2], Math.min(r[3], r[0] > 13.8 ? 19.85 : 29.85)])
+      : lv.kind === 'residential'
+      ? lv.slab.map((r) => [
+          r[0],
+          r[1],
+          r[0] > 28 && r[3] > 15.2 ? Math.min(r[2], 31.45) : r[0] > 11.5 && r[0] < 14.5 && r[3] > 23.5 ? Math.min(r[2], 13.85) : r[2],
+          r[0] > 14.5 ? Math.min(r[3], 19.65) : Math.min(r[3], 29.85),
+        ])
+      : lv.slab;
+    L.slabMesh = add(g, mesh(boxes([...baseSlab, ...extraSlab], y, SLAB, slabColours), mats.slab));
     if (lv.kind === 'roof') {
       add(g, mesh(boxes(lv.pool || [], L.floor, 0.04), mats.pool, false));
       add(g, mesh(boxes(lv.decks || [], L.floor, 0.06), mats.deck, false));
@@ -119,18 +144,92 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
         add(g, mesh(boxes(lv.rails, L.floor, 1.1), mats.rail, false));
       }   // otherwise the roof terrace (amenities.js) draws housings, deck and glass
     } else {
-      L.walls = add(vert, mesh(boxes(lv.walls, 0, full), mats.wall));
-      // the lobby is glazed all round (restaurant, entrance); elsewhere the envelope is graphite cladding
-      L.shell = add(vert, mesh(boxes(lv.shell || [], 0, full), lv.kind === 'lobby' ? mats.glass : mats.shell));
-      L.columns = add(vert, mesh(boxes(lv.columns, 0, full), mats.column));
+      const trimFront = (rects) => rects
+        .filter((r) => {
+          if (r[0] > 29.5 && r[3] > 18.2) return false;
+          if (lv.kind === 'spa' || lv.kind === 'lobby') {
+            if (r[3] > 18.2) return false;
+          }
+          if (lv.kind === 'residential') {
+            if (r[0] > 14.2 && r[1] >= 19.15) return false;
+            if (r[0] <= 14.2 && r[1] >= 28.35) return false;
+            if (r[0] > 12.25 && r[0] <= 14.2 && r[3] > 19.5) return false;
+          }
+          return true;
+        })
+        .map((r) => {
+          if (lv.kind === 'residential') {
+            const zMax = r[0] > 14.2 ? 19.20 : 28.35;
+            return [r[0], r[1], r[2], Math.min(r[3], zMax)];
+          }
+          return r;
+        });
+
+      const extraWalls = lv.level === 1 ? [
+        // Solid slate-graphite left wing pier & back walls on Level 1 (matching Blender & фасад 2)
+        [3.90, 9.60, 4.30, 28.40],
+        [3.90, 9.60, 5.85, 18.20],
+        [5.45, 18.00, 5.85, 28.40],
+        [11.20, 18.00, 13.55, 18.40],
+      ] : [];
+      const extraCols = lv.level === 1 ? [
+        // Ground-floor structural columns directly supporting every node of the 2nd-floor origami frames (Blender & фасад 2)
+        [5.50, 28.15, 6.00, 28.65],
+        [9.57, 29.50, 10.07, 30.00],
+        [13.20, 29.00, 13.70, 29.50],
+        [13.50, 23.65, 14.00, 24.15],
+        [13.20, 18.00, 13.70, 18.50],
+        [15.20, 19.25, 15.70, 19.75],
+        [17.17, 19.45, 17.67, 19.95],
+        [21.40, 19.20, 21.90, 19.70],
+        [25.95, 19.45, 26.45, 19.95],
+        [31.05, 19.20, 31.55, 19.70],
+      ] : [];
+      const extraLobbyGlass = lv.level === 1 ? [
+        // Left wing ground-floor lobby windows & storefront glazing
+        [4.30, 28.15, 5.50, 28.35],
+        [6.00, 28.55, 9.57, 29.65],
+        [10.07, 29.25, 13.20, 29.55],
+        [13.35, 24.15, 13.60, 29.00],
+        [13.35, 18.50, 13.60, 23.65],
+        // Right wing restaurant storefront glazing under the 3 retractable awnings
+        [13.70, 19.25, 15.20, 19.45],
+        [15.70, 19.35, 17.17, 19.55],
+        [17.67, 19.35, 21.40, 19.55],
+        [21.90, 19.35, 25.95, 19.55],
+        [26.45, 19.35, 31.05, 19.55],
+      ] : [];
+
+      L.walls = add(vert, mesh(boxes([...trimFront(lv.walls), ...extraWalls], 0, full), mats.wall));
+      L.shell = add(vert, mesh(boxes(trimFront(lv.shell || []), 0, full), lv.kind === 'lobby' ? mats.glass : mats.shell));
+      L.columns = add(vert, mesh(boxes([...trimFront(lv.columns), ...extraCols], 0, full), mats.column));
+      // dark window mullions along the glazed strips so windows have architectural framing like 16.png
+      const mullionRects = [];
+      for (const r of [...(lv.glass || []), ...extraLobbyGlass]) {
+        const gw = r[2] - r[0], gd = r[3] - r[1];
+        if (Math.max(gw, gd) < 0.9) continue;
+        const horiz = gw >= gd, span = horiz ? gw : gd;
+        const n = Math.max(1, Math.round(span / 1.15));
+        for (let i = 0; i <= n; i++) {
+          const t = i / n;
+          if (horiz) {
+            const mx = r[0] + gw * t;
+            mullionRects.push([mx - 0.03, r[1] - 0.02, mx + 0.03, r[3] + 0.02]);
+          } else {
+            const mz = r[1] + gd * t;
+            mullionRects.push([r[0] - 0.02, mz - 0.03, r[2] + 0.02, mz + 0.03]);
+          }
+        }
+      }
+      if (mullionRects.length) add(vert, mesh(boxes(mullionRects, 0, full), mats.mullion, false));
       if (lv.facade && lv.facade.length) {
         // own material per floor: hovering a floor lights its whole band of frames
         L.frameMat = keep(mats.frame.clone());
         L.frames = add(g, mesh(keep(frameGeometry([{ y0: y, height: lv.height, edges: lv.facade }])), L.frameMat));
       }
-      L.commonGlass = add(vert, mesh(boxes(lv.glass.filter((r) => r[4] < 0), 0, full), mats.glass));
-      // balustrades along the drawn terrace fronts (slanted ones stay straight); raster outline where none
-      L.rails = add(g, mesh(lv.facade && lv.facade.some((e) => e[6]) ? balustradeGeometry(lv.facade, L.floor) : boxes(lv.rails, L.floor, 1.1), mats.rail, false));
+      L.commonGlass = add(vert, mesh(boxes([...lv.glass.filter((r) => r[4] < 0), ...extraLobbyGlass], 0, full), mats.glass));
+      // balustrades along the drawn terrace fronts and stepped setback terraces
+      L.rails = add(g, mesh(lv.facade && lv.facade.some((e) => e[6]) ? balustradeGeometry(lv.facade, L.floor, lv.level) : boxes(lv.rails, L.floor, 1.1), mats.rail, false));
       add(g, mesh(boxes(lv.units.flatMap((u) => u.decks || []), L.floor, 0.05), mats.deck, false));
     }
     L.vert = vert;
@@ -208,12 +307,12 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
   }
   const top = y;
 
-  // car park on the lobby level: left row on the spa roof, right row on its own deck
+  // car park on the lobby level: attached to lobby group so it hides during walk-through
   const lobby = levels.find((l) => l.level === 1);
   let parkGroup = null;
   if (data.parking && lobby) {
     const park = carPark(data.parking, lobby.y0 + SLAB * 0);
-    inner.add(park.group);
+    lobby.group.add(park.group);
     parkGroup = park.group;
     disposables.push(park);
   }
@@ -288,16 +387,17 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     for (const L of levels) {
       const opened = focus !== null && L.level === focus;
       const hidden = focus !== null && L.level > focus;
-      // inside a flat only its own floor and the one above stay (the overhang): the crude
-      // slabs of the floors below and of the podium would show up as grey plates under the
-      // balcony, where the photograph is supposed to be
-      const walkHidden = walkPatch && L.level !== walkPatch.L.level && L.level !== walkPatch.L.level + 1;
+      // inside a flat its own 1:1 model and the 360° photograph replace the exterior massing
+      // completely, so no crude massing slabs, walls or upper-floor boxes appear in the windows
+      const walkHidden = !!walkPatch;
       L.group.visible = !hidden && !walkHidden;
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
+      if (L.walls) L.walls.material = opened ? mats.wallCut : mats.wall;
+      if (L.columns) L.columns.material = opened ? mats.wallCut : mats.column;
       if (L.plan) L.plan.visible = opened;
       if (L.glow) L.glow.visible = focus === null && hover === L.level;
       if (L.frames) {
-        L.frames.visible = !opened && !(walkPatch && walkPatch.hidden.includes(L.frames));
+        L.frames.visible = !opened && !walkPatch;
         const lit = focus === null && hover === L.level;
         // hovered: the floor's frames light up; at night all frames get the soft wash of the evening render
         L.frameMat.emissive.set(lit ? 0x1c4e89 : 0xfff1dc);
@@ -338,72 +438,10 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     return null;
   }
 
-  /* Walk-through: the flat's own model stands in its place, so this floor's
-     massing walls, columns and glass inside the flat give way to it. */
+  /* Walk-through: the flat's own model and 360° panorama replace the building massing. */
   let walkPatch = null;
-  function nearPoly(x, z, poly, margin) {
-    let inside = false;
-    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      const [xi, zi] = poly[i], [xj, zj] = poly[j];
-      if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
-      const dx = xj - xi, dz = zj - zi, t = Math.max(0, Math.min(1, ((x - xi) * dx + (z - zi) * dz) / (dx * dx + dz * dz || 1)));
-      if (Math.hypot(xi + t * dx - x, zi + t * dz - z) < margin) return true;
-    }
-    return inside;
-  }
   function setWalk(unit) {
-    if (walkPatch) {
-      walkPatch.hidden.forEach((o) => { o.visible = true; });
-      walkPatch.meshes.forEach((m) => { m.parent.remove(m); m.geometry.dispose(); });
-      walkPatch = null;
-      paint();
-    }
-    if (!unit) return;
-    const L = levels.find((l) => l.level === unit.level);
-    const above = levels.find((l) => l.level === unit.level + 1);
-    // the flat's own model replaces the massing here: its rooms and its balcony or terrace
-    const areas = [unit.data.poly, ...(unit.data.outdoor || [])];
-    const keepOut = (r) => !areas.some((poly) => nearPoly((r[0] + r[2]) / 2, (r[1] + r[3]) / 2, poly, 0.6));
-    // Massing walls are long rectangles (6–8 m) whose centre can be far from the flat while
-    // they run right along its edge: cut them into 0.5 m pieces so that only the piece next
-    // to the flat goes, not the whole wall and not nothing.
-    const pieces = (r) => {
-      const w = r[2] - r[0], d = r[3] - r[1], horizontal = w >= d, len = horizontal ? w : d;
-      const n = Math.max(1, Math.ceil(len / 0.5));
-      return Array.from({ length: n }, (_, i) => {
-        const a = (len * i) / n, b = (len * (i + 1)) / n;
-        return horizontal ? [r[0] + a, r[1], r[0] + b, r[3], ...r.slice(4)] : [r[0], r[1] + a, r[2], r[1] + b, ...r.slice(4)];
-      });
-    };
-    // Up close the massing's facade frames and balustrades are crude: on this floor and the
-    // one above they would stand right in front of the windows, so they go for the walk.
-    const hidden = [L.walls, L.columns, L.shell, unit.glass, L.frames, L.rails, above && above.frames, above && above.rails].filter(Boolean);
-    hidden.forEach((o) => { o.visible = false; });
-    const meshes = [];
-    const swap = (orig, rects, mat) => {
-      if (!orig) return;
-      const m = mesh(boxes(rects.flatMap(pieces).filter(keepOut), 0, L.full), mat);
-      if (m) { L.vert.add(m); meshes.push(m); }
-    };
-    swap(L.walls, L.data.walls, mats.wall);
-    swap(L.shell, L.data.shell || [], mats.shell);
-    swap(L.columns, L.data.columns, mats.column);
-    swap(L.commonGlass, L.data.glass.filter((r) => r[4] < 0), mats.glass);
-    // The floor slab of the massing lies 1 cm above the model's thin balcony slab and hides
-    // its tiles (seen from the balcony as a flat grey plate with ragged edges): under the
-    // flat and its balcony the model's own floor shows instead.
-    if (L.slabMesh) {
-      L.slabMesh.visible = false;
-      hidden.push(L.slabMesh);
-      const m = mesh(boxes(L.data.slab.flatMap(pieces).filter(keepOut), L.y0, SLAB, L.slabColours), mats.slab);
-      if (m) { L.group.add(m); meshes.push(m); }
-    }
-    // other flats' glazing on this floor stays, minus anything over this flat's balcony
-    const others = L.data.glass.filter((r) => r[4] >= 0 && L.units[r[4]] !== unit).flatMap(pieces).filter(keepOut);
-    const glass = mesh(boxes(others, 0, L.full), mats.glass);
-    if (glass) { L.vert.add(glass); meshes.push(glass); }
-    L.units.forEach((u) => { if (u.glass && u !== unit) { u.glass.visible = false; hidden.push(u.glass); } });
-    walkPatch = { L, unit, meshes, hidden };
+    walkPatch = unit ? { unit } : null;
     paint();
   }
 

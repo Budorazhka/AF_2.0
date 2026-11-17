@@ -11,7 +11,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "10";
+  var VERSION = "22";
   var app = null;
 
   function base() { return window.__BASE_PATH__ || ""; }

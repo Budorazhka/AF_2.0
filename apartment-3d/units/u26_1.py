@@ -30,8 +30,8 @@ def build():
 
     # -- floors ----------------------------------------------------------
     s.rect('Studio floor', 0.00, 2.21, 5.01, 5.61, 0.16, 'floor', -0.16, 'floor')
-    s.rect('Bathroom tile floor', 3.51, 0.00, 5.66, 2.01, 0.16, 'tile', -0.16, 'floor')
-    s.slab('Balcony slab', [(-1.40, 2.01), (-0.20, 2.01), (-0.20, 5.61), (-0.70, 5.61), (-0.70, 5.81), (-1.40, 5.81)],
+    s.rect('Bathroom tile floor', 3.51, 0.00, 5.66, 2.21, 0.16, 'tile', -0.16, 'floor')
+    s.slab('Balcony slab', [(-1.40, 2.01), (0.00, 2.01), (0.00, 5.61), (-0.70, 5.61), (-0.70, 5.81), (-1.40, 5.81)],
            -0.20, 0.18, 'tile')
 
     # -- structure -------------------------------------------------------
@@ -49,7 +49,7 @@ def build():
     s.wall('East wall north', 5.01, 2.21, 5.21, 3.15)
     s.lintel('Entrance lintel', 5.01, 3.15, 5.21, 4.05)
     s.wall('East wall south', 5.01, 4.05, 5.21, 5.41)
-    s.door_leaf('Entrance open door', 4.20, 3.11, 4.24, 3.98)
+    s.door_leaf('Entrance open door', 5.01, 3.14, 5.11, 4.06)
 
     # bathroom shell
     s.wall('Bathroom west wall', 3.31, 0.00, 3.51, 2.01)
@@ -60,16 +60,17 @@ def build():
     s.door_leaf('Bathroom open door', 3.75, 1.15, 3.79, 1.99, 'white')
 
     # -- glazing and balcony ---------------------------------------------
-    s.glazing('West glazing', -0.15, 2.55, -0.05, 5.27, mullions=[2.55, 3.45, 4.40, 5.23])
-    s.rect('Balcony open door', -0.03, 4.45, 0.01, 5.27, 2.20, 'metal', group='glazing')
+    s.glazing('West glazing', -0.15, 2.55, -0.05, 4.44, mullions=[2.55, 3.48, 4.40])
+    s.lintel('Balcony door lintel', -0.20, 4.40, 0.00, 5.27)
+    s.glazed_door_leaf('Balcony open door', -0.02, 5.21, 0.72, 5.25, 'metal')
 
     for z0, z1 in [(2.15, 3.35), (3.45, 4.65), (4.75, 5.70)]:
         s.glass_panel('Balcony glass', [(-1.38, z0), (-1.36, z0), (-1.36, z1), (-1.38, z1)])
     s.glass_panel('Balcony north glass', [(-1.38, 2.06), (-0.25, 2.06), (-0.25, 2.08), (-1.38, 2.08)])
-    s.glass_panel('Balcony south glass', [(-1.38, 5.74), (-0.75, 5.74), (-0.75, 5.76), (-1.38, 5.76)])
+    s.glass_panel('Balcony south glass', [(-1.38, 5.74), (-0.25, 5.74), (-0.25, 5.76), (-1.38, 5.76)])
     s.rect('Balcony handrail', -1.40, 2.05, -1.34, 5.78, 0.025, 'metal', 1.10, 'rail')
-    s.rect('Balcony north rail', -1.40, 2.05, -0.25, 2.11, 0.025, 'metal', 1.10, 'rail')
-    s.rect('Balcony south rail', -1.40, 5.72, -0.75, 5.78, 0.025, 'metal', 1.10, 'rail')
+    s.rect('Balcony north rail', -1.40, 2.05, -0.22, 2.11, 0.025, 'metal', 1.10, 'rail')
+    s.rect('Balcony south rail', -1.40, 5.72, -0.22, 5.78, 0.025, 'metal', 1.10, 'rail')
 
     s.rect('White balcony fascia', -1.50, 1.95, -1.36, 5.88, 0.24, 'white', -0.24, 'facade')
     s.rect('Balcony soffit', -1.50, 1.95, -1.36, 5.88, 0.24, 'white', CEILING, 'facade')
