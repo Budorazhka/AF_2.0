@@ -14,11 +14,11 @@
     '26-1': {slug: '26-1', interior: 'Ар-деко'},
     '28-3': {slug: '28-3', interior: 'Ар-деко'},
     '40-5': {slug: '40-5', interior: 'Ар-деко'},
-    '48-5': {slug: '48-5', interior: 'Ар-деко', revision: '20260916-verified-1'},
+    '48-5': {slug: '48-5', interior: 'Ар-деко', revision: '20261119-bathroom-48'},
     '66': {slug: '66', interior: 'Ар-деко'},
     '81-8': {slug: '81-8', interior: 'Ар-деко', revision: '20260915-layout-2'},
-    '107-1': {slug: '107-1', interior: 'Ар-деко'},
-    '113-7': {slug: '113-7', interior: 'Ар-деко'}
+    '107-1': {slug: '107-1', interior: 'Ар-деко', revision: '20261119-layout-704'},
+    '113-7': {slug: '113-7', interior: 'Ар-деко', revision: '20261119-terrace-604'}
   };
   var PLANS = {
     '/assets/img/plans/26,1.webp': '26-1',

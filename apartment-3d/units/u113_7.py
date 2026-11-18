@@ -142,7 +142,7 @@ def build():
     s.rect('Wardrobe 2 seam', 2.26, 5.09, 2.84, 5.11, 2.38, 'dark', 0.01)
 
     # -- entrance hall --------------------------------------------------------
-    s.rect('Hall wardrobe', 1.10, 0.05, 2.30, 0.65, 2.40, 'white')
+    s.rect('Hall wardrobe', 1.16, 1.24, 2.36, 1.79, 2.40, 'white')
     s.rect('Hall bench', 2.60, 0.10, 3.60, 0.55, 0.45, 'wood')
     s.rect('Hall mirror', 3.90, 0.30, 3.92, 1.40, 1.30, 'glass', 0.90)
 
@@ -207,14 +207,44 @@ def build():
     s.rect('Armchair back', 6.43, 7.61, 7.23, 7.73, 0.72, 'fabric')
 
     # -- terrace set ----------------------------------------------------------------------
-    s.rect('Terrace table top', 9.60, 2.60, 11.00, 4.40, 0.05, 'wood', 0.73)
-    for x in (9.66, 10.89):
-        for z in (2.66, 4.29):
+    s.rect('Terrace table top', 9.80, 5.05, 11.20, 6.85, 0.05, 'wood', 0.73)
+    for x in (9.86, 11.09):
+        for z in (5.11, 6.74):
             s.rect('Terrace table leg', x, z, x + 0.05, z + 0.05, 0.73, 'dark')
-    for z in (2.85, 3.45, 4.05):
-        s.rect('Terrace chair west', 9.12, z, 9.52, z + 0.40, 0.04, 'fabric', 0.44)
-        s.rect('Terrace chair west back', 9.09, z, 9.12, z + 0.40, 0.42, 'wood', 0.44)
-        s.rect('Terrace chair east', 11.08, z, 11.48, z + 0.40, 0.04, 'fabric', 0.44)
-        s.rect('Terrace chair east back', 11.48, z, 11.51, z + 0.40, 0.42, 'wood', 0.44)
+    for z in (5.30, 5.90, 6.50):
+        s.rect('Terrace chair west', 9.32, z, 9.72, z + 0.40, 0.04, 'fabric', 0.44)
+        s.rect('Terrace chair west back', 9.29, z, 9.32, z + 0.40, 0.42, 'wood', 0.44)
+        s.rect('Terrace chair east', 11.28, z, 11.68, z + 0.40, 0.04, 'fabric', 0.44)
+        s.rect('Terrace chair east back', 11.68, z, 11.71, z + 0.40, 0.42, 'wood', 0.44)
+    add_terrace_lounge(s)
 
     return s
+
+
+def add_terrace_lounge(scene):
+    scene.rect('Lounger frame', 10.60, 0.74, 11.39, 2.64, 0.06, 'wood', 0.25)
+    for x in (10.65, 11.29):
+        for z in (0.80, 2.54):
+            scene.rect('Lounger leg', x, z, x + 0.045, z + 0.045, 0.27, 'dark', -0.02)
+    scene.rect('Lounger seat', 10.64, 1.43, 11.35, 2.60, 0.084, 'fabric', 0.31)
+    back = scene.rect('Lounger back cushion', 10.64, 0.78, 11.35, 1.43, 0.084, 'fabric', 0.31)
+    brace = scene.rect('Lounger back frame', 10.60, 0.74, 11.39, 1.43, 0.05, 'wood', 0.26)
+    for piece in (back, brace):
+        for vertex in piece['v']:
+            vertex[1] += (1.43 - vertex[2]) * 0.62
+    scene.rect('Lounger back support', 10.93, 0.87, 11.05, 0.93, 0.36, 'dark', 0.29)
+
+    scene.oval('Terrace side table foot', 11.83, 1.72, 0.17, 0.17, -0.02, 0.035, 'dark')
+    scene.oval('Terrace side table stem', 11.83, 1.72, 0.026, 0.026, 0.01, 0.46, 'dark')
+    scene.oval('Terrace side table top', 11.83, 1.72, 0.25, 0.25, 0.465, 0.04, 'wood')
+
+    scene.oval('Champagne ice bucket', 11.82, 1.72, 0.116, 0.116, 0.505, 0.17, 'metal')
+    scene.oval('Ice bucket inset', 11.82, 1.72, 0.099, 0.099, 0.674, 0.004, '#798c90')
+    scene.rect('Bucket left handle', 11.684, 1.698, 11.708, 1.742, 0.024, 'metal', 0.615)
+    scene.rect('Bucket right handle', 11.932, 1.698, 11.956, 1.742, 0.024, 'metal', 0.615)
+    for x, z, h in [(11.753, 1.687, 0.028), (11.837, 1.76, 0.022), (11.87, 1.695, 0.032), (11.77, 1.755, 0.031)]:
+        scene.rect('Ice cube', x, z, x + 0.034, z + 0.034, h, '#d5e6e8', 0.677)['alpha'] = 0.78
+    scene.oval('Champagne bottle', 11.82, 1.71, 0.041, 0.041, 0.674, 0.13, '#33391d')
+    scene.oval('Champagne label', 11.82, 1.71, 0.0415, 0.0415, 0.715, 0.053, '#e6d6af')
+    scene.oval('Champagne shoulder', 11.82, 1.71, 0.031, 0.031, 0.798, 0.022, '#33391d')
+    scene.oval('Champagne gold foil', 11.82, 1.71, 0.017, 0.017, 0.817, 0.078, '#b59a54')

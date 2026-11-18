@@ -9,7 +9,8 @@
 import * as THREE from './three.js';
 import { GLTFLoader } from './three.js';
 import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
-import { ART_DECO_PILOT, createArtDeco } from './art-deco.js?v=2';
+import { createWalkFinishes } from './walk-finishes.js?v=2';
+import { createWalkAccessories } from './walk-accessories.js?v=2';
 
 const EYE = 1.6;
 const CEILING = 2.8;
@@ -32,13 +33,15 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   const loader = new GLTFLoader();
   const glbCache = new Map();
-  const artDeco = createArtDeco(renderer, assetUrl);
+  const finishes = createWalkFinishes(renderer, basePath);
+  const accessories = createWalkAccessories(basePath);
   const railGlass = new THREE.MeshStandardMaterial({ color: 0xaecad8, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
   const lamp = new THREE.PointLight(0xffd6a0, 1.2, 16, 1.3);   // warm interior light
   const fillLight = new THREE.HemisphereLight(0xfffbf4, 0xd8cfc2, 0.42);
 
   let model = null, parent = null;
-  let artDecoDetails = null;
+  let finishDetails = null;
+  let stagingDetails = null;
   const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(PANO_R, 96, 48),
     // writes depth so the live sky dome behind it (40 km) cannot paint over the photographs
@@ -93,7 +96,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
       let role = roleOf(o.material);
       if (group === 'floor' && o.geometry.boundingBox.max.y < -0.01) role = 'terrace';
       o.userData.af = { group, role, original: o.material };
-      o.castShadow = group !== 'floor';
+      o.castShadow = group !== 'floor' && !o.material.transparent;
       o.receiveShadow = true;
       // the building draws its own facade frames now; the model's fins would double them
       if (group === 'facade') o.visible = false;
@@ -146,13 +149,13 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   function applyStyle() {
     if (!model) return;
-    const detailed = artDecoDetails && style.id === 'art_deco';
-    artDecoDetails?.show(detailed, furniture);
+    finishDetails?.show(style.id, furniture && style.furniture);
+    stagingDetails?.show(furniture && style.furniture, style.id);
     model.traverse((o) => {
       if (!o.isMesh || !o.userData.af) return;
       const { group, role, original } = o.userData.af;
       const styled = ['walls', 'floor', 'furniture', 'ceiling'].includes(group);
-      const m = (detailed && artDecoDetails.materialFor(o)) || (styled && role && materialFor(style, role, renderer));
+      const m = finishDetails?.materialFor(o) || (styled && role && materialFor(style, role, renderer));
       // the model's dark railing glass reads as a blue band across the view; real balustrade glass is clear
       o.material = group === 'rail' && role === 'blue_glass' ? railGlass : m || original || materialFor(style, 'wall', renderer);
       if (group === 'furniture') o.visible = (furniture && style.furniture) || /Entrance open door/i.test(o.name);
@@ -195,7 +198,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     return false;
   }
 
-  function spawn(facingWorld) {
+  function spawn(facingWorld, origin) {
     // middle of the largest interior floor piece — the living room
     let best = null, area = 0;
     model.traverse((o) => {
@@ -205,7 +208,8 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
         if (bb.max.y > -0.01 && a > area) { area = a; best = bb; }
       }
     });
-    local.set((best.min.x + best.max.x) / 2, 0, (best.min.z + best.max.z) / 2);
+    if (origin && inside(...origin)) local.set(origin[0], 0, origin[1]);
+    else local.set((best.min.x + best.max.x) / 2, 0, (best.min.z + best.max.z) / 2);
     if (!free(local.x, local.z)) {
       // nearest free spot, searched in rings round the middle of the room
       search: for (let r = 0.2; r < 4; r += 0.2) {
@@ -229,11 +233,13 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   /* -- public ------------------------------------------------------------ */
   /** parent: the building's plan-space group; offset: [x, z] of the model in it; floorY: slab top. */
   async function enter({ slug, parent: p, offset, floorY, facingAz, floor }) {
-    const [src] = await Promise.all([loadGlb(slug), slug === ART_DECO_PILOT ? artDeco.load() : null]);
+    const [src] = await Promise.all([loadGlb(slug), finishes.load(style.id), accessories.load()]);
     exit();
     parent = p;
     model = prepare(src);
-    if (slug === ART_DECO_PILOT) artDecoDetails = artDeco.decorate(model);
+    finishDetails = finishes.decorate(model, slug);
+    stagingDetails = accessories.decorate(model, slug);
+    if (stagingDetails) furnBlockers.push(...stagingDetails.blockers);
     // 1 cm above the building's slab so the two floor surfaces do not flicker
     model.position.set(offset[0], floorY + 0.03, offset[1]);
     parent.add(model);
@@ -242,11 +248,16 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     model.add(lamp);
     model.add(fillLight);
     applyStyle();
-    // Azimuth → camera yaw. Frame the sofa and the balcony together in the pilot.
+    // Furnished interiors open with a view composed for this floor plan.
     const windowYaw = facingAz != null ? (-facingAz * Math.PI) / 180 : 0;
-    const showLivingRoom = artDecoDetails && style.id === 'art_deco';
-    spawn(windowYaw - (showLivingRoom ? Math.PI / 3.7 : 0));
-    if (showLivingRoom) pitch.v = -0.19;
+    const view = style.furniture ? finishDetails.view : null;
+    spawn(windowYaw, view?.[0]);
+    if (view) {
+      const [x, z] = view[1];
+      tmp.set(x - local.x, 0, z - local.z).applyQuaternion(model.getWorldQuaternion(qInv));
+      yaw.v = Math.atan2(-tmp.x, -tmp.z);
+      pitch.v = -0.19;
+    }
     lamp.position.set(local.x, 2.4, local.z);
     placeCamera();
     site.setShadowFocus(box.getCenter(new THREE.Vector3()), 16);
@@ -256,8 +267,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   }
 
   function exit() {
-    artDecoDetails?.dispose();
-    artDecoDetails = null;
+    finishDetails?.dispose();
+    finishDetails = null;
+    stagingDetails = null;
     if (model && parent) {
       parent.remove(model);
       model.traverse((o) => o.geometry?.dispose());
@@ -270,6 +282,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   function setSun(dir, altitude) {
     const day = THREE.MathUtils.smoothstep(altitude, -0.1, 0.25);
+    stagingDetails?.setSun(day);
     lamp.intensity = 1.2 + 5.8 * (1 - day);
     fillLight.intensity = 0.25 + 0.22 * day;
     sphere.material.color.setScalar(0.18 + 0.82 * day);
@@ -330,7 +343,11 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     enter, exit, setSun, update, tapTo, look,
     get active() { return !!model; },
     get style() { return style.id; },
-    setStyle(id) { style = STYLES.find((s) => s.id === id) || style; applyStyle(); },
+    setStyle(id) {
+      style = STYLES.find((s) => s.id === id) || style;
+      applyStyle();
+      finishes.load(style.id)?.then(() => { if (style.id === id) applyStyle(); });
+    },
     get furniture() { return furniture; },
     setFurniture(on) { furniture = on; applyStyle(); },
     keyDown(code) { keys.add(code); },
@@ -339,7 +356,8 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     resize(w, h) { camera.aspect = w / h; camera.updateProjectionMatrix(); },
     dispose() {
       exit(); railGlass.dispose(); lamp.dispose(); fillLight.dispose();
-      artDeco.dispose();
+      finishes.dispose();
+      accessories.dispose();
       sphere.geometry.dispose(); sphere.material.dispose();
       panoCache.forEach((p) => p.then((t) => t.dispose()).catch(() => {}));
     },

@@ -130,8 +130,8 @@ def build():
     s.rect('Vanity', 1.46, 5.11, 1.96, 5.70, 0.75, 'wood')
     s.oval('Washbasin', 1.71, 5.40, 0.18, 0.22, 0.75, 0.12, 'white')
     s.rect('Mirror', 1.47, 5.11, 1.49, 5.70, 0.85, 'glass', 1.15)
-    s.rect('Washing machine', 2.70, 5.35, 3.30, 5.95, 0.85, '#dcd8cf')
-    s.rect('Washer porthole', 2.85, 5.31, 3.15, 5.35, 0.30, 'dark', 0.30)
+    s.rect('Washing machine', 2.35, 5.35, 2.95, 5.95, 0.85, '#dcd8cf')
+    s.rect('Washer porthole', 2.50, 5.31, 2.80, 5.35, 0.30, 'dark', 0.30)
 
     # -- living room --------------------------------------------------------
     s.rect('Sofa base', 3.90, 0.56, 4.78, 2.52, 0.30, 'wood')
