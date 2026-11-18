@@ -11,6 +11,7 @@
    Everything here is in plan coordinates (metres on the drawing). */
 import * as THREE from './three.js';
 import { mergeGeometries } from './three.js';
+import { PARKING } from './exterior-layout.js';
 
 /* Fixed plan-space node chains placed along the outer terrace edge; outward
    normals point +Z (south/sea) and +X (east), so the origami exoskeleton sits
@@ -294,7 +295,7 @@ export function frameGeometry(storeys) {
 
 /* -- car park ------------------------------------------------------------- */
 
-const CAR_COLOURS = [0x181c22, 0x222830, 0x14171c, 0x2d333b, 0x1c222b, 0x3b4048];
+const CAR_COLOURS = [0x354859, 0xbfc5c9, 0x242832, 0x5b6879, 0x798387, 0xd2cbc2];
 
 function carGeometry() {
   const body = new THREE.BoxGeometry(4.4, 0.58, 1.82); body.translate(0, 0.54, 0);
@@ -309,38 +310,56 @@ function carGeometry() {
   return g;
 }
 
-/** Elevated dark-graphite parking deck on the right of the podium (фасад 2). */
-export function carPark(bays, y) {
+/** Open top deck above a covered garage, with an entrance at each elevation. */
+export function carPark(y, lowerY) {
   const group = new THREE.Group();
-  if (!bays || !bays.length) return { group, dispose() {} };
-  const x0 = 26.2, x1 = 42.5, z0 = 20.2, z1 = 32.8;
+  const { bounds: [x0, z0, x1, z1], upper, lower, deckThickness } = PARKING;
   const w = x1 - x0, d = z1 - z0;
-
   const deckMat = new THREE.MeshStandardMaterial({ color: 0x38414f, roughness: 0.82 });
-  const deck = new THREE.Mesh(new THREE.BoxGeometry(w, 4.4, d), deckMat);
-  deck.position.set((x0 + x1) / 2, y - 2.2, (z0 + z1) / 2);
-  deck.castShadow = true;
-  deck.receiveShadow = true;
-  group.add(deck);
-
-  const parParts = [
-    new THREE.BoxGeometry(w, 0.75, 0.35).translate((x0 + x1) / 2, y + 0.375, z1 - 0.175),
-    new THREE.BoxGeometry(0.35, 0.75, d).translate(x1 - 0.175, y + 0.375, (z0 + z1) / 2),
-    new THREE.BoxGeometry(w, 0.75, 0.35).translate((x0 + x1) / 2, y + 0.375, z0 + 0.175),
-  ];
-  const parMesh = new THREE.Mesh(mergeGeometries(parParts, false), deckMat);
-  parParts.forEach((p) => p.dispose());
-  parMesh.castShadow = true;
-  parMesh.receiveShadow = true;
-  group.add(parMesh);
-
-  const asphalt = new THREE.Mesh(
-    new THREE.PlaneGeometry(w - 0.7, d - 0.7).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0x2b3038, roughness: 0.92 })
-  );
-  asphalt.position.set((x0 + x1) / 2, y + 0.02, (z0 + z1) / 2);
-  asphalt.receiveShadow = true;
-  group.add(asphalt);
+  const asphalt = new THREE.MeshStandardMaterial({ color: 0x40464b, roughness: 0.95 });
+  const boxes = [];
+  const box = (a, b, c, e, base, height) => boxes.push(new THREE.BoxGeometry(c - a, height, e - b)
+    .translate((a + c) / 2, base + height / 2, (b + e) / 2));
+  box(x0, z0, x1, z1, y - deckThickness, deckThickness);
+  box(x0, z0, x1, z1, lowerY - 0.22, 0.22);
+  const wall = 0.26;
+  const clearHeight = y - deckThickness - lowerY;
+  const entryStart = lower.z - lower.halfWidth;
+  const entryEnd = lower.z + lower.halfWidth;
+  box(x0, z0, x0 + wall, z1, lowerY, clearHeight);
+  // Low sea-facing retaining wall with open bays below the deck.
+  box(x0, z1 - wall, x1, z1, lowerY, 0.84);
+  for (const x of [x0 + wall / 2, x0 + w / 3, x1 - w / 3, x1 - wall / 2]) {
+    box(x - wall / 2, z1 - wall, x + wall / 2, z1, lowerY + 0.84, clearHeight - 0.84);
+  }
+  box(x0, z0, x1, z0 + wall, lowerY, clearHeight);
+  box(x1 - wall, z0, x1, entryStart, lowerY, clearHeight);
+  box(x1 - wall, entryEnd, x1, z1, lowerY, clearHeight);
+  box(x0, z1 - wall, x1, z1, y, 0.75);
+  box(x1 - wall, z0, x1, z1, y, 0.75);
+  box(x0, z0, upper.x - upper.halfWidth, z0 + wall, y, 0.75);
+  box(upper.x + upper.halfWidth, z0, x1, z0 + wall, y, 0.75);
+  const structure = new THREE.Mesh(mergeGeometries(boxes, false), deckMat);
+  boxes.forEach((p) => p.dispose());
+  structure.castShadow = structure.receiveShadow = true;
+  group.add(structure);
+  const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.19, entryEnd - entryStart + 0.4),
+    new THREE.MeshStandardMaterial({ color: 0x929da5, roughness: 0.8 }));
+  lintel.position.set(x1 + 0.03, y - deckThickness + 0.105, lower.z);
+  lintel.receiveShadow = true;
+  group.add(lintel);
+  const fixture = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 3.4),
+    new THREE.MeshStandardMaterial({ color: 0xffedd7, emissive: 0xffd6a5, emissiveIntensity: 0.75 }));
+  fixture.position.set(x1 - 1.3, y - deckThickness - 0.02, lower.z);
+  const entranceLight = new THREE.PointLight(0xffddb8, 20, 7);
+  entranceLight.position.set(x1 - 1.75, y - deckThickness - 0.45, lower.z);
+  group.add(fixture, entranceLight);
+  for (const elevation of [y, lowerY]) {
+    const surface = new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), asphalt);
+    surface.position.set((x0 + x1) / 2, elevation + 0.02, (z0 + z1) / 2);
+    surface.receiveShadow = true;
+    group.add(surface);
+  }
 
   const lines = [];
   const bayZ0 = z0 + 1.2, bayPitch = 2.0, bayCount = 5;
@@ -353,6 +372,11 @@ export function carPark(bays, y) {
   const frontLine = new THREE.PlaneGeometry(0.1, bayCount * bayPitch).rotateX(-Math.PI / 2);
   frontLine.translate(x1 - 5.4, y + 0.03, bayZ0 + (bayCount * bayPitch) / 2);
   lines.push(frontLine);
+  const lowerBays = 4, lowerPitch = 2.65, lowerStart = x0 + 1.1;
+  for (let i = 0; i <= lowerBays; i++) {
+    lines.push(new THREE.PlaneGeometry(0.08, 4.65).rotateX(-Math.PI / 2)
+      .translate(lowerStart + i * lowerPitch, lowerY + 0.03, z1 - 2.5));
+  }
 
   const lineMesh = new THREE.Mesh(mergeGeometries(lines, false), new THREE.MeshBasicMaterial({ color: 0xd8dce2 }));
   lines.forEach((l) => l.dispose());
@@ -361,7 +385,7 @@ export function carPark(bays, y) {
   const cars = new THREE.InstancedMesh(
     carGeometry(),
     new THREE.MeshStandardMaterial({ roughness: 0.22, metalness: 0.65 }),
-    bayCount
+    bayCount + lowerBays
   );
   const m = new THREE.Matrix4(), c = new THREE.Color();
   for (let i = 0; i < bayCount; i++) {
@@ -369,6 +393,11 @@ export function carPark(bays, y) {
     m.makeRotationY(0).setPosition(x1 - 2.9, y, bz);
     cars.setMatrixAt(i, m);
     cars.setColorAt(i, c.setHex(CAR_COLOURS[i % CAR_COLOURS.length]));
+  }
+  for (let i = 0; i < lowerBays; i++) {
+    m.makeRotationY(Math.PI / 2).setPosition(lowerStart + (i + 0.5) * lowerPitch, lowerY + 0.02, z1 - 2.45);
+    cars.setMatrixAt(bayCount + i, m);
+    cars.setColorAt(bayCount + i, c.setHex(CAR_COLOURS[(i + 1) % CAR_COLOURS.length]));
   }
   cars.castShadow = true;
   cars.receiveShadow = true;

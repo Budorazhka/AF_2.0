@@ -12,8 +12,8 @@
    Texts go through AF_I18N.t(): the Russian string is the dictionary key. */
 import * as THREE from './three.js';
 import { OrbitControls, RoomEnvironment } from './three.js';
-import { createSite, groundHeight } from './site.js?v=24';
-import { createBuilding, STATUS_COLORS } from './building.js?v=24';
+import { createSite, groundHeight } from './site.js?v=25';
+import { createBuilding, STATUS_COLORS } from './building.js?v=25';
 import { createWalk } from './walk.js?v=30';
 import { createAmenities } from './amenities.js?v=24';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
@@ -633,7 +633,11 @@ function createApp(el) {
       building.attachToLevel(1, amenities.plan);
       building.attachToLevel(8, amenities.roof);
       scene.add(amenities.world);
-      site = createSite(scene, renderer, { keepOut: [...building.keepOut, ...amenities.keepOut], roadFrom: building.roadFrom, paths: amenities.paths });
+      site = createSite(scene, renderer, {
+        keepOut: [...building.keepOut, ...amenities.keepOut],
+        roadFrom: building.roadFrom, approaches: building.approaches,
+        parkingGround: building.parkingGround, paths: amenities.paths,
+      });
       site.setShadowFocus(new THREE.Vector3(0, 8, 0), 60);
       // pose before the first frame: from the sea side, matching the main facade render
       const start = orbitPose(new THREE.Vector3(0, 8.5, 2), 76, 12);
