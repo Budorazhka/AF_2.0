@@ -9,6 +9,7 @@
 import * as THREE from './three.js';
 import { GLTFLoader } from './three.js';
 import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
+import { ART_DECO_PILOT, createArtDeco } from './art-deco.js?v=2';
 
 const EYE = 1.6;
 const CEILING = 2.8;
@@ -31,11 +32,13 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   const loader = new GLTFLoader();
   const glbCache = new Map();
+  const artDeco = createArtDeco(renderer, assetUrl);
   const railGlass = new THREE.MeshStandardMaterial({ color: 0xaecad8, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
   const lamp = new THREE.PointLight(0xffd6a0, 1.2, 16, 1.3);   // warm interior light
   const fillLight = new THREE.HemisphereLight(0xfffbf4, 0xd8cfc2, 0.42);
 
   let model = null, parent = null;
+  let artDecoDetails = null;
   const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(PANO_R, 96, 48),
     // writes depth so the live sky dome behind it (40 km) cannot paint over the photographs
@@ -143,11 +146,13 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
 
   function applyStyle() {
     if (!model) return;
+    const detailed = artDecoDetails && style.id === 'art_deco';
+    artDecoDetails?.show(detailed, furniture);
     model.traverse((o) => {
       if (!o.isMesh || !o.userData.af) return;
       const { group, role, original } = o.userData.af;
       const styled = ['walls', 'floor', 'furniture', 'ceiling'].includes(group);
-      const m = styled && role && materialFor(style, role, renderer);
+      const m = (detailed && artDecoDetails.materialFor(o)) || (styled && role && materialFor(style, role, renderer));
       // the model's dark railing glass reads as a blue band across the view; real balustrade glass is clear
       o.material = group === 'rail' && role === 'blue_glass' ? railGlass : m || original || materialFor(style, 'wall', renderer);
       if (group === 'furniture') o.visible = (furniture && style.furniture) || /Entrance open door/i.test(o.name);
@@ -224,10 +229,11 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   /* -- public ------------------------------------------------------------ */
   /** parent: the building's plan-space group; offset: [x, z] of the model in it; floorY: slab top. */
   async function enter({ slug, parent: p, offset, floorY, facingAz, floor }) {
-    const src = await loadGlb(slug);
+    const [src] = await Promise.all([loadGlb(slug), slug === ART_DECO_PILOT ? artDeco.load() : null]);
     exit();
     parent = p;
     model = prepare(src);
+    if (slug === ART_DECO_PILOT) artDecoDetails = artDeco.decorate(model);
     // 1 cm above the building's slab so the two floor surfaces do not flicker
     model.position.set(offset[0], floorY + 0.03, offset[1]);
     parent.add(model);
@@ -236,8 +242,11 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     model.add(lamp);
     model.add(fillLight);
     applyStyle();
-    // azimuth → camera yaw: yaw 0 looks north (-Z) and grows anticlockwise
-    spawn(facingAz != null ? (-facingAz * Math.PI) / 180 : 0);
+    // Azimuth → camera yaw. Frame the sofa and the balcony together in the pilot.
+    const windowYaw = facingAz != null ? (-facingAz * Math.PI) / 180 : 0;
+    const showLivingRoom = artDecoDetails && style.id === 'art_deco';
+    spawn(windowYaw - (showLivingRoom ? Math.PI / 3.7 : 0));
+    if (showLivingRoom) pitch.v = -0.19;
     lamp.position.set(local.x, 2.4, local.z);
     placeCamera();
     site.setShadowFocus(box.getCenter(new THREE.Vector3()), 16);
@@ -247,7 +256,12 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   }
 
   function exit() {
-    if (model && parent) parent.remove(model);
+    artDecoDetails?.dispose();
+    artDecoDetails = null;
+    if (model && parent) {
+      parent.remove(model);
+      model.traverse((o) => o.geometry?.dispose());
+    }
     model = null;
     scene.remove(sphere);
     keys.clear();
@@ -325,6 +339,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     resize(w, h) { camera.aspect = w / h; camera.updateProjectionMatrix(); },
     dispose() {
       exit(); railGlass.dispose(); lamp.dispose(); fillLight.dispose();
+      artDeco.dispose();
       sphere.geometry.dispose(); sphere.material.dispose();
       panoCache.forEach((p) => p.then((t) => t.dispose()).catch(() => {}));
     },

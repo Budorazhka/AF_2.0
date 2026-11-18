@@ -197,16 +197,19 @@ function forest({ keepOut, road, houses, paths = [] }) {
 
 function neighbourSpots(keepOut, road) {
   const random = rng(7);
-  const out = [];
+  // Above the house on the upper slope there is only 1 neighbouring house; all other neighbours lie further downhill towards the coast.
+  const out = [
+    { x: 85, z: -48, y: groundHeight(85, -48), w: 10.5, d: 9.0, h: 6, a: 0.35, r: 7.5 },
+  ];
   let tries = 0;
-  while (out.length < 110 && tries++ < 4000) {
-    const a = Math.PI * 0.35 + random() * Math.PI * 1.45;   // mostly downhill: north, west and south
-    const r = 70 + 1000 * random() ** 1.4;
-    const x = Math.cos(a) * r * 1.0, z = Math.sin(a) * r;
+  while (out.length < 65 && tries++ < 4000) {
+    const a = Math.PI * 0.65 + random() * Math.PI * 0.70;   // strictly downhill towards the sea (west / NW / SW)
+    const r = 165 + 880 * random() ** 1.3;
+    const x = Math.cos(a) * r, z = Math.sin(a) * r;
     const h = groundHeight(x, z);
-    if (h < SEA_LEVEL + 8 || blocked(x, z, keepOut, 18) || distToPath(x, z, road) < 12) continue;
+    if (x > -120 || h > -16 || h < SEA_LEVEL + 8 || blocked(x, z, keepOut, 18) || distToPath(x, z, road) < 12) continue;
     const w = 8 + random() * 6, d = 9 + random() * 5, hh = 6 + Math.floor(random() * 3) * 3;
-    if (out.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + 10)) continue;
+    if (out.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + 14)) continue;
     out.push({ x, z, y: h, w, d, h: hh, a: random() * Math.PI, r: Math.max(w, d) * 0.7 });
   }
   return out;
