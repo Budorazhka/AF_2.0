@@ -45,19 +45,27 @@ export function groundHeight(x, z) {
 
 /* -- relief ------------------------------------------------------------------ */
 
-function relief() {
+function relief(height, localBounds) {
   // one grid, dense near the house and stretched towards the horizon
   const n = 280, R = 9000, k = 2.2;
   const map = (u) => Math.sign(u) * R * Math.abs(u) ** k;
+  const regular = Array.from({ length: n + 1 }, (_, i) => map((i / n) * 2 - 1));
+  const axis = (min, max) => {
+    if (!localBounds) return regular;
+    const values = regular.filter((v) => v < min || v > max);
+    for (let v = min; v <= max; v += 0.85) values.push(v);
+    return values.sort((a, b) => a - b);
+  };
+  const [x0, z0, x1, z1] = localBounds || [];
+  const xs = axis(x0, x1), zs = axis(z0, z1);
   const pos = [], col = [], idx = [];
   const c = new THREE.Color();
   const forest = new THREE.Color(0x3d5e2b), deep = new THREE.Color(0x2d4a20), lawn = new THREE.Color(0x4b6b35);
   const sand = new THREE.Color(0xd8ccb0), town = new THREE.Color(0x9a9d8e), rock = new THREE.Color(0x6b745c);
   const noise = rng(11);
-  for (let j = 0; j <= n; j++) {
-    for (let i = 0; i <= n; i++) {
-      const x = map((i / n) * 2 - 1), z = map((j / n) * 2 - 1);
-      const h = groundHeight(x, z);
+  for (const z of zs) {
+    for (const x of xs) {
+      const h = height(x, z);
       pos.push(x, h, z);
       const r = Math.hypot(x, z), d = x - coastX(z);
       c.copy(forest).lerp(deep, smooth(150, 700, h) * 0.8).lerp(rock, smooth(500, 800, h) * 0.5);
@@ -68,9 +76,9 @@ function relief() {
       col.push(c.r, c.g, c.b);
     }
   }
-  for (let j = 0; j < n; j++) {
-    for (let i = 0; i < n; i++) {
-      const a = j * (n + 1) + i, b = a + 1, cc = a + n + 1, d = cc + 1;
+  for (let j = 0; j < zs.length - 1; j++) {
+    for (let i = 0; i < xs.length - 1; i++) {
+      const a = j * xs.length + i, b = a + 1, cc = a + xs.length, d = cc + 1;
       idx.push(a, cc, b, b, cc, d);
     }
   }
@@ -134,7 +142,7 @@ function distToPath(x, z, path) {
 
 const GREENS = [0x2f5422, 0x3b6329, 0x467231, 0x26471b, 0x527d38, 0x355c25, 0x5d8942];
 
-function forest({ keepOut, road, houses, paths = [] }) {
+function forest({ keepOut, roads, houses, paths = [] }) {
   const geo = treeGeometry();
   const mat = new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: false });
   const random = rng(42);
@@ -150,7 +158,7 @@ function forest({ keepOut, road, houses, paths = [] }) {
       if (blocked(x, z, keepOut, r < 120 ? 3.5 : 3)) continue;                 // hug the podium closely like фасад 2
       // keep the camera sightline from the west-south-west (x < -18, -14 < z < 20) open to the pool & facade
       if (x < -18 && x > -58 && z > -14 && z < 16) continue;
-      if (distToPath(x, z, road) < 7) continue;
+      if (roads.some((road) => distToPath(x, z, road) < 7)) continue;
       if (r < 120 && paths.some((p) => distToPath(x, z, p) < 2.8)) continue;
       if (houses.some((p) => Math.hypot(p.x - x, p.z - z) < p.r + 3)) continue;
       out.push({ x, y: h - 0.3, z, s: sMin + (sMax - sMin) * random(), a: random() * Math.PI * 2, c: GREENS[Math.floor(random() * GREENS.length)], deciduous: random() < 0.35, pick: random() });
@@ -246,33 +254,77 @@ function neighbours(spots) {
 }
 
 function roadPath(from) {
-  // leaves the car park, then climbs the slope behind the house in two bends
+  // Leaves the junction, then climbs the slope behind the house.
   const pts = [[0, 0], [8, 38], [70, 62], [150, 40], [230, 92], [330, 70], [430, 140], [560, 120]]
     .map(([dx, dz]) => new THREE.Vector3(from.x + dx, 0, from.z + dz));
   const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.4);
   return curve.getSpacedPoints(Math.round(curve.getLength() / 3));
 }
 
-function roadMesh(path) {
-  const pos = [], idx = [];
-  const w = 3;
+function accessTerrain(drives, garage) {
+  const strips = drives.map(({ path, halfWidth }) => ({
+    path,
+    halfWidth,
+    bounds: new THREE.Box3().setFromPoints(path).expandByScalar(halfWidth + 3),
+  }));
+  const bounds = strips.reduce((combined, strip) => combined.union(strip.bounds), new THREE.Box3());
+  if (garage) {
+    bounds.expandByPoint(new THREE.Vector3(garage[0] - 2, garage[1], garage[2] - 2));
+    bounds.expandByPoint(new THREE.Vector3(garage[3] + 2, garage[4], garage[5] + 2));
+  }
+  function height(x, z) {
+    const base = groundHeight(x, z);
+    let top = base;
+    for (const { path, halfWidth, bounds: area } of strips) {
+      if (x < area.min.x || x > area.max.x || z < area.min.z || z > area.max.z) continue;
+      let nearest = Infinity, surface = 0;
+      for (let i = 1; i < path.length; i++) {
+        const a = path[i - 1], b = path[i];
+        const dx = b.x - a.x, dz = b.z - a.z;
+        const t = THREE.MathUtils.clamp(((x - a.x) * dx + (z - a.z) * dz) / (dx * dx + dz * dz || 1), 0, 1);
+        const distance = Math.hypot(x - a.x - t * dx, z - a.z - t * dz);
+        if (distance >= nearest) continue;
+        nearest = distance;
+        surface = THREE.MathUtils.lerp(a.y, b.y, t);
+      }
+      top = Math.min(top, THREE.MathUtils.lerp(surface - 0.22, base, smooth(halfWidth + 0.65, halfWidth + 2.4, nearest)));
+    }
+    if (garage && x >= garage[0] && x <= garage[3] && z >= garage[2] && z <= garage[5]) top = Math.min(top, garage[1] - 0.24);
+    return top;
+  }
+  return { height, bounds: bounds.isEmpty() ? null : [bounds.min.x, bounds.min.z, bounds.max.x, bounds.max.z] };
+}
+
+function roadMesh(path, halfWidth, elevation, terrain) {
+  const pos = [], skirt = [], idx = [], skirtIdx = [];
   path.forEach((p, i) => {
     const a = path[Math.max(0, i - 1)], b = path[Math.min(path.length - 1, i + 1)];
     const tx = b.x - a.x, tz = b.z - a.z, l = Math.hypot(tx, tz) || 1;
     const nx = -tz / l, nz = tx / l;
     for (const s of [-1, 1]) {
-      const x = p.x + nx * w * s, z = p.z + nz * w * s;
-      pos.push(x, groundHeight(x, z) + 0.25, z);
+      const x = p.x + nx * halfWidth * s, z = p.z + nz * halfWidth * s;
+      const y = elevation(p, x, z);
+      pos.push(x, y, z);
+      if (terrain) skirt.push(x, y, z, x, Math.min(y - 0.16, terrain(x, z) - 0.12), z);
     }
     if (i) { const k = i * 2; idx.push(k - 2, k, k - 1, k - 1, k, k + 1); }
+    if (i && terrain) {
+      for (const k of [i * 4, i * 4 + 2]) skirtIdx.push(k - 4, k - 3, k, k, k - 3, k + 1);
+    }
   });
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setIndex(idx);
-  g.computeVertexNormals();
-  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x5a5d60, roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -2, side: THREE.DoubleSide }));
-  m.receiveShadow = true;
-  return m;
+  const mesh = (positions, indices, color) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    g.setIndex(indices);
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, roughness: 0.95, side: THREE.DoubleSide }));
+    m.receiveShadow = true;
+    return m;
+  };
+  const group = new THREE.Group();
+  group.add(mesh(pos, idx, 0x40464b));
+  if (terrain) group.add(mesh(skirt, skirtIdx, 0x4a4e52));
+  return group;
 }
 
 function batumi() {
@@ -295,12 +347,27 @@ function batumi() {
 
 /* -- site ----------------------------------------------------------------------- */
 
-/** keepOut: world AABBs [x0, z0, x1, z1] of the house; roadFrom: world point where the road starts. */
-export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z: 30 }, paths = [] } = {}) {
+/** keepOut: world AABBs [x0, z0, x1, z1] of the house. */
+export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z: 30 }, approaches = [], parkingGround = null, paths = [] } = {}) {
   const group = new THREE.Group();
   scene.add(group);
 
-  const ground = relief();
+  const drives = approaches.map(({ points, halfWidth }) => {
+    const curve = new THREE.CatmullRomCurve3(points);
+    return { halfWidth, path: curve.getSpacedPoints(Math.ceil(curve.getLength() / 0.65)) };
+  });
+  const road = roadPath(roadFrom);
+  const roadElevation = (p, x, z) => {
+    const surface = groundHeight(x, z) + 0.25;
+    if (!drives.length) return surface;
+    return THREE.MathUtils.lerp(roadFrom.y, surface, smooth(0, 14, Math.hypot(p.x - roadFrom.x, p.z - roadFrom.z)));
+  };
+  const join = drives.length ? [
+    { halfWidth: 3.5, path: [roadFrom, roadFrom] },
+    { halfWidth: 3, path: road.slice(0, 6).map((p) => new THREE.Vector3(p.x, roadElevation(p, p.x, p.z), p.z)) },
+  ] : [];
+  const terrain = accessTerrain([...drives, ...join], parkingGround);
+  const ground = relief(terrain.height, terrain.bounds);
   group.add(ground);
 
   const sea = new THREE.Mesh(
@@ -310,12 +377,20 @@ export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z
   sea.position.y = SEA_LEVEL;
   group.add(sea);
 
-  const road = roadPath(roadFrom);
   const spots = neighbourSpots(keepOut, road);
-  group.add(roadMesh(road));
+  group.add(roadMesh(road, 3, roadElevation));
+  for (const { path, halfWidth } of drives) group.add(roadMesh(path, halfWidth, (p) => p.y, terrain.height));
+  if (drives.length) {
+    const apron = new THREE.Mesh(new THREE.CircleGeometry(3.5, 24).rotateX(-Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0x40464b, roughness: 0.95 }));
+    apron.position.copy(roadFrom);
+    apron.position.y -= 0.012;
+    apron.receiveShadow = true;
+    group.add(apron);
+  }
   const houses = neighbours(spots);
   group.add(houses);
-  const trees = forest({ keepOut, road, houses: spots, paths });
+  const trees = forest({ keepOut, roads: [road, ...drives.map(({ path }) => path)], houses: spots, paths });
   group.add(trees.group);
   const city = batumi();
   group.add(city);

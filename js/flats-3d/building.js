@@ -6,7 +6,8 @@
    `outer` turns the sheet so that its "down" faces the real azimuth (the sea). */
 import * as THREE from './three.js';
 import { mergeGeometries } from './three.js';
-import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=20';
+import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=21';
+import { PARKING, SETBACK_ROOFS, parkingAccess } from './exterior-layout.js';
 
 export const SLAB = 0.3;
 const CUT = 1.25;          // wall height left standing when a floor is opened
@@ -107,11 +108,7 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     // light walking surface on top so the floor plan drawing reads clearly when opened; slate-graphite exterior edge
     const slabColours = { top: 0xe7e4de, side: 0x3b4556 };
     L.slabColours = slabColours;
-    const extraSlab = lv.level === 6
-      ? [[26.20, 14.20, 31.30, 19.55]]
-      : lv.level === 7
-      ? [[21.95, 13.55, 26.20, 19.55]]
-      : lv.level === 1 || lv.level === -1
+    const extraSlab = SETBACK_ROOFS[lv.level] || (lv.level === 1 || lv.level === -1
       ? [
           [3.90, 9.60, 13.70, 29.40],
           [5.50, 28.20, 13.70, 30.00],
@@ -121,7 +118,7 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
           // Ensure residential slabs reach the exact outer columns under both wings
           [5.65, 28.20, 13.65, 29.85],
           ...(lv.level <= 5 ? [[15.30, 18.00, 31.45, 19.65]] : []),
-        ];
+        ]);
     const baseSlab = lv.kind === 'spa' || lv.kind === 'lobby'
       ? lv.slab
           .filter((r) => !(r[0] < 13.8 && r[3] > 18.0))
@@ -309,9 +306,10 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
 
   // car park on the lobby level: attached to lobby group so it hides during walk-through
   const lobby = levels.find((l) => l.level === 1);
+  const spa = levels.find((l) => l.kind === 'spa');
   let parkGroup = null;
-  if (data.parking && lobby) {
-    const park = carPark(data.parking, lobby.y0 + SLAB * 0);
+  if (data.parking?.length && lobby && spa) {
+    const park = carPark(lobby.y0, spa.floor);
     lobby.group.add(park.group);
     parkGroup = park.group;
     disposables.push(park);
@@ -319,6 +317,10 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
 
   outer.updateMatrixWorld(true);
   const toWorld = (v) => v.clone().applyMatrix4(inner.matrixWorld);
+  const approaches = parkGroup ? parkingAccess(lobby.y0 + 0.02, spa.floor + 0.02).map(({ halfWidth, points }) => ({
+    halfWidth,
+    points: points.map(([x, height, z]) => toWorld(new THREE.Vector3(x, height, z))),
+  })) : [];
 
   // -- occluders and windows for the sun estimate ---------------------------
   const occluders = [];
@@ -329,10 +331,12 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
       corner.set(px, 0, pz).applyMatrix4(inner.matrixWorld);
       x0 = Math.min(x0, corner.x); x1 = Math.max(x1, corner.x); z0 = Math.min(z0, corner.z); z1 = Math.max(z1, corner.z);
     }
-    occluders.push([x0, y0, z0, x1, y1, z1]);
+    const box = [x0, y0, z0, x1, y1, z1];
+    occluders.push(box);
+    return box;
   }
   for (const L of levels) {
-    for (const r of L.data.slab) pushBox(r, L.y0, L.floor);
+    for (const r of [...L.data.slab, ...(SETBACK_ROOFS[L.level] || [])]) pushBox(r, L.y0, L.floor);
     const h = L.kind === 'roof' ? 2.8 : L.full;
     for (const r of [...L.data.walls, ...(L.data.shell || []), ...(L.data.glass || []), ...(L.data.columns || [])]) pushBox(r, L.floor, L.floor + h);
   }
@@ -341,15 +345,14 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
   const keepOut = [];
   const occluderCount = occluders.length;
   for (const L of levels) if (L.level <= 2) for (const r of L.data.slab) pushBox(r, 0, 0);
-  if (data.parking && data.parking.length) {
-    const b = data.parking;
-    pushBox([Math.min(...b.map((p) => p[0])) - 1, Math.min(...b.map((p) => p[1])) - 7, Math.max(...b.map((p) => p[2])) + 1, Math.max(...b.map((p) => p[3])) + 1], 0, 0);
+  const parkingGround = parkGroup ? pushBox(PARKING.bounds, spa.floor, spa.floor) : null;
+  if (parkGroup) {
+    const [x0, z0, x1, z1] = PARKING.bounds;
+    // Keep the lower entrance and open side clear of mature trees.
+    pushBox([x0, z0, x1 + 7, z1 + 6], 0, 0);
   }
   occluders.splice(occluderCount).forEach((o) => keepOut.push([o[0], o[2], o[3], o[5]]));
-  // the road starts at the far end of the car park's driving lane
-  const roadFrom = data.parking && data.parking.length
-    ? toWorld(new THREE.Vector3(Math.max(...data.parking.map((p) => p[2])) + 4, 0, Math.min(...data.parking.map((p) => p[1])) - 3))
-    : toWorld(new THREE.Vector3(data.size[0], 0, data.size[1]));
+  const roadFrom = approaches[0]?.points.at(-1) ?? toWorld(new THREE.Vector3(data.size[0], 0, data.size[1]));
 
   const rot = outer.rotation.y;
   function windowsOf(unit) {
@@ -464,7 +467,9 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
     planToWorld: (x, z, y = 0) => toWorld(new THREE.Vector3(x, y, z)),
     get parkGroup() { return parkGroup; },
     keepOut,
-    roadFrom: { x: roadFrom.x, z: roadFrom.z },
+    roadFrom,
+    approaches,
+    parkingGround,
     floorOf: (unit) => levels.find((l) => l.level === unit.level).floor,
     object: outer,
     levels,
