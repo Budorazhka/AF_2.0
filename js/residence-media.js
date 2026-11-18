@@ -13,7 +13,7 @@
   var UNITS = {
     '26-1': {slug: '26-1', interior: 'Ар-деко'},
     '28-3': {slug: '28-3', interior: 'Ар-деко'},
-    '40-5': {slug: '40-5', interior: 'Ар-деко'},
+    '40-5': {slug: '40-5', interior: 'Ар-деко', revision: '20261119-kitchen-405'},
     '48-5': {slug: '48-5', interior: 'Ар-деко', revision: '20261119-bathroom-48'},
     '66': {slug: '66', interior: 'Ар-деко'},
     '81-8': {slug: '81-8', interior: 'Ар-деко', revision: '20260915-layout-2'},
