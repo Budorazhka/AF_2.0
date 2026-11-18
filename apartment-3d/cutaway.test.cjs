@@ -76,6 +76,23 @@ const box = o => {
   return [Math.min(...at(0)), Math.min(...at(1)), Math.min(...at(2)),
           Math.max(...at(0)), Math.max(...at(1)), Math.max(...at(2))];
 };
+// Leave space between the lounge chairs and the entire dining group.
+const loungeChairs = large.filter(o => o.name.startsWith('Armchair'));
+const diningGroup = large.filter(o => /^Dining (chair|table)/.test(o.name));
+assert.ok(loungeChairs.length && diningGroup.length, '81-8: the seating groups must be present');
+for (const armchair of loungeChairs) {
+  const a = box(armchair);
+  for (const dining of diningGroup) {
+    const b = box(dining);
+    const circular = dining.name !== 'Dining table stem';
+    const radius = circular ? (b[3] - b[0]) / 2 : 0;
+    const gapX = Math.max(a[0] - b[3] + radius, b[0] + radius - a[3], 0);
+    const gapZ = Math.max(a[2] - b[5] + radius, b[2] + radius - a[5], 0);
+    const gap = Math.hypot(gapX, gapZ) - radius;
+    assert.ok(gap >= .45, `81-8: ${armchair.name} is too close to ${dining.name}`);
+  }
+}
+
 // 48.5 m² is photo-checked against the actual black-framed openings.  Its two
 // balconies are shallow exterior strips, not rooms: never allow furniture to
 // migrate outside or block either full-height balcony door again.
