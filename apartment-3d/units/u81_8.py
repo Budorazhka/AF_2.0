@@ -227,11 +227,11 @@ def build():
     for x in (3.97, 5.11):
         s.rect('Coffee table leg', x, 7.42, x + 0.05, 7.47, 0.36, 'dark')
         s.rect('Coffee table leg', x, 7.73, x + 0.05, 7.78, 0.36, 'dark')
-    for ax in (2.58, 5.92):
-        s.rect('Armchair base', ax, 7.30, ax + 0.75, 8.09, 0.30, 'wood')
-        s.rect('Armchair seat', ax + 0.06, 7.36, ax + 0.69, 8.03, 0.16, 'fabric', 0.30)
-    s.rect('Armchair back west', 2.58, 7.30, 2.70, 8.09, 0.72, 'fabric')
-    s.rect('Armchair back east', 6.55, 7.30, 6.67, 8.09, 0.72, 'fabric')
+    # Stagger the west armchair toward the sofa to clear the dining stools.
+    for side, ax, az, back_x in (('west', 2.58, 8.14, 2.58), ('east', 5.92, 7.30, 6.55)):
+        s.rect('Armchair base', ax, az, ax + 0.75, az + 0.79, 0.30, 'wood')
+        s.rect('Armchair seat', ax + 0.06, az + 0.06, ax + 0.69, az + 0.73, 0.16, 'fabric', 0.30)
+        s.rect(f'Armchair back {side}', back_x, az, back_x + 0.12, az + 0.79, 0.72, 'fabric')
     s.rect('Media console', 4.58, 5.73, 6.68, 6.05, 0.45, 'wood')
     s.rect('TV panel', 5.12, 5.73, 6.38, 5.77, 0.72, 'dark', 0.55)
 
