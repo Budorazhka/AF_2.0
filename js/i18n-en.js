@@ -377,7 +377,6 @@ Object.assign(window.AF_I18N_EN, {
   "Вид на море": "Sea view",
   "Пройти по квартире": "Walk through the apartment",
   "Выйти": "Exit",
-  "Мебель": "Furniture",
   "Зима": "Winter",
   "Весна": "Spring",
   "Лето": "Summer",

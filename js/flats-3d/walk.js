@@ -67,7 +67,6 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     sphere.position.copy(centre);
   }
   let style = STYLES[1];
-  let furniture = true;
   let walkable = [];           // floor triangles in model space [ax, az, bx, bz, cx, cz]
   let blockers = [];           // AABBs in model space [x0, z0, x1, z1]
   let furnBlockers = [];       // tall furniture: [x0, z0, x1, z1, mesh]; only counts while the mesh is shown
@@ -152,8 +151,8 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
 
   function applyStyle() {
     if (!model) return;
-    finishDetails?.show(style.id, furniture && style.furniture);
-    stagingDetails?.show(furniture && style.furniture, style.id);
+    finishDetails?.show(style.id, style.furniture);
+    stagingDetails?.show(style.furniture, style.id);
     model.traverse((o) => {
       if (!o.isMesh || !o.userData.af) return;
       const { group, role, original } = o.userData.af;
@@ -161,7 +160,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
       const m = finishDetails?.materialFor(o) || (styled && role && materialFor(style, role, renderer));
       // the model's dark railing glass reads as a blue band across the view; real balustrade glass is clear
       o.material = group === 'rail' && role === 'blue_glass' ? railGlass : m || original || materialFor(style, 'wall', renderer);
-      if (group === 'furniture') o.visible = (furniture && style.furniture) || /Entrance open door/i.test(o.userData.name || o.name);
+      if (group === 'furniture') o.visible = style.furniture ||/Entrance open door/i.test(o.userData.name || o.name);
     });
   }
 
@@ -363,8 +362,6 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
       applyStyle();
       finishes.load(style.id)?.then(() => { if (style.id === id) { applyStyle(); if (onUpdate) onUpdate(); } });
     },
-    get furniture() { return furniture; },
-    setFurniture(on) { furniture = on; applyStyle(); },
     keyDown(code) { keys.add(code); },
     keyUp(code) { keys.delete(code); },
     clearKeys() { keys.clear(); glide = null; },

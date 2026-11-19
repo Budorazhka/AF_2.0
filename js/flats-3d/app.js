@@ -14,7 +14,7 @@ import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
 import { createBuilding, STATUS_COLORS } from './building.js?v=28';
-import { createWalk } from './walk.js?v=33';
+import { createWalk } from './walk.js?v=34';
 import { createAmenities } from './amenities.js?v=25';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
@@ -270,12 +270,7 @@ function createApp(el) {
       <span class="af3d__sep" aria-hidden="true"></span>
       <div class="af3d__styles" role="group" aria-label="${esc(t('Вариант ремонта'))}">
         ${walk.styles.map((s) => `<button type="button" data-style="${s.id}" aria-pressed="${walk.style === s.id}">${esc(t(s.title))}</button>`).join('')}
-      </div>
-      <span class="af3d__sep" aria-hidden="true"></span>
-      <button type="button" class="af3d__toggle" data-act="furniture" aria-pressed="${walk.furniture}" ${walk.style === 'white_box' ? 'disabled' : ''}>
-        <i class="af3d__toggle-dot" aria-hidden="true"></i>
-        <span>${esc(t('Мебель'))}</span>
-      </button>`;
+      </div>`;
     bar.hidden = false;
   }
 
@@ -524,7 +519,6 @@ function createApp(el) {
       case 'deselect': select(null); break;
       case 'walk': enterWalk(); break;
       case 'exit-walk': leaveWalk(); toFloor(state.unit.level, { keepUnit: true }); setTimeout(() => { const w = el.querySelector('[data-act="walk"]'); if (w) w.focus(); }); break;
-      case 'furniture': walk.setFurniture(!walk.furniture); renderWalkBar(); requestRender(3); break;
       case 'play': state.playing = !state.playing; renderTime(); requestRender(2); break;
       case 'toggle-sun': state.sunOpen = !state.sunOpen; renderTime(); break;
       case 'lightbox-close': closeLightbox(); break;
