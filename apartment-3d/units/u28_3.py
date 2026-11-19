@@ -34,7 +34,7 @@ def build():
     s.rect('Studio floor east', 3.56, 1.50, 5.80, 6.00, 0.16, 'floor', -0.16, 'floor')
     s.slab('Wardrobe alcove floor', [(0.58, 0.00), (1.80, 0.00), (1.80, 1.40), (0.00, 1.40), (0.00, 0.59)],
            -0.16, 0.16, 'floor')
-    s.rect('Bathroom tile floor', 3.36, 0.00, 5.80, 1.50, 0.16, 'tile', -0.16, 'floor')
+    s.rect('Bathroom tile floor', 3.56, 0.00, 5.80, 1.50, 0.16, 'tile', -0.16, 'floor')
     s.slab('Balcony slab', [(4.00, 6.00), (5.80, 6.00), (5.80, 7.65), (4.00, 7.06)], -0.20, 0.18, 'tile')
 
     # -- structure -------------------------------------------------------
@@ -45,7 +45,7 @@ def build():
     s.wall('North wall west', 0.58, -0.20, 2.00, 0.00)
     s.lintel('Entrance lintel', 2.00, -0.20, 2.93, 0.00)
     s.wall('North wall east', 2.93, -0.20, 5.60, 0.00)
-    s.door_leaf('Entrance open door', 1.99, -0.10, 2.94, 0.00)
+    s.entrance_door()
 
     # chamfered north-west corner
     s.slab('Chamfer wall', [(0.00, 0.72), (0.00, 0.59), (0.58, 0.00), (0.58, -0.20), (-0.20, 0.59), (-0.20, 0.72)], 0.0, CEILING, 'wall', 'walls')
@@ -65,7 +65,7 @@ def build():
     s.door_leaf('Bathroom open door', 3.58, 0.02, 4.42, 0.06, 'white')
 
     # -- glazing ---------------------------------------------------------
-    s.glazing('South glazing', 1.90, 6.05, 4.74, 6.15, mullions=[1.90, 2.85, 3.80, 4.70])
+    s.fixed_glazing('South glazing', 1.90, 6.00, 4.74, 6.20, mullions=[1.90, 2.85, 3.80, 4.70])
     s.lintel('Balcony door lintel', 4.70, 6.00, 5.60, 6.20)
     s.glazed_door_leaf('Balcony open door', 5.54, 5.26, 5.58, 5.98, 'metal')
 
@@ -115,9 +115,8 @@ def build():
     s.rect('Side table stem', 4.51, 3.86, 4.59, 3.94, 0.42, 'dark')
 
     # -- kitchen run below the bathroom ---------------------------------------
-    s.rect('Kitchen cabinet base', 3.46, 1.70, 5.15, 2.30, 0.86, 'wood')
+    s.appliance_run(3.46, 1.70, 5.15, 2.30, 3.50, 4.03)
     s.rect('Kitchen countertop', 3.44, 1.68, 5.15, 2.32, 0.045, 'white', 0.86)
-    s.rect('Appliance front', 3.50, 2.26, 4.03, 2.30, 0.78, '#dcd8cf', 0.04)
     s.rect('Appliance porthole', 3.64, 2.28, 3.90, 2.32, 0.26, 'dark', 0.30)
     s.rect('Cooktop', 4.13, 1.76, 4.52, 2.26, 0.015, 'dark', 0.905)
     s.oval('Burner 1', 4.32, 1.90, 0.07, 0.07, 0.92, 0.005, 'metal')

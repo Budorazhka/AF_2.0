@@ -29,6 +29,12 @@ FOOTPRINT = [
 
 def add_kitchen_fittings(s):
     counter = next(o for o in s.objects if o['name'] == 'Kitchen countertop')
+    tall = next(o for o in s.objects if o['name'] == 'Kitchen tall unit')
+    end_of_tall_unit = s.bounds(tall)[3]
+    for o in s.objects:
+        if o['name'] in ('Kitchen lower run', 'Kitchen countertop'):
+            for vertex in o['v']:
+                vertex[0] = max(vertex[0], end_of_tall_unit)
     corner_z = s.bounds(counter)[2]
     top_x, back_x, end_z = 5.895, 6.50, 1.36
     sink_left, sink_right, sink_near, sink_far = 5.96, 6.37, 1.48, 2.00
@@ -82,6 +88,6 @@ def build():
                 'Cabinet front', 'Sink rim', 'Sink bowl', 'Tap', 'Entrance open door', 'Balcony open door'}
     s.objects = [o for o in s.objects if o['name'] not in replaced]
     add_kitchen_fittings(s)
-    s.door_leaf('Entrance open door', 2.99, -0.10, 4.02, 0.00)
+    s.entrance_door()
     s.glazed_door_leaf('Balcony open door', 3.90, 5.33, 3.94, 5.98, 'metal')
     return s

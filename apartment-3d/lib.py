@@ -72,6 +72,32 @@ class Scene:
     def door_leaf(self, name, x1, z1, x2, z2, c='wood'):
         return self.rect(name, x1, z1, x2, z2, DOOR_H, c, 0, 'furniture')
 
+    def entrance_door(self):
+        opening = next(o for o in self.objects if o['name'] == 'Entrance lintel')
+        x1, head, z1, x2, _, z2 = self.bounds(opening)
+        along_x = x2 - x1 > z2 - z1
+        near, far = (x1, x2) if along_x else (z1, z2)
+        centre = (z1 + z2 if along_x else x1 + x2) / 2
+        def edges(a, b, depth):
+            if along_x:
+                return a, centre - depth / 2, b, centre + depth / 2
+            return centre - depth / 2, a, centre + depth / 2, b
+        jamb = .035
+        for a, b in ((near, near + jamb), (far - jamb, far)):
+            self.rect('Entrance jamb', *edges(a, b, .10), head, 'wood', group='walls')
+        self.rect('Entrance frame head', *edges(near + jamb, far - jamb, .10),
+                  jamb, 'wood', head - jamb, 'walls')
+        self.rect('Entrance open door', *edges(near + jamb, far - jamb, .055),
+                  head - jamb, 'wood')
+
+    def appliance_run(self, x1, z1, x2, z2, left, right):
+        """Two cabinets with a full-depth appliance bay between them."""
+        self.rect('Kitchen cabinet base left', x1, z1, left, z2, .86, 'wood')
+        self.rect('Kitchen cabinet base right', right, z1, x2, z2, .86, 'wood')
+        self.rect('Appliance front', left, z1, right, z2, .78, '#dcd8cf', .04)
+        self.rect('Appliance plinth', left, z1, right, z2 - .04, .04, 'dark')
+        self.rect('Appliance top rail', left, z1, right, z2 - .01, .04, 'wood', .82)
+
     def glazed_door_leaf(self, name, x1, z1, x2, z2, c='dark', h=DOOR_H):
         """Open glazed balcony/terrace door leaf: perimeter frame so it never reads as a solid wall."""
         xa, xb = min(x1, x2), max(x1, x2)
@@ -123,16 +149,35 @@ class Scene:
         o['alpha'] = 0.82
         return o
 
-    def glazing(self, name, x1, z1, x2, z2, mullions=(), thickness=0.10):
+    def glazing(self, name, x1, z1, x2, z2, mullions=(), thickness=0.10, *, height=CEILING):
         """Floor-to-ceiling window band with a base rail, top rail and mullions."""
         horizontal = abs(x2 - x1) >= abs(z2 - z1)
         self.rect(name + ' base', x1, z1, x2, z2, 0.10, 'dark', 0, 'glazing')
-        self.rect(name + ' head', x1, z1, x2, z2, 0.06, 'dark', CEILING - 0.06, 'glazing')
+        self.rect(name + ' head', x1, z1, x2, z2, 0.06, 'dark', height - 0.06, 'glazing')
         for m in mullions:
             if horizontal:
-                self.rect(name + ' mullion', m, z1, m + 0.04, z2, CEILING, 'dark', 0, 'glazing')
+                self.rect(name + ' mullion', m, z1, m + 0.04, z2, height - .16, 'dark', .10, 'glazing')
             else:
-                self.rect(name + ' mullion', x1, m, x2, m + 0.04, CEILING, 'dark', 0, 'glazing')
+                self.rect(name + ' mullion', x1, m, x2, m + 0.04, height - .16, 'dark', .10, 'glazing')
+
+    def threshold(self, name, x1, z1, x2, z2):
+        # A low cap bridges the entire wall reveal, including a lower balcony slab.
+        self.rect(name + ' sill', x1, z1, x2, z2, .166, 'dark', -.16, 'glazing')
+
+    def fixed_glazing(self, name, x1, z1, x2, z2, mullions, height=CEILING):
+        self.threshold(name, x1, z1, x2, z2)
+        horizontal = x2 - x1 > z2 - z1
+        centre = (z1 + z2 if horizontal else x1 + x2) / 2
+        def strip(start, end, half_depth):
+            if horizontal:
+                return start, centre - half_depth, end, centre + half_depth
+            return centre - half_depth, start, centre + half_depth, end
+        start, end = (x1, x2) if horizontal else (z1, z2)
+        self.glazing(name, *strip(start, end, .05), mullions, height=height)
+        # The glass seats inside the end posts so its edges never share an exposed face.
+        pane = self.rect(name + ' pane', *strip(start + .02, end - .02, .008),
+                         height - .16, 'glass', .10, 'glazing')
+        pane['alpha'] = .10
 
     # -- checks -----------------------------------------------------------
     def bounds(self, o):

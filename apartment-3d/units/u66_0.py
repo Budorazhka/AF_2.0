@@ -50,7 +50,7 @@ def build():
     s.wall('North exterior kitchen', 4.40, -0.20, 8.00, 0.00)
     s.wall('West corridor stub', -0.20, 1.10, 0.00, 1.80)
     s.lintel('Entrance lintel', -0.20, 0.20, 0.00, 1.10)
-    s.door_leaf('Entrance open door', -0.10, 0.19, 0.00, 1.11)
+    s.entrance_door()
     s.wall('Corridor core wall', 0.20, 1.80, 4.00, 2.00)
     s.wall('East exterior north', 8.20, 0.20, 8.40, 1.80)
     s.wall('East exterior mid', 8.20, 2.20, 8.40, 7.80)
@@ -73,10 +73,10 @@ def build():
     s.wall('Balcony divider wall', 4.10, 8.20, 4.30, 9.25)
 
     # -- glazing ---------------------------------------------------------
-    s.glazing('Bedroom glazing', 1.30, 7.95, 4.00, 8.05, mullions=[1.30, 2.65, 3.96])
+    s.fixed_glazing('Bedroom glazing', 1.30, 7.90, 4.00, 8.10, mullions=[1.30, 2.65, 3.96])
     s.lintel('Bedroom balcony door lintel', 0.20, 7.90, 1.30, 8.05)
     s.glazed_door_leaf('Bedroom balcony open door', 0.22, 7.22, 0.26, 7.92, 'metal')
-    s.glazing('Living glazing', 4.40, 7.95, 6.84, 8.05, mullions=[4.40, 5.60, 6.80])
+    s.fixed_glazing('Living glazing', 4.40, 7.90, 6.84, 8.10, mullions=[4.40, 5.60, 6.80])
     s.lintel('Living terrace door lintel', 6.80, 7.90, 8.00, 8.05)
     s.glazed_door_leaf('Living balcony sliding door', 5.66, 7.89, 6.78, 7.93, 'metal')
 
@@ -128,7 +128,7 @@ def build():
     s.rect('Nightstand left', 0.55, 4.88, 0.95, 5.28, 0.48, 'wood')
     s.rect('Nightstand right', 2.85, 4.88, 3.25, 5.28, 0.48, 'wood')
     s.rect('Wardrobe closet', 3.50, 5.05, 4.03, 6.75, 2.40, 'white')
-    s.rect('Wardrobe seam', 3.76, 5.05, 3.78, 6.75, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe seam', 3.496, 5.898, 3.50, 5.902, 2.38, 'dark', 0.01)
 
     # -- bathroom ---------------------------------------------------------
     s.rect('Vanity', 4.20, 2.20, 4.70, 2.75, 0.75, 'wood')

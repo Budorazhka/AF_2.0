@@ -38,7 +38,7 @@ def build():
     s.rect('Bedroom 1 floor', 4.40, 0.00, 8.41, 3.02, 0.16, 'floor', -0.16, 'floor')
     s.rect('Bathroom tile floor', 0.00, 2.00, 3.04, 4.02, 0.16, 'tile', -0.16, 'floor')
     s.rect('Bedroom 2 floor', 0.00, 4.22, 3.04, 8.00, 0.16, 'floor', -0.16, 'floor')
-    s.rect('Hall floor', 2.84, 1.80, 4.40, 3.22, 0.16, 'floor', -0.16, 'floor')
+    s.rect('Hall floor', 3.04, 2.00, 4.40, 3.22, 0.16, 'floor', -0.16, 'floor')
     s.rect('Living room floor', 3.04, 3.22, 8.41, 8.00, 0.16, 'floor', -0.16, 'floor')
     s.slab('Balcony slab', [(0.00, 8.00), (4.03, 8.00), (4.03, 9.30), (0.00, 9.14)], -0.20, 0.18, 'tile')
     # L-shaped terrace, split so each cap stays convex
@@ -57,19 +57,22 @@ def build():
     s.lintel('Entrance lintel', 0.80, 0.30, 1.00, 1.15)
     s.wall('Corridor notch wall south', 0.80, 1.15, 1.00, 1.80)
     s.wall('Notch return wall', 0.00, 1.80, 1.00, 2.00)
-    s.door_leaf('Entrance open door', 0.90, 0.29, 1.00, 1.16)
+    s.entrance_door()
 
     s.wall('West exterior north', -0.20, 2.00, 0.00, 7.81)
-    s.wall('East exterior north', 8.41, 0.00, 8.61, 3.90)
+    s.wall('East exterior north', 8.41, 0.00, 8.61, 0.30)
+    s.wall('East window return', 8.41, 2.60, 8.61, 3.90)
     s.lintel('Terrace east door lintel', 8.41, 3.90, 8.61, 4.70)
-    s.wall('East exterior south', 8.41, 4.70, 8.61, 7.81)
+    s.wall('East exterior south', 8.41, 4.70, 8.61, 4.90)
+    s.wall('East window south return', 8.41, 7.70, 8.61, 7.81)
     s.glazed_door_leaf('Terrace east open door', 8.64, 3.90, 9.38, 3.94, 'metal')
 
     s.wall('South exterior west', 0.00, 8.00, 0.80, 8.20)
     s.lintel('Balcony door lintel', 0.80, 8.00, 1.70, 8.20)
     s.wall('South exterior mid', 1.70, 8.00, 4.60, 8.20)
     s.lintel('Terrace south door lintel', 4.60, 8.00, 5.50, 8.20)
-    s.wall('South exterior east', 5.50, 8.00, 8.41, 8.20)
+    s.wall('South exterior east', 5.50, 8.00, 5.60, 8.20)
+    s.wall('South window east return', 8.30, 8.00, 8.41, 8.20)
     s.glazed_door_leaf('Balcony open door', 0.80, 8.23, 0.84, 8.98, 'metal')
     s.glazed_door_leaf('Terrace south open door', 4.60, 8.23, 4.64, 8.98, 'metal')
 
@@ -91,9 +94,9 @@ def build():
     s.wall('Kitchen back wall', 4.40, 3.02, 8.41, 3.22)
 
     # -- glazing ---------------------------------------------------------
-    s.glazing('Bedroom 1 east window', 8.46, 0.30, 8.56, 2.60, mullions=[0.30, 1.10, 1.90, 2.56])
-    s.glazing('Living east glazing', 8.46, 4.90, 8.56, 7.70, mullions=[4.90, 5.80, 6.70, 7.66])
-    s.glazing('Living south glazing', 5.60, 8.05, 8.30, 8.15, mullions=[5.60, 6.50, 7.40, 8.26])
+    s.fixed_glazing('Bedroom 1 east window', 8.41, 0.30, 8.61, 2.60, mullions=[0.30, 1.10, 1.90, 2.56])
+    s.fixed_glazing('Living east glazing', 8.41, 4.90, 8.61, 7.70, mullions=[4.90, 5.80, 6.70, 7.66])
+    s.fixed_glazing('Living south glazing', 5.60, 8.00, 8.30, 8.20, mullions=[5.60, 6.50, 7.40, 8.26])
 
     # balcony rail
     s.glass_panel('Balcony glass', [(0.10, 9.14), (3.95, 9.28), (3.95, 9.30), (0.10, 9.16)])
@@ -126,7 +129,7 @@ def build():
     s.rect('Bed 1 nightstand left', 5.43, 0.02, 5.83, 0.42, 0.48, 'wood')
     s.rect('Bed 1 nightstand right', 7.57, 0.02, 7.97, 0.42, 0.48, 'wood')
     s.rect('Wardrobe 1', 4.44, 0.20, 5.04, 1.90, 2.40, 'white')
-    s.rect('Wardrobe 1 seam', 4.46, 1.04, 5.04, 1.06, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe 1 seam', 5.04, 1.048, 5.044, 1.052, 2.38, 'dark', 0.01)
     s.oval('Bedroom 1 rug', 6.70, 1.60, 1.35, 0.95, 0.0, 0.018, 'rug')
 
     # -- bedroom 2 (west) ----------------------------------------------------
@@ -139,7 +142,7 @@ def build():
     s.rect('Bed 2 nightstand north', 0.06, 4.65, 0.46, 5.05, 0.48, 'wood')
     s.rect('Bed 2 nightstand south', 0.06, 6.95, 0.46, 7.35, 0.48, 'wood')
     s.rect('Wardrobe 2', 2.24, 4.30, 2.84, 5.90, 2.40, 'white')
-    s.rect('Wardrobe 2 seam', 2.26, 5.09, 2.84, 5.11, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe 2 seam', 2.236, 5.098, 2.24, 5.102, 2.38, 'dark', 0.01)
 
     # -- entrance hall --------------------------------------------------------
     s.rect('Hall wardrobe', 1.16, 1.24, 2.36, 1.79, 2.40, 'white')
@@ -162,9 +165,8 @@ def build():
     s.rect('Washer porthole', 2.35, 2.70, 2.65, 2.74, 0.30, 'dark', 0.30)
 
     # -- kitchen backing onto bedroom 1 -------------------------------------------
-    s.rect('Kitchen cabinet base', 4.60, 3.22, 8.05, 3.82, 0.86, 'wood')
+    s.appliance_run(4.60, 3.22, 8.05, 3.82, 5.13, 5.76)
     s.rect('Kitchen countertop', 4.58, 3.22, 8.07, 3.84, 0.045, 'white', 0.86)
-    s.rect('Appliance front', 5.13, 3.78, 5.76, 3.82, 0.78, '#dcd8cf', 0.04)
     s.rect('Appliance porthole', 5.30, 3.82, 5.58, 3.86, 0.26, 'dark', 0.30)
     s.rect('Cooktop', 5.97, 3.28, 6.66, 3.78, 0.015, 'dark', 0.905)
     for bx, bz, r in [(6.14, 3.42, 0.07), (6.14, 3.63, 0.06), (6.46, 3.42, 0.07), (6.46, 3.63, 0.06)]:

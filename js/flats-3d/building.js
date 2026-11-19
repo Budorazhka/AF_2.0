@@ -5,9 +5,10 @@
    z down the sheet. Everything is built in plan coordinates inside `inner`;
    `outer` turns the sheet so that its "down" faces the real azimuth (the sea). */
 import * as THREE from './three.js';
-import { mergeGeometries } from './three.js';
+import { storeyQuads } from './storey-surfaces.js';
 import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=21';
 import { PARKING, SETBACK_ROOFS, parkingAccess } from './exterior-layout.js';
+import { trimWalkStorey } from './walk-shell.js';
 
 export const SLAB = 0.3;
 const CUT = 1.25;          // wall height left standing when a floor is opened
@@ -18,14 +19,18 @@ export const STATUS_COLORS = {
 };
 
 function boxes(rects, y0, h, colours) {
-  if (!rects.length) return null;
-  const geos = rects.map((r) => {
-    const g = new THREE.BoxGeometry(Math.max(r[2] - r[0], 0.01), h, Math.max(r[3] - r[1], 0.01));
-    g.translate((r[0] + r[2]) / 2, y0 + h / 2, (r[1] + r[3]) / 2);
-    return g;
-  });
-  const merged = mergeGeometries(geos, false);
-  geos.forEach((g) => g.dispose());
+  const quads = storeyQuads(rects, y0, h);
+  if (!quads.length) return null;
+  const positions = [], indices = [];
+  for (const quad of quads) {
+    const i = positions.length / 3;
+    for (const v of quad) positions.push(...v);
+    indices.push(i, i + 1, i + 2, i, i + 2, i + 3);
+  }
+  const merged = new THREE.BufferGeometry();
+  merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  merged.setIndex(indices);
+  merged.computeVertexNormals();
   if (colours) {
     // slabs: light walking surface on top (the plan drawing sits on it), dark edge outside
     const n = merged.attributes.normal, col = new Float32Array(n.count * 3);
@@ -227,7 +232,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
       L.commonGlass = add(vert, mesh(boxes([...lv.glass.filter((r) => r[4] < 0), ...extraLobbyGlass], 0, full), mats.glass));
       // balustrades along the drawn terrace fronts and stepped setback terraces
       L.rails = add(g, mesh(lv.facade && lv.facade.some((e) => e[6]) ? balustradeGeometry(lv.facade, L.floor, lv.level) : boxes(lv.rails, L.floor, 1.1), mats.rail, false));
-      add(g, mesh(boxes(lv.units.flatMap((u) => u.decks || []), L.floor, 0.05), mats.deck, false));
+      L.decks = add(g, mesh(boxes(lv.units.flatMap((u) => u.decks || []), L.floor, 0.05), mats.deck, false));
     }
     L.vert = vert;
     L.full = full;
@@ -378,10 +383,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     for (const L of levels) {
       const opened = focus !== null && L.level === focus;
       const hidden = focus !== null && L.level > focus;
-      // inside a flat its own 1:1 model and the 360° photograph replace the exterior massing
-      // completely, so no crude massing slabs, walls or upper-floor boxes appear in the windows
-      const walkHidden = !!walkPatch;
-      L.group.visible = !hidden && !walkHidden;
+      L.group.visible = !hidden;
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
       if (L.walls) L.walls.material = opened ? mats.wallCut : mats.wall;
       if (L.columns) L.columns.material = opened ? mats.wallCut : mats.column;
@@ -401,7 +403,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
       if (L.plan) L.plan.visible = opened;
       if (L.glow) L.glow.visible = focus === null && hover === L.level;
       if (L.frames) {
-        L.frames.visible = !opened && !walkPatch;
+        L.frames.visible = !opened;
         const lit = focus === null && hover === L.level;
         // hovered: the floor's frames light up; at night all frames get the soft wash of the evening render
         L.frameMat.emissive.set(lit ? 0x1c4e89 : 0xfff1dc);
@@ -442,11 +444,14 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     return null;
   }
 
-  /* Walk-through: the flat's own model and 360° panorama replace the building massing. */
-  let walkPatch = null;
-  function setWalk(unit) {
-    walkPatch = unit ? { unit } : null;
-    paint();
+  let restoreStorey = null;
+  function setWalk(unit, cutouts) {
+    restoreStorey?.();
+    restoreStorey = null;
+    if (unit) {
+      const storey = levels.find((l) => l.level === unit.level);
+      restoreStorey = trimWalkStorey([...storey.vert.children, storey.rails, storey.decks], cutouts);
+    }
   }
 
   paint();
@@ -505,6 +510,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
       paint();
     },
     dispose() {
+      restoreStorey?.();
       disposables.forEach((d) => d.dispose && d.dispose());
       Object.values(mats).forEach((m) => m.dispose());
     },

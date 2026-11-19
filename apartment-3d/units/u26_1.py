@@ -49,7 +49,7 @@ def build():
     s.wall('East wall north', 5.01, 2.21, 5.21, 3.15)
     s.lintel('Entrance lintel', 5.01, 3.15, 5.21, 4.05)
     s.wall('East wall south', 5.01, 4.05, 5.21, 5.41)
-    s.door_leaf('Entrance open door', 5.01, 3.14, 5.11, 4.06)
+    s.entrance_door()
 
     # bathroom shell
     s.wall('Bathroom west wall', 3.31, 0.00, 3.51, 2.01)
@@ -60,7 +60,7 @@ def build():
     s.door_leaf('Bathroom open door', 3.75, 1.15, 3.79, 1.99, 'white')
 
     # -- glazing and balcony ---------------------------------------------
-    s.glazing('West glazing', -0.15, 2.55, -0.05, 4.44, mullions=[2.55, 3.48, 4.40])
+    s.fixed_glazing('West glazing', -0.20, 2.55, 0.00, 4.44, mullions=[2.55, 3.48, 4.40])
     s.lintel('Balcony door lintel', -0.20, 4.40, 0.00, 5.27)
     s.glazed_door_leaf('Balcony open door', -0.02, 5.21, 0.72, 5.25, 'metal')
 
@@ -90,7 +90,7 @@ def build():
 
     # -- wardrobe between bathroom wall and entrance -----------------------
     s.rect('Wardrobe', 4.41, 2.25, 5.01, 3.05, 2.40, 'white')
-    s.rect('Wardrobe seam', 4.41, 2.64, 4.99, 2.66, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe seam', 4.406, 2.648, 4.41, 2.652, 2.38, 'dark', 0.01)
 
     # -- kitchen along the south wall --------------------------------------
     s.rect('Kitchen cabinet base', 3.10, 5.01, 4.96, 5.61, 0.86, 'wood')
@@ -120,7 +120,7 @@ def build():
 
     # -- bathroom fittings --------------------------------------------------
     s.rect('Shower tray', 3.51, 0.00, 4.39, 0.91, 0.06, 'white')
-    s.rect('Shower screen', 4.39, 0.00, 4.43, 0.91, 1.95, 'glass', 0.06, 'glazing')
+    s.rect('Shower screen', 4.39, 0.00, 4.43, 0.87, 1.95, 'glass', 0.06, 'glazing')
     s.rect('Shower screen front', 3.51, 0.87, 4.43, 0.91, 1.95, 'glass', 0.06, 'glazing')
     s.rect('Shower mixer', 3.53, 0.35, 3.57, 0.55, 0.30, 'metal', 1.05)
     s.rect('WC cistern', 5.48, 0.27, 5.66, 0.62, 0.78, 'white')

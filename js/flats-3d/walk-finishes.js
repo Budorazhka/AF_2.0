@@ -12,6 +12,7 @@ const profiles = {
       upholstery: { map: 'linen', bump: 0.002, size: 0.42, roughness: 0.91 },
       accent: { map: 'linen', bump: 0.002, size: 0.42, roughness: 0.91, color: 0x7c8256 },
       casework: { color: 0xcbb69b, roughness: 0.44 },
+      wood: { folder: 'black-sea-modern', map: 'oak-veneer', size: 1.24, color: 0x846043, roughness: 0.47 },
       hardware: { color: 0x695440, roughness: 0.38, metalness: 0.72 },
       moulding: { color: 0xd7c5ad, roughness: 0.76 },
       innerMoulding: { color: 0xd7c5ad, roughness: 0.76 },
@@ -78,6 +79,34 @@ function roundedBox(size, radius, mobile = false) {
   return geometry;
 }
 
+// One instanced draw for the soft occlusion immediately beneath the furniture.
+function contactShadows(bases, rugs) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const fade = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  fade.addColorStop(0, 'rgba(40,31,25,.27)');
+  fade.addColorStop(.68, 'rgba(40,31,25,.18)');
+  fade.addColorStop(1, 'rgba(40,31,25,0)');
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, 64, 64);
+  const map = new THREE.CanvasTexture(canvas);
+  map.colorSpace = THREE.SRGBColorSpace;
+  const shadow = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false }), bases.length);
+  const transform = new THREE.Object3D();
+  bases.forEach((box, i) => {
+    box.getCenter(transform.position);
+    const { x, z } = transform.position;
+    const rug = rugs.find((r) => x >= r.min.x && x <= r.max.x && z >= r.min.z && z <= r.max.z);
+    transform.position.y = (rug?.max.y ?? box.min.y) + .001;
+    transform.scale.set((box.max.x - box.min.x) * 1.25, 1, (box.max.z - box.min.z) * 1.25);
+    transform.updateMatrix();
+    shadow.setMatrixAt(i, transform.matrix);
+  });
+  return shadow;
+}
+
 export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) {
   const loader = new THREE.TextureLoader();
   const textures = new Map();
@@ -109,8 +138,8 @@ export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) 
     const materials = new Map();
     const loaded = Promise.all(Object.entries(profile.finishes).map(async ([key, spec]) => {
       const [map, bumpMap] = spec.map ? await Promise.all([
-        loadTexture(profile.folder, spec.map, spec.size, true),
-        spec.bump ? loadTexture(profile.folder, `${spec.map}-bump`, spec.size, false) : null,
+        loadTexture(spec.folder ?? profile.folder, spec.map, spec.size, true),
+        spec.bump ? loadTexture(spec.folder ?? profile.folder, `${spec.map}-bump`, spec.size, false) : null,
       ]) : [null, null];
       if (disposed || (spec.map && !map)) return;
       materials.set(key, new THREE.MeshStandardMaterial({
@@ -138,6 +167,7 @@ export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) 
     const named = new Map();
     const sofaBacks = [];
     const sofaSeats = [];
+    const bases = [], rugs = [];
     const tallUnit = model.children.find((mesh) => meshName(mesh) === 'Kitchen tall unit');
     model.traverse((mesh) => {
       if (!mesh.userData.af) return;
@@ -145,6 +175,10 @@ export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) 
       named.set(name, mesh);
       const finish = finishOf(mesh, mesh.userData.af.role);
       if (finish) surfaces.set(mesh, finish);
+      if (finish === 'rug') rugs.push(mesh.geometry.boundingBox);
+      if (/^(Bed(?: \d+)? frame|Sofa .*base|Armchair base|Wardrobe(?: \d+| closet)?|WC pedestal)$/i.test(name)) {
+        bases.push(mesh.geometry.boundingBox);
+      }
       if (/^Sofa .*\bback$/i.test(name)) sofaBacks.push(mesh.geometry.boundingBox);
       if (/^Sofa .*\b(?:seat|cushion)$/i.test(name)) {
         sofaSeats.push(mesh.geometry.boundingBox.getCenter(new THREE.Vector3()));
@@ -152,18 +186,38 @@ export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) 
       // The exporter emits 36 vertices for a box. Preserve oval seats and other curved models.
       const boxMesh = mesh.geometry.attributes.position.count === 36;
       const soft = boxMesh && (sofaPieces.test(name) || armchairPieces.test(name) || bedding.test(name));
-      const countertop = name === 'Kitchen countertop' && tallUnit;
-      if (!soft && !countertop) return;
+      const veneer = boxMesh && /^(Bed(?: \d+)? frame|Media console|Bedside cabinet|Bed.*nightstand.*)$/i.test(name);
+      const countertop = name === 'Kitchen countertop' && tallUnit &&
+        mesh.geometry.boundingBox.min.x < tallUnit.geometry.boundingBox.max.x;
+      if (!soft && !countertop && !veneer) return;
       const original = mesh.geometry;
       const bounds = original.boundingBox.clone();
       if (countertop) bounds.min.x = tallUnit.geometry.boundingBox.max.x;
       const size = bounds.getSize(new THREE.Vector3());
       const centre = bounds.getCenter(new THREE.Vector3());
-      const geometry = soft ? roundedBox(size, Math.min(size.x, size.y, size.z) * 0.32, mobile) : new THREE.BoxGeometry(size.x, size.y, size.z);
+      const radius = soft ? Math.min(size.x, size.y, size.z) * 0.32 : veneer ? 0.004 : 0;
+      const geometry = radius ? roundedBox(size, radius, mobile) : new THREE.BoxGeometry(size.x, size.y, size.z);
+      if (/pillow/i.test(name)) {
+        const p = geometry.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+          const x = 2 * p.getX(i) / size.x, z = 2 * p.getZ(i) / size.z;
+          const loft = (1 - x * x) * (1 - z * z);
+          p.setY(i, p.getY(i) * (0.72 + 0.55 * loft));
+        }
+        geometry.computeVertexNormals();
+      }
       geometry.translate(centre.x, centre.y, centre.z);
       addMetricUVs(geometry);
+      if (veneer) {
+        const { uv, normal } = geometry.attributes;
+        for (let i = 0; i < uv.count; i++) {
+          if (Math.abs(normal.getY(i)) < .7 || size.x > size.z) uv.setXY(i, uv.getY(i), uv.getX(i));
+        }
+      }
       replacements.set(mesh, { original, geometry });
     });
+    const shadows = contactShadows(bases, rugs);
+    furniture.add(shadows);
 
     function box(group, key, x, y, z, w, h, d, radius = 0) {
       const geometry = radius ? roundedBox(new THREE.Vector3(w, h, d), radius, mobile) : new THREE.BoxGeometry(w, h, d);
@@ -198,8 +252,8 @@ export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) 
         for (const [key, width, height] of [['moulding', step - 0.07, 2.27], ['innerMoulding', step - 0.19, 2.15]]) {
           const v = edge + 0.01 * sign;
           for (const side of [-1, 1]) {
-            alongFace(details, key, axis, u + side * width / 2, 1.40, v, 0.016, height, 0.02);
-            alongFace(details, key, axis, u, 1.40 + side * height / 2, v, width, 0.016, 0.02);
+            alongFace(details, key, axis, u + side * width / 2, 1.40, v, 0.016, height - 0.016, 0.02);
+            alongFace(details, key, axis, u, 1.40 + side * height / 2, v, width + 0.016, 0.016, 0.02);
           }
         }
       }
@@ -286,6 +340,9 @@ export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) 
         replacements.forEach(({ original, geometry }, mesh) => { mesh.geometry = active ? geometry : original; });
       },
       dispose() {
+        shadows.material.map.dispose();
+        shadows.material.dispose();
+        shadows.dispose();
         replacements.forEach(({ original, geometry }, mesh) => {
           mesh.geometry = original;
           geometry.dispose();

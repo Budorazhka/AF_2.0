@@ -13,8 +13,8 @@
 import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
-import { createBuilding, STATUS_COLORS } from './building.js?v=26';
-import { createWalk } from './walk.js?v=31';
+import { createBuilding, STATUS_COLORS } from './building.js?v=27';
+import { createWalk } from './walk.js?v=32';
 import { createAmenities } from './amenities.js?v=24';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
@@ -321,6 +321,7 @@ function createApp(el) {
   }
 
   function renderAll() {
+    if (el.dataset.mode !== state.mode) $('[data-help]').open = false;
     el.dataset.mode = state.mode;
     renderNavHead(); renderFloors(); renderCard(); renderWalkBar(); renderHint(); renderTime();
     $('[data-nav]').hidden = state.mode === 'walk';
@@ -380,14 +381,15 @@ function createApp(el) {
     try {
       walkReady = walk.enter({
         slug: u.data.model.slug, parent: building.inner, offset: u.data.model.offset,
-        floorY: building.floorOf(u), floor: u.level,
+        floorY: building.floorOf(u), floor: u.level, windows: u.data.windows,
         facingAz: azOf[sides[0]] != null ? azOf[sides[0]] : 270,
       });
-      await walkReady;
+      const cutouts = await walkReady;
+      if (!alive) return;
       // the whole house stays in view; only this flat's own walls and glass give way to its model
       building.setFocus(null);
       building.setSelected(null);
-      building.setWalk(u);
+      building.setWalk(u, cutouts);
       showLandscape(false);
     } catch (err) {
       el.classList.remove('is-loading');
@@ -499,6 +501,7 @@ function createApp(el) {
   });
 
   on(el, 'click', (ev) => {
+    if (!ev.target.closest('[data-help]')) $('[data-help]').open = false;
     if (state.sunOpen && !ev.target.closest('[data-sun]') && ev.target !== renderer.domElement) {
       state.sunOpen = false;
       renderTime();
@@ -542,6 +545,10 @@ function createApp(el) {
     if (!alive || ev.target.closest('input, textarea, select') || document.querySelector('.modal.is-open')) return;
     if (ev.key === 'Escape') {
       if (lightboxOpen()) closeLightbox();
+      else if ($('[data-help]').open) {
+        $('[data-help]').open = false;
+        $('[data-help] summary').focus();
+      }
       else if (state.sunOpen) { state.sunOpen = false; renderTime(); }
       else if (state.mode === 'walk') { leaveWalk(); toFloor(state.unit.level, { keepUnit: true }); }
       else if (state.unit) select(null);
@@ -784,7 +791,10 @@ function createApp(el) {
           <span class="af3d__sun-caret" aria-hidden="true">▴</span>
         </button>
       </div>
-      <p class="af3d__hint" data-hint></p>
+      <details class="af3d__help" data-help>
+        <summary aria-label="${esc(t('Навигация по модели'))}">?</summary>
+        <p class="af3d__hint" data-hint></p>
+      </details>
       <div class="af3d__lightbox" data-lightbox hidden role="dialog" aria-modal="true" aria-label="${esc(t('Просмотр изображения'))}">
         <button type="button" class="af3d__lightbox-close" data-act="lightbox-close" aria-label="${esc(t('Закрыть'))}">&#215;</button>
         <figure><img alt=""><figcaption></figcaption></figure>

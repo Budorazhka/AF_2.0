@@ -36,8 +36,8 @@ def build():
     s = Scene()
 
     # -- floors ----------------------------------------------------------
-    s.rect('Bedroom 1 floor', 0.00, 0.00, 2.85, 3.64, 0.16, 'floor', -0.16, 'floor')
-    s.rect('Bathroom tile floor', 0.00, 3.84, 2.85, 5.53, 0.16, 'tile', -0.16, 'floor')
+    s.rect('Bedroom 1 floor', 0.00, 0.00, 2.70, 3.64, 0.16, 'floor', -0.16, 'floor')
+    s.rect('Bathroom tile floor', 0.00, 3.84, 2.70, 5.53, 0.16, 'tile', -0.16, 'floor')
     s.rect('Hallway floor', 2.70, 0.00, 4.32, 5.73, 0.16, 'floor', -0.16, 'floor')
     s.rect('Bedroom 2 floor', 4.32, 0.00, 7.01, 5.53, 0.16, 'floor', -0.16, 'floor')
     s.rect('Living room floor', 0.00, 5.73, 7.81, 8.71, 0.16, 'floor', -0.16, 'floor')
@@ -56,7 +56,7 @@ def build():
     s.wall('North exterior west', 0.20, -0.20, 3.09, 0.00)
     s.lintel('Entrance lintel', 3.09, -0.20, 4.08, 0.00)
     s.wall('North exterior east', 4.08, -0.20, 6.81, 0.00)
-    s.door_leaf('Entrance open door', 3.08, -0.10, 4.09, 0.00)
+    s.entrance_door()
 
     s.wall('West exterior north', -0.20, 0.20, 0.00, 0.30)
     # Photo 0075: when looking west, the door is on the RIGHT (north),
@@ -104,18 +104,19 @@ def build():
     s.door_leaf('Bedroom 2 open door', 4.32, 0.02, 5.32, 0.06)
 
     # -- glazing ---------------------------------------------------------
-    s.glazing('Bedroom 2 panorama', 7.06, 2.05, 7.16, 4.78, mullions=[2.05, 2.94, 3.84, 4.74])
-    s.glazing('Living south panorama', 3.52, 9.96, 7.47, 10.06, mullions=[3.52, 4.49, 5.47, 6.45, 7.43])
-    s.rect('Living south transom', 3.52, 9.95, 7.47, 10.07, 0.045, 'dark', 2.22, 'glazing')
-    s.glazing('Terrace two-panel slider', 7.86, 6.42, 7.96, 8.22, mullions=[6.42, 8.18])
+    s.fixed_glazing('Bedroom 2 panorama', 7.01, 2.05, 7.21, 4.78, mullions=[2.05, 2.94, 3.84, 4.74])
+    s.fixed_glazing('Living south panorama', 3.52, 9.91, 7.47, 10.11, [3.52, 4.49, 5.47, 6.45, 7.43], height=2.20)
+    s.threshold('Terrace slider', 7.81, 6.42, 8.01, 8.22)
+    s.glazing('Terrace two-panel slider', 7.86, 6.42, 7.96, 8.22, mullions=[6.42, 8.18], height=2.20)
     s.glazed_door_leaf('Terrace open slider leaf', 7.81, 6.44, 7.85, 7.32, 'dark')
     def west_frame(name, z1, z2, bottom, top, divisions):
         # Local helper: unlike panorama glazing, these frames stop at their lintels.
         s.rect(name + ' base', -.15, z1, -.05, z2, .04, 'dark', bottom, 'glazing')
         s.rect(name + ' head', -.15, z1, -.05, z2, .04, 'dark', top - .04, 'glazing')
         for z in divisions:
-            s.rect(name + ' mullion', -.15, z, -.05, z + .035, top - bottom, 'dark', bottom, 'glazing')
+            s.rect(name + ' mullion', -.15, z, -.05, z + .035, top - bottom - .08, 'dark', bottom + .04, 'glazing')
 
+    s.threshold('West bedroom balcony door', -.20, .30, 0, 1.05)
     west_frame('West bedroom balcony door', .30, 1.05, .02, 2.20, [.30, 1.015])
     # Open glazed leaf lies alongside the north wall, not across the threshold.
     s.rect('Balcony open leaf bottom', -.05, .30, .69, .34, .04, 'dark', .04, 'glazing')
@@ -168,7 +169,7 @@ def build():
     s.rect('Bed 2 nightstand north', 4.37, 1.66, 4.77, 2.06, 0.48, 'wood')
     s.rect('Bed 2 nightstand south', 4.37, 3.81, 4.77, 4.21, 0.48, 'wood')
     s.rect('Wardrobe 2', 6.41, 0.28, 7.01, 1.62, 2.40, 'white')
-    s.rect('Wardrobe 2 seam', 6.43, 0.94, 7.01, 0.96, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe 2 seam', 6.406, 0.948, 6.41, 0.952, 2.38, 'dark', 0.01)
     s.oval('Bedroom 2 rug', 5.55, 2.95, 1.05, 0.95, 0.0, 0.018, 'rug')
 
     # -- bathroom ------------------------------------------------------------

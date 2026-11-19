@@ -9,8 +9,9 @@
 import * as THREE from './three.js';
 import { GLTFLoader } from './three.js';
 import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
-import { createWalkFinishes } from './walk-finishes.js?v=3';
+import { createWalkFinishes } from './walk-finishes.js?v=4';
 import { createWalkAccessories } from './walk-accessories.js?v=3';
+import { floorCutout } from './walk-shell.js';
 
 const EYE = 1.6;
 const CEILING = 2.8;
@@ -28,7 +29,7 @@ export function viewFiles(floor) {
    Its layout matches SphereGeometry, so no extra rotation is needed. */
 const PANO_R = 600;
 export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mobile = false, onUpdate }) {
-  const camera = new THREE.PerspectiveCamera(72, 1, 0.05, 40000);
+  const camera = new THREE.PerspectiveCamera(72, 1, 0.08, PANO_R * 2);
   camera.rotation.order = 'YXZ';
 
   const loader = new GLTFLoader();
@@ -36,7 +37,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   const finishes = createWalkFinishes(renderer, basePath, { mobile });
   const accessories = createWalkAccessories(basePath, onUpdate);
   const railGlass = new THREE.MeshStandardMaterial({ color: 0xaecad8, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
-  const lamp = new THREE.PointLight(0xffd6a0, 1.2, 16, 1.3);   // warm interior light
+  const lamp = new THREE.PointLight(0xffd6a0, 1.2, 16, 1.3);
+  const roomLight = new THREE.Vector3(), windowLight = new THREE.Vector3();
+  const eveningColour = new THREE.Color(0xffd6a0), daylightColour = new THREE.Color(0xe7efff);
   const fillLight = new THREE.HemisphereLight(0xfffbf4, 0xd8cfc2, 0.42);
 
   let model = null, parent = null;
@@ -78,7 +81,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   function loadGlb(slug) {
     if (!glbCache.has(slug)) {
       const url = assetUrl(slug, 'apartment.glb');
-      const vUrl = url + (url.includes('?') ? '&' : '?') + 'v=19';
+      const vUrl = url + (url.includes('?') ? '&' : '?') + 'walk=20';
       glbCache.set(slug, new Promise((resolve, reject) => loader.load(vUrl, (g) => resolve(g.scene), undefined, reject)));
     }
     return glbCache.get(slug);
@@ -158,7 +161,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
       const m = finishDetails?.materialFor(o) || (styled && role && materialFor(style, role, renderer));
       // the model's dark railing glass reads as a blue band across the view; real balustrade glass is clear
       o.material = group === 'rail' && role === 'blue_glass' ? railGlass : m || original || materialFor(style, 'wall', renderer);
-      if (group === 'furniture') o.visible = (furniture && style.furniture) || /Entrance open door/i.test(o.name);
+      if (group === 'furniture') o.visible = (furniture && style.furniture) || /Entrance open door/i.test(o.userData.name || o.name);
     });
   }
 
@@ -232,7 +235,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
 
   /* -- public ------------------------------------------------------------ */
   /** parent: the building's plan-space group; offset: [x, z] of the model in it; floorY: slab top. */
-  async function enter({ slug, parent: p, offset, floorY, facingAz, floor }) {
+  async function enter({ slug, parent: p, offset, floorY, facingAz, floor, windows = [] }) {
     const [src] = await Promise.all([loadGlb(slug), finishes.load(style.id), accessories.load()]);
     exit();
     parent = p;
@@ -240,7 +243,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     finishDetails = finishes.decorate(model, slug);
     stagingDetails = accessories.decorate(model, slug);
     if (stagingDetails) furnBlockers.push(...stagingDetails.blockers);
-    // 1 cm above the building's slab so the two floor surfaces do not flicker
+    // Both the interior and the 2 cm lower terrace finish sit above the building slab.
     model.position.set(offset[0], floorY + 0.03, offset[1]);
     parent.add(model);
     parent.updateMatrixWorld(true);
@@ -258,12 +261,20 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
       yaw.v = Math.atan2(-tmp.x, -tmp.z);
       pitch.v = -0.19;
     }
-    lamp.position.set(local.x, 2.4, local.z);
+    roomLight.set(local.x, 2.4, local.z);
+    windowLight.copy(roomLight);
+    const mainWindow = windows.reduce((best, w) => !best || w[4] > best[4] ? w : best, null);
+    if (mainWindow) {
+      const [x, z, nx, nz] = mainWindow;
+      windowLight.set(x - offset[0] - nx * .45, 1.95, z - offset[1] - nz * .45);
+    }
+    lamp.position.copy(roomLight);
     placeCamera();
     site.setShadowFocus(box.getCenter(new THREE.Vector3()), 16);
     await buildRing(floor, camera.position.clone());
     scene.add(sphere);
-    return box.getCenter(new THREE.Vector3());
+    return model.children.filter((mesh) => mesh.userData.af?.group === 'floor')
+      .map((mesh) => floorCutout(mesh.geometry, offset)).filter((planes) => planes.length >= 3);
   }
 
   function exit() {
@@ -283,8 +294,10 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   function setSun(dir, altitude) {
     const day = THREE.MathUtils.smoothstep(altitude, -0.1, 0.25);
     stagingDetails?.setSun(day);
-    lamp.intensity = 1.2 + 5.8 * (1 - day);
-    fillLight.intensity = 0.25 + 0.22 * day;
+    lamp.position.lerpVectors(roomLight, windowLight, day);
+    lamp.color.copy(eveningColour).lerp(daylightColour, day);
+    lamp.intensity = 2.3 + 4.7 * (1 - day);
+    fillLight.intensity = 0.25 + 0.12 * day;
     sphere.material.color.setScalar(0.18 + 0.82 * day);
     renderer.toneMappingExposure = 0.66 + 0.2 * day;
   }
