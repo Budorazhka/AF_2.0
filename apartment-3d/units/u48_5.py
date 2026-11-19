@@ -49,12 +49,12 @@ def build():
 
     s.wall('North exterior west', -0.20, -0.20, 2.10, 0.00)
     s.wall('North exterior east', 2.50, -0.20, 7.11, 0.00)
-    s.wall('West exterior north', -0.20, -0.20, 0.00, 2.62)
+    s.wall('West exterior north', -0.20, -0.20, 0.00, 0.20)
     s.wall('West exterior south', -0.20, 3.37, 0.00, 3.80)
     s.lintel('West balcony lintel', -0.20, 2.62, 0.00, 3.37)
     s.wall('West wing south wall', -0.20, 3.80, 1.46, 4.00)
 
-    s.wall('East exterior north', 6.91, -0.20, 7.11, 2.62)
+    s.wall('East exterior north', 6.91, -0.20, 7.11, 0.20)
     s.lintel('East balcony lintel', 6.91, 2.62, 7.11, 3.37)
     s.wall('East exterior stub', 6.91, 3.37, 7.11, 3.75)
     s.wall('Kitchen bay north wall', 7.11, 3.55, 7.41, 3.75)
@@ -63,7 +63,7 @@ def build():
     s.wall('South wall west', 1.26, 6.01, 4.05, 6.21)
     s.lintel('Entrance lintel', 4.05, 6.01, 4.96, 6.21)
     s.wall('South wall east', 4.96, 6.01, 7.41, 6.21)
-    s.door_leaf('Entrance open door', 4.04, 6.01, 4.97, 6.11)
+    s.entrance_door()
 
     # bedroom / living divider with two openings
     s.wall('Divider north', 3.70, 0.00, 3.90, 2.94)
@@ -78,9 +78,9 @@ def build():
     s.wall('Bathroom west wall', 1.26, 4.00, 1.46, 6.01)
 
     # -- glazing and balconies --------------------------------------------
-    s.glazing('West glazing', -0.15, 0.20, -0.05, 2.62, mullions=[0.20, 1.05, 1.85, 2.58])
+    s.fixed_glazing('West glazing', -0.20, 0.20, 0.00, 2.62, mullions=[0.20, 1.05, 1.85, 2.58])
     s.glazed_door_leaf('West balcony open door', -0.72, 3.33, -0.04, 3.37, 'metal')
-    s.glazing('East glazing', 6.96, 0.20, 7.06, 2.62, mullions=[0.20, 1.05, 1.85, 2.58])
+    s.fixed_glazing('East glazing', 6.91, 0.20, 7.11, 2.62, mullions=[0.20, 1.05, 1.85, 2.58])
     s.glazed_door_leaf('East balcony open door', 7.00, 3.33, 7.68, 3.37, 'metal')
 
     for x0, z0, z1, name in [(-1.38, 0.25, 1.85, 'West'), (-1.38, 1.95, 3.55, 'West'),
@@ -114,8 +114,8 @@ def build():
     s.rect('Nightstand north', 3.16, 0.06, 3.56, 0.46, 0.48, 'wood')
     s.rect('Nightstand south', 3.16, 2.24, 3.56, 2.64, 0.48, 'wood')
     s.rect('Wardrobe', 0.20, 3.16, 3.00, 3.76, 2.40, 'white')
-    s.rect('Wardrobe seam A', 1.12, 3.16, 1.14, 3.74, 2.38, 'dark', 0.01)
-    s.rect('Wardrobe seam B', 2.06, 3.16, 2.08, 3.74, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe seam A', 1.128, 3.156, 1.132, 3.16, 2.38, 'dark', 0.01)
+    s.rect('Wardrobe seam B', 2.068, 3.156, 2.072, 3.16, 2.38, 'dark', 0.01)
     s.oval('Bedroom rug', 1.60, 1.35, 0.95, 1.05, 0.0, 0.018, 'rug')
 
     # -- bathroom ----------------------------------------------------------
@@ -160,7 +160,7 @@ def build():
 
     # -- kitchen in the south-east bay ------------------------------------------
     s.rect('Kitchen cabinet base', 6.61, 3.95, 7.21, 5.30, 0.86, 'wood')
-    s.rect('Kitchen countertop', 6.59, 3.93, 7.21, 5.32, 0.045, 'white', 0.86)
+    s.rect('Kitchen countertop', 6.59, 3.93, 7.21, 5.28, 0.045, 'white', 0.86)
     s.rect('Kitchen return base', 6.50, 5.30, 7.21, 5.90, 0.86, 'wood')
     s.rect('Kitchen return top', 6.48, 5.28, 7.21, 5.92, 0.045, 'white', 0.86)
     s.rect('Appliance front', 6.57, 3.99, 6.61, 4.57, 0.78, '#dcd8cf', 0.04)

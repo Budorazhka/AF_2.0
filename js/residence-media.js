@@ -38,7 +38,9 @@
   function unitFor(apt) { return (apt && UNITS[PLANS[apt.planImageUrl]]) || null; }
   function asset(slug, file, folder) {
     var revision = UNITS[slug] && UNITS[slug].revision;
-    return base() + '/assets/residences/' + slug + '/' + (folder ? folder + '/' : '') + file + (revision ? '?v=' + revision : '');
+    var url = base() + '/assets/residences/' + slug + '/' + (folder ? folder + '/' : '') + file + (revision ? '?v=' + revision : '');
+    if (file === 'model.html' || file === 'apartment.glb') url += (revision ? '&' : '?') + 'geometry=2';
+    return url;
   }
   function hasMedia(apt) { return !!unitFor(apt); }
 

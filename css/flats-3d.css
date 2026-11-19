@@ -235,19 +235,25 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 .af3d__clock { margin: 0; white-space: nowrap; font-size: 0.84rem; color: var(--af3d-muted); }
 .af3d__clock b { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; color: var(--af3d-text); }
 
-/* подсказка в свободном правом верхнем углу; с открытой карточкой не нужна */
+.af3d__help {
+  position: absolute; z-index: 3; right: var(--af3d-gap); bottom: var(--af3d-gap);
+}
+.af3d__help summary {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  list-style: none; cursor: pointer; background: var(--af3d-panel);
+  border: 1px solid var(--af3d-line); border-radius: 50%; color: var(--af3d-text);
+  font: 600 1rem/1 var(--body);
+}
+.af3d__help summary::-webkit-details-marker { display: none; }
+.af3d__help summary:focus-visible { outline: 2px solid #1c4e89; outline-offset: 2px; }
 .af3d__hint {
-  position: absolute; z-index: 2; right: var(--af3d-gap); top: var(--af3d-gap); margin: 0;
-  max-width: 290px; padding: 8px 12px; background: rgba(255, 255, 255, 0.88);
+  position: absolute; right: 0; bottom: calc(100% + 8px); margin: 0;
+  width: max-content; max-width: min(300px, calc(100vw - 32px)); padding: 8px 12px; background: white;
   backdrop-filter: blur(8px); border: 1px solid var(--af3d-line); border-radius: 4px;
   font-size: 0.8rem; line-height: 1.45; color: var(--af3d-muted);
 }
-.af3d.has-card .af3d__hint { display: none; }
-.af3d[data-mode="walk"] .af3d__hint { top: auto; right: auto; left: var(--af3d-gap); bottom: var(--af3d-gap); max-width: 330px; }
+.af3d.has-card .af3d__help { right: calc(min(380px, 34vw) + 2 * var(--af3d-gap)); }
 .af3d[data-mode="walk"] .af3d__labels { display: none; }
-@media (max-width: 1260px) {
-  .af3d[data-mode="walk"] .af3d__hint { display: none; }
-}
 
 /* ---------- walk ---------- */
 /* left/right + auto margins: with left: 50% the bar only gets half the width and wraps */
@@ -328,16 +334,15 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
   }
   .af3d__actions { bottom: -16px; margin: 16px -16px -16px; padding: 12px 16px 14px; grid-template-columns: 1fr 1fr; }
   .af3d__actions .af3d__cta-note { grid-column: 1 / -1; }
-  .af3d.has-card .af3d__sun, .af3d.has-card .af3d__hint, .af3d.has-sun-open .af3d__hint { display: none; }
+  .af3d.has-card .af3d__sun { display: none; }
   .af3d__sun { left: 10px; bottom: 10px; transform: none; align-items: flex-start; }
   .af3d__sun-tag { display: none; }
   .af3d__sun-panel, .af3d[data-mode="walk"] .af3d__sun-panel { width: calc(100vw - 20px); max-width: 460px; padding: 9px 10px 8px; }
   .af3d__seasons { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .af3d__seasons button { white-space: nowrap; }
-  .af3d__hint, .af3d[data-mode="walk"] .af3d__hint {
-    display: block; top: auto; bottom: 10px; left: 124px; right: 10px; max-width: none;
-    font-size: 0.72rem; line-height: 1.3; padding: 7px 9px;
-  }
+  .af3d__help { bottom: 10px; right: 10px; }
+  .af3d.has-card .af3d__help { top: 76px; right: 10px; bottom: auto; }
+  .af3d.has-card .af3d__hint { top: calc(100% + 8px); bottom: auto; }
   .af3d__walkbar {
     top: 10px; left: 10px; right: 10px; width: auto;
     display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px;

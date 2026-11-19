@@ -32,26 +32,12 @@ FOOTPRINT = [
 ]
 
 
-def fixed_glazing(scene, name, x1, z1, x2, z2, mullions):
-    """Fill the fixed part of the opening between the frame rails with glass."""
-    scene.rect(f'{name} sill', x1, z1, x2, z2, 0.16, 'dark', -0.16, 'glazing')
-    if x2 - x1 > z2 - z1:
-        scene.glazing(name, x1, z1 + 0.05, x2, z2 - 0.05, mullions)
-        z1 = (z1 + z2) / 2 - 0.008
-        z2 = z1 + 0.016
-    else:
-        scene.glazing(name, x1 + 0.05, z1, x2 - 0.05, z2, mullions)
-        x1 = (x1 + x2) / 2 - 0.008
-        x2 = x1 + 0.016
-    scene.rect(f'{name} pane', x1, z1, x2, z2, CEILING - 0.16, 'glass', 0.10, 'glazing')['alpha'] = 0.14
-
-
 def build():
     s = Scene()
 
     # -- floors ----------------------------------------------------------
     s.rect('Bedroom 1 floor', 6.82, 0.00, 10.21, 3.04, 0.16, 'floor', -0.16, 'floor')
-    s.rect('Bathroom tile floor', 3.00, 2.00, 6.01, 4.14, 0.16, 'tile', -0.16, 'floor')
+    s.rect('Bathroom tile floor', 3.20, 2.00, 6.01, 4.14, 0.16, 'tile', -0.16, 'floor')
     s.rect('Hall floor', 1.80, 2.00, 3.20, 5.12, 0.16, 'floor', -0.16, 'floor')
     s.slab('Wardrobe alcove floor', [(0.00, 2.59), (0.58, 2.00), (1.80, 2.00), (1.80, 3.40), (0.00, 3.40)],
            -0.16, 0.16, 'floor')
@@ -118,9 +104,9 @@ def build():
     s.door_leaf('Bedroom 2 open door', 5.68, 5.30, 5.72, 6.08)
 
     # -- glazing ---------------------------------------------------------
-    fixed_glazing(s, 'Living east glazing', 10.21, 5.84, 10.41, 7.01, [5.84, 6.41, 6.97])
-    fixed_glazing(s, 'Bedroom 2 south glazing', 2.00, 8.00, 4.87, 8.20, [2.00, 2.94, 3.90, 4.83])
-    fixed_glazing(s, 'Living south glazing', 6.00, 8.00, 9.24, 8.20, [6.00, 7.07, 8.14, 9.20])
+    s.fixed_glazing('Living east glazing', 10.21, 5.84, 10.41, 7.01, [5.84, 6.41, 6.97])
+    s.fixed_glazing('Bedroom 2 south glazing', 2.00, 8.00, 4.87, 8.20, [2.00, 2.94, 3.90, 4.83])
+    s.fixed_glazing('Living south glazing', 6.00, 8.00, 9.24, 8.20, [6.00, 7.07, 8.14, 9.20])
 
     # balcony rail
     s.glass_panel('Balcony glass', [(4.10, 9.13), (5.92, 9.39), (5.92, 9.41), (4.10, 9.15)])
@@ -189,9 +175,8 @@ def build():
     s.rect('Washer porthole', 3.39, 3.46, 3.69, 3.50, 0.30, 'dark', 0.30)
 
     # -- kitchen backing onto bedroom 1 -------------------------------------------
-    s.rect('Kitchen cabinet base', 7.59, 3.24, 10.14, 3.84, 0.86, 'wood')
+    s.appliance_run(7.59, 3.24, 10.14, 3.84, 7.64, 8.27)
     s.rect('Kitchen countertop', 7.57, 3.24, 10.16, 3.86, 0.045, 'white', 0.86)
-    s.rect('Appliance front', 7.64, 3.80, 8.27, 3.84, 0.78, '#dcd8cf', 0.04)
     s.rect('Appliance porthole', 7.81, 3.84, 8.09, 3.88, 0.26, 'dark', 0.30)
     s.rect('Cooktop', 8.66, 3.30, 9.05, 3.80, 0.015, 'dark', 0.905)
     s.oval('Burner 1', 8.85, 3.44, 0.07, 0.07, 0.92, 0.005, 'metal')
