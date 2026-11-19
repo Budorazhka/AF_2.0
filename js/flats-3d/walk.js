@@ -9,8 +9,8 @@
 import * as THREE from './three.js';
 import { GLTFLoader } from './three.js';
 import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
-import { createWalkFinishes } from './walk-finishes.js?v=2';
-import { createWalkAccessories } from './walk-accessories.js?v=2';
+import { createWalkFinishes } from './walk-finishes.js?v=3';
+import { createWalkAccessories } from './walk-accessories.js?v=3';
 
 const EYE = 1.6;
 const CEILING = 2.8;
@@ -27,14 +27,14 @@ export function viewFiles(floor) {
    film (apartment-3d/panorama.py) surrounds the flat on a sphere 600 m out.
    Its layout matches SphereGeometry, so no extra rotation is needed. */
 const PANO_R = 600;
-export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
+export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mobile = false, onUpdate }) {
   const camera = new THREE.PerspectiveCamera(72, 1, 0.05, 40000);
   camera.rotation.order = 'YXZ';
 
   const loader = new GLTFLoader();
   const glbCache = new Map();
-  const finishes = createWalkFinishes(renderer, basePath);
-  const accessories = createWalkAccessories(basePath);
+  const finishes = createWalkFinishes(renderer, basePath, { mobile });
+  const accessories = createWalkAccessories(basePath, onUpdate);
   const railGlass = new THREE.MeshStandardMaterial({ color: 0xaecad8, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
   const lamp = new THREE.PointLight(0xffd6a0, 1.2, 16, 1.3);   // warm interior light
   const fillLight = new THREE.HemisphereLight(0xfffbf4, 0xd8cfc2, 0.42);
@@ -43,7 +43,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   let finishDetails = null;
   let stagingDetails = null;
   const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(PANO_R, 96, 48),
+    new THREE.SphereGeometry(PANO_R, mobile ? 48 : 96, mobile ? 24 : 48),
     // writes depth so the live sky dome behind it (40 km) cannot paint over the photographs
     new THREE.MeshBasicMaterial({ side: THREE.BackSide, fog: false, toneMapped: false })
   );
@@ -52,7 +52,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     if (!panoCache.has(file)) {
       panoCache.set(file, new Promise((resolve, reject) => new THREE.TextureLoader().load(basePath + '/assets/residences/views/' + file, (t) => {
         t.colorSpace = THREE.SRGBColorSpace;
-        t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        t.anisotropy = mobile ? Math.min(2, renderer.capabilities.getMaxAnisotropy()) : renderer.capabilities.getMaxAnisotropy();
         resolve(t);
       }, undefined, reject)));
     }
@@ -290,7 +290,8 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
   }
 
   function update(dt) {
-    if (!model) return;
+    if (!model) return false;
+    const prevX = local.x, prevZ = local.z, prevYaw = yaw.v, prevPitch = pitch.v;
     const run = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 2 : 1;
     let fx = 0, fz = 0;
     if (keys.has('KeyW') || keys.has('ArrowUp')) fz -= 1;
@@ -318,6 +319,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
       }
     }
     placeCamera();
+    return local.x !== prevX || local.z !== prevZ || yaw.v !== prevYaw || pitch.v !== prevPitch;
   }
 
   /** Tap on the floor: walk there. ndc in -1..1. */
@@ -346,7 +348,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl }) {
     setStyle(id) {
       style = STYLES.find((s) => s.id === id) || style;
       applyStyle();
-      finishes.load(style.id)?.then(() => { if (style.id === id) applyStyle(); });
+      finishes.load(style.id)?.then(() => { if (style.id === id) { applyStyle(); if (onUpdate) onUpdate(); } });
     },
     get furniture() { return furniture; },
     setFurniture(on) { furniture = on; applyStyle(); },

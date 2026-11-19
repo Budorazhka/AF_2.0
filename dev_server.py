@@ -92,9 +92,16 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _resolve(self, path: str) -> Path | None:
         rel = path.lstrip("/")
-        if not rel or rel.endswith("/"):
-            candidate = ROOT / rel / "index.html"
+        if not rel:
+            candidate = ROOT / "index.html"
             return candidate if candidate.is_file() else None
+        if rel.endswith("/"):
+            candidate = ROOT / rel / "index.html"
+            if candidate.is_file():
+                return candidate
+            slug = rel.rstrip("/")
+            html = ROOT / f"{slug}.html" if slug else None
+            return html if html and html.is_file() else None
 
         direct = ROOT / rel
         if direct.is_file():

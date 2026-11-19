@@ -54,7 +54,7 @@ function centroid(poly) {
   return a ? [cx / (3 * a), cz / (3 * a)] : poly[0];
 }
 
-export function createBuilding(data, apartments, { basePath = '' } = {}) {
+export function createBuilding(data, apartments, { basePath = '', onUpdate = null } = {}) {
   const byNumber = new Map(apartments.map((a) => [String(a.apartmentNumber), a]));
   const outer = new THREE.Group();
   const inner = new THREE.Group();
@@ -280,21 +280,9 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
       });
     });
 
-    // floor drawing laid on the slab (shown when the floor is opened)
-    if (lv.plan) {
-      const tex = keep(loader.load(basePath + lv.plan));
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = 8;
-      const plane = new THREE.Mesh(
-        keep(new THREE.PlaneGeometry(data.size[0], data.size[1]).rotateX(-Math.PI / 2)),
-        keep(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.85, polygonOffset: true, polygonOffsetFactor: -4 }))
-      );
-      plane.position.set(data.size[0] / 2, L.floor + 0.04, data.size[1] / 2);
-      plane.renderOrder = 3;
-      plane.visible = false;
-      g.add(plane);
-      L.plan = plane;
-    }
+    // floor drawing laid on the slab (lazy-loaded when that floor is opened)
+    L.planUrl = lv.plan || null;
+    L.plan = null;
 
     g.add(vert);
     inner.add(g);
@@ -397,6 +385,19 @@ export function createBuilding(data, apartments, { basePath = '' } = {}) {
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
       if (L.walls) L.walls.material = opened ? mats.wallCut : mats.wall;
       if (L.columns) L.columns.material = opened ? mats.wallCut : mats.column;
+      if (opened && L.planUrl && !L.plan) {
+        const tex = keep(loader.load(basePath + L.planUrl, () => { if (onUpdate) onUpdate(); }));
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 8;
+        const plane = new THREE.Mesh(
+          keep(new THREE.PlaneGeometry(data.size[0], data.size[1]).rotateX(-Math.PI / 2)),
+          keep(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.85, polygonOffset: true, polygonOffsetFactor: -4 }))
+        );
+        plane.position.set(data.size[0] / 2, L.floor + 0.04, data.size[1] / 2);
+        plane.renderOrder = 3;
+        L.group.add(plane);
+        L.plan = plane;
+      }
       if (L.plan) L.plan.visible = opened;
       if (L.glow) L.glow.visible = focus === null && hover === L.level;
       if (L.frames) {

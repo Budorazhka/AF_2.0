@@ -11,10 +11,10 @@
    and assets/data/building-3d.json (geometry from the ArchiCAD plans).
    Texts go through AF_I18N.t(): the Russian string is the dictionary key. */
 import * as THREE from './three.js';
-import { OrbitControls, RoomEnvironment } from './three.js';
-import { createSite, groundHeight } from './site.js?v=25';
-import { createBuilding, STATUS_COLORS } from './building.js?v=25';
-import { createWalk } from './walk.js?v=30';
+import { OrbitControls } from './three.js';
+import { createSite, groundHeight } from './site.js?v=26';
+import { createBuilding, STATUS_COLORS } from './building.js?v=26';
+import { createWalk } from './walk.js?v=31';
 import { createAmenities } from './amenities.js?v=24';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
@@ -57,9 +57,11 @@ function createApp(el) {
   const state = {
     mode: 'overview', level: null, unit: null, hover: null,
     year: now.getUTCFullYear(), month: now.getUTCMonth(), day: now.getUTCDate(), minutes: 15 * 60,
-    playing: false, season: null,
+    playing: false, season: null, sunOpen: false,
   };
   let alive = true;
+  let renderFrames = 4;
+  const requestRender = (n = 2) => { renderFrames = Math.max(renderFrames, n); };
   const cleanups = [];
   const on = (target, type, fn, opts) => { target.addEventListener(type, fn, opts); cleanups.push(() => target.removeEventListener(type, fn, opts)); };
 
@@ -75,21 +77,19 @@ function createApp(el) {
   const tip = $('[data-tip]');
 
   // -- renderer -------------------------------------------------------------
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const mobile = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || Math.min(window.innerWidth, window.innerHeight) <= 860;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.35 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = mobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
   renderer.domElement.className = 'af3d__canvas';
   renderer.domElement.setAttribute('aria-label', t('3D-модель дома Aurum Fort'));
   renderer.domElement.setAttribute('role', 'img');
   stage.prepend(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
-  scene.environment = envRT.texture;
   scene.environmentIntensity = 0.35;
 
   const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 30000);
@@ -100,6 +100,11 @@ function createApp(el) {
   controls.maxDistance = 220;
   controls.maxPolarAngle = Math.PI * 0.47;
   controls.screenSpacePanning = false;
+  const onCtrlStart = () => requestRender(4);
+  const onCtrlChange = () => requestRender(2);
+  controls.addEventListener('start', onCtrlStart);
+  controls.addEventListener('change', onCtrlChange);
+  cleanups.push(() => { controls.removeEventListener('start', onCtrlStart); controls.removeEventListener('change', onCtrlChange); });
 
   let site = null;               // created once the house is known: the forest keeps off it
   let amenities = null;
@@ -147,14 +152,17 @@ function createApp(el) {
     if (amenities) amenities.setNight(1 - day);
     // reflections follow the sky, but rebuilding them on every slider step is wasted work
     clearTimeout(envTimer);
-    envTimer = setTimeout(() => { if (alive && site) site.refreshEnvironment(); }, 180);
+    envTimer = setTimeout(() => { if (alive && site) { site.refreshEnvironment(); requestRender(2); } }, 180);
     if (building) building.setNight(1 - day);
     if (walk && state.mode === 'walk') walk.setSun(dir, pos.altitude);
-    $('[data-clock]').textContent = formatClock(state.minutes);
+    const clockText = formatClock(state.minutes);
+    $('[data-clock]').textContent = clockText;
+    $('[data-sun-clock]').textContent = clockText;
     const slider = $('[data-time-range]');
     if (Number(slider.value) !== state.minutes) slider.value = state.minutes;
-    slider.setAttribute('aria-valuetext', formatClock(state.minutes));
+    slider.setAttribute('aria-valuetext', clockText);
     paintSunBar();
+    requestRender(3);
   }
   function sunFor(unit) {
     const key = unit.number + ':' + state.month + ':' + state.day;
@@ -255,13 +263,19 @@ function createApp(el) {
     if (state.mode !== 'walk' || !walk) { bar.hidden = true; return; }
     const u = state.unit;
     bar.innerHTML = `
-      <button type="button" class="af3d__exit" data-act="exit-walk">← ${esc(t('Выйти'))}</button>
-      <p class="af3d__walk-title">№${esc(u.number)} <span>${esc(t('Этаж'))} ${u.level} · ${area((u.apt || {}).areaTotal)}</span></p>
+      <div class="af3d__walk-main">
+        <button type="button" class="af3d__exit" data-act="exit-walk">← ${esc(t('Выйти'))}</button>
+        <p class="af3d__walk-title">№${esc(u.number)} <span>${esc(t('Этаж'))} ${u.level} · ${area((u.apt || {}).areaTotal)}</span></p>
+      </div>
+      <span class="af3d__sep" aria-hidden="true"></span>
       <div class="af3d__styles" role="group" aria-label="${esc(t('Вариант ремонта'))}">
-        <span class="af3d__styles-label">${esc(t('Вариант ремонта'))}</span>
         ${walk.styles.map((s) => `<button type="button" data-style="${s.id}" aria-pressed="${walk.style === s.id}">${esc(t(s.title))}</button>`).join('')}
-        <button type="button" data-act="furniture" aria-pressed="${walk.furniture}" ${walk.style === 'white_box' ? 'disabled' : ''}>${esc(t('Мебель'))}</button>
-      </div>`;
+      </div>
+      <span class="af3d__sep" aria-hidden="true"></span>
+      <button type="button" class="af3d__toggle" data-act="furniture" aria-pressed="${walk.furniture}" ${walk.style === 'white_box' ? 'disabled' : ''}>
+        <i class="af3d__toggle-dot" aria-hidden="true"></i>
+        <span>${esc(t('Мебель'))}</span>
+      </button>`;
     bar.hidden = false;
   }
 
@@ -275,27 +289,43 @@ function createApp(el) {
     $('[data-hint]').textContent = t(texts[state.mode]);
   }
 
-  function renderCrumb() {
-    const c = $('[data-crumb]');
-    const parts = [`<button type="button" data-act="overview" ${state.mode === 'overview' ? 'aria-current="page"' : ''}>${esc(t('Весь дом'))}</button>`];
-    if (state.level != null) parts.push(`<button type="button" data-act="floor" ${state.mode === 'floor' && !state.unit ? 'aria-current="page"' : ''}>${esc(t('Этаж'))} ${state.level}</button>`);
-    if (state.unit) parts.push(`<span>№${esc(state.unit.number)}</span>`);
-    c.innerHTML = parts.join('<span aria-hidden="true">/</span>');
+  function renderNavHead() {
+    const head = $('[data-nav-head]');
+    const chess = `<a class="af3d__chess-link" href="${base()}/flats-chess" data-barba-prevent>${esc(t('Шахматка'))} ↗</a>`;
+    if (state.mode === 'floor') {
+      head.innerHTML = `<button type="button" class="af3d__back" data-act="overview">← ${esc(t('Весь дом'))}</button>${chess}`;
+    } else {
+      head.innerHTML = `<span class="af3d__nav-title">${esc(t('Этажи'))}</span>${chess}`;
+    }
   }
 
   function renderTime() {
-    $('[data-seasons]').innerHTML = SEASONS.map((s) => `<button type="button" data-season="${s.id}" aria-pressed="${state.season === s.id}">${esc(t(s.title))}</button>`).join('')
+    const inWalk = state.mode === 'walk';
+    const seasonsEl = $('[data-seasons]');
+    seasonsEl.innerHTML = SEASONS.map((s) => `<button type="button" data-season="${s.id}" aria-pressed="${state.season === s.id}">${esc(t(s.title))}</button>`).join('')
       + `<button type="button" data-season="today" aria-pressed="${state.season === null}">${esc(t('Сегодня'))}</button>`;
-    $('[data-date]').textContent = dateLabel();
+    seasonsEl.hidden = inWalk;
+    const dateEl = $('[data-date]');
+    dateEl.textContent = dateLabel();
+    dateEl.hidden = inWalk;
+    const seasonObj = SEASONS.find((x) => x.id === state.season);
+    const sunTag = $('[data-sun-tag]');
+    sunTag.textContent = (!inWalk && seasonObj) ? t(seasonObj.title) : '';
+    sunTag.hidden = !sunTag.textContent;
     $('[data-play]').setAttribute('aria-label', t(state.playing ? 'Остановить' : 'Запустить движение солнца'));
     $('[data-play]').classList.toggle('is-playing', state.playing);
+    $('[data-sun-panel]').hidden = !state.sunOpen;
+    $('[data-sun-btn]').setAttribute('aria-expanded', String(state.sunOpen));
+    $('[data-sun-btn]').setAttribute('aria-label', t('Солнце и время суток'));
+    el.classList.toggle('has-sun-open', state.sunOpen);
   }
 
   function renderAll() {
     el.dataset.mode = state.mode;
-    renderCrumb(); renderFloors(); renderCard(); renderWalkBar(); renderHint(); renderTime();
-    $('[data-floors-wrap]').hidden = state.mode === 'walk';
+    renderNavHead(); renderFloors(); renderCard(); renderWalkBar(); renderHint(); renderTime();
+    $('[data-nav]').hidden = state.mode === 'walk';
     syncUrl();
+    requestRender(2);
   }
 
   function syncUrl() {
@@ -344,7 +374,7 @@ function createApp(el) {
     if (!u || !u.data.model) return;
     el.classList.add('is-loading');
     $('[data-loading]').textContent = t('Загружаем квартиру…');
-    if (!walk) walk = createWalk({ renderer, site, scene, basePath: base(), assetUrl: (slug, file) => (window.AF_RESIDENCE_MEDIA ? window.AF_RESIDENCE_MEDIA.asset(slug, file) : base() + '/assets/residences/' + slug + '/' + file) });
+    if (!walk) walk = createWalk({ renderer, site, scene, basePath: base(), assetUrl: (slug, file) => (window.AF_RESIDENCE_MEDIA ? window.AF_RESIDENCE_MEDIA.asset(slug, file) : base() + '/assets/residences/' + slug + '/' + file), mobile, onUpdate: () => requestRender(2) });
     const sides = building.facing(u);
     const azOf = { n: 0, e: 90, s: 180, w: 270 };
     try {
@@ -371,6 +401,7 @@ function createApp(el) {
     applySun();
     el.classList.remove('is-loading');
     renderAll();
+    requestRender(4);
     $('[data-act="exit-walk"]').focus();
   }
   /* Inside a flat the windows show photographs only (walk.js ring); a modelled
@@ -391,6 +422,7 @@ function createApp(el) {
     site.setShadowFocus(new THREE.Vector3(0, 8, 0), 60);
     state.mode = 'floor';
     applySun();
+    requestRender(3);
   }
 
   // -- picking --------------------------------------------------------------
@@ -434,6 +466,7 @@ function createApp(el) {
       if (down && down.id === ev.pointerId) {
         walk.look(ev.clientX - (down.lx ?? down.x), ev.clientY - (down.ly ?? down.y));
         down.lx = ev.clientX; down.ly = ev.clientY;
+        requestRender(2);
       }
       return;
     }
@@ -443,17 +476,20 @@ function createApp(el) {
       state.hover = target;
       building.setHover(target);
       renderer.domElement.style.cursor = target != null ? 'pointer' : '';
+      requestRender(2);
     }
     showTip(ev, tipFor(target));
   });
-  on(renderer.domElement, 'pointerleave', () => { tip.hidden = true; if (state.mode !== 'walk') { state.hover = null; building.setHover(null); } });
+  on(renderer.domElement, 'pointerleave', () => { tip.hidden = true; if (state.mode !== 'walk' && state.hover != null) { state.hover = null; building.setHover(null); requestRender(2); } });
   on(renderer.domElement, 'pointerup', (ev) => {
     const d = down;
     down = null;
     if (!d || Math.hypot(ev.clientX - d.x, ev.clientY - d.y) > 6 || performance.now() - d.t > 450) return;
+    if (state.sunOpen) { state.sunOpen = false; renderTime(); }
     if (state.mode === 'walk') {
       const r = renderer.domElement.getBoundingClientRect();
       walk.tapTo(new THREE.Vector2(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1));
+      requestRender(2);
       return;
     }
     const target = pick(ev);
@@ -463,11 +499,15 @@ function createApp(el) {
   });
 
   on(el, 'click', (ev) => {
+    if (state.sunOpen && !ev.target.closest('[data-sun]') && ev.target !== renderer.domElement) {
+      state.sunOpen = false;
+      renderTime();
+    }
     const b = ev.target.closest('button, [data-act]');
     if (!b || !el.contains(b)) return;
     if (b.dataset.floor) { toFloor(Number(b.dataset.floor)); return; }
     if (b.dataset.pin) { select(building.findUnit(b.dataset.pin)); return; }
-    if (b.dataset.style) { walk.setStyle(b.dataset.style); renderWalkBar(); return; }
+    if (b.dataset.style) { walk.setStyle(b.dataset.style); renderWalkBar(); requestRender(3); return; }
     if (b.dataset.season) { setSeason(b.dataset.season); return; }
     if (b.dataset.view) { openLightbox(b.dataset.view, b.dataset.viewCaption); return; }
     switch (b.dataset.act) {
@@ -476,17 +516,18 @@ function createApp(el) {
       case 'deselect': select(null); break;
       case 'walk': enterWalk(); break;
       case 'exit-walk': leaveWalk(); toFloor(state.unit.level, { keepUnit: true }); setTimeout(() => { const w = el.querySelector('[data-act="walk"]'); if (w) w.focus(); }); break;
-      case 'furniture': walk.setFurniture(!walk.furniture); renderWalkBar(); break;
-      case 'play': state.playing = !state.playing; renderTime(); break;
+      case 'furniture': walk.setFurniture(!walk.furniture); renderWalkBar(); requestRender(3); break;
+      case 'play': state.playing = !state.playing; renderTime(); requestRender(2); break;
+      case 'toggle-sun': state.sunOpen = !state.sunOpen; renderTime(); break;
       case 'lightbox-close': closeLightbox(); break;
       default:
     }
   });
   on(el.querySelector('[data-floors]'), 'pointerover', (ev) => {
     const b = ev.target.closest('[data-floor]');
-    if (state.mode === 'overview') building.setHover(b ? Number(b.dataset.floor) : null);
+    if (state.mode === 'overview') { building.setHover(b ? Number(b.dataset.floor) : null); requestRender(2); }
   });
-  on(el.querySelector('[data-floors]'), 'pointerleave', () => { if (state.mode === 'overview') building.setHover(null); });
+  on(el.querySelector('[data-floors]'), 'pointerleave', () => { if (state.mode === 'overview') { building.setHover(null); requestRender(2); } });
 
   on(el.querySelector('[data-time-range]'), 'input', (ev) => { state.minutes = Number(ev.target.value); state.playing = false; renderTime(); applySun(); });
 
@@ -501,6 +542,7 @@ function createApp(el) {
     if (!alive || ev.target.closest('input, textarea, select') || document.querySelector('.modal.is-open')) return;
     if (ev.key === 'Escape') {
       if (lightboxOpen()) closeLightbox();
+      else if (state.sunOpen) { state.sunOpen = false; renderTime(); }
       else if (state.mode === 'walk') { leaveWalk(); toFloor(state.unit.level, { keepUnit: true }); }
       else if (state.unit) select(null);
       else if (state.mode === 'floor') toOverview();
@@ -510,10 +552,11 @@ function createApp(el) {
       if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'].includes(ev.code)) {
         if (ev.target === document.body || el.contains(ev.target)) ev.preventDefault();
         walk.keyDown(ev.code);
+        requestRender(2);
       }
     }
   });
-  on(window, 'keyup', (ev) => { if (walk) walk.keyUp(ev.code); });
+  on(window, 'keyup', (ev) => { if (walk) { walk.keyUp(ev.code); if (state.mode === 'walk') requestRender(2); } });
   on(window, 'blur', () => { if (walk) walk.clearKeys(); });
 
   // -- lightbox -------------------------------------------------------------
@@ -528,7 +571,7 @@ function createApp(el) {
     lb.querySelector('button').focus();
   }
   function lightboxOpen() { return !lb.hidden; }
-  function closeLightbox() { lb.hidden = true; if (lbTrigger && lbTrigger.isConnected) lbTrigger.focus(); }
+  function closeLightbox() { lb.hidden = true; if (lbTrigger && lbTrigger.isConnected) lbTrigger.focus(); requestRender(2); }
   on(lb, 'click', (ev) => { if (ev.target === lb) closeLightbox(); });
 
   // -- labels over the opened floor -----------------------------------------
@@ -561,6 +604,11 @@ function createApp(el) {
   }
 
   // -- sizing / loop --------------------------------------------------------
+  function renderNow() {
+    if (!alive || !building) return;
+    if (state.mode === 'walk' && walk) renderer.render(scene, walk.camera);
+    else { syncPins(); renderer.render(scene, camera); }
+  }
   function resize() {
     const header = document.querySelector('.header');
     el.style.setProperty('--af3d-top', (header ? header.offsetHeight : 0) + 'px');
@@ -571,6 +619,8 @@ function createApp(el) {
     camera.updateProjectionMatrix();
     if (walk) walk.resize(w, h);
     viewOffset();
+    renderNow();
+    requestRender(3);
   }
   /* On phones the card is a bottom sheet: shift the picture up so the chosen
      flat stays visible above it (pins use the same camera, so they follow). */
@@ -578,16 +628,19 @@ function createApp(el) {
     const w = stage.clientWidth, h = stage.clientHeight;
     if (w && h && w <= 860 && el.classList.contains('has-card')) camera.setViewOffset(w, h, 0, h * 0.27, w, h);
     else camera.clearViewOffset();
+    requestRender(2);
   }
   const ro = new ResizeObserver(resize);
   ro.observe(stage);
   cleanups.push(() => ro.disconnect());
+  on(window, 'resize', resize);
 
   let visible = true;
-  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; });
+  const io = new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; if (visible) requestRender(2); });
   io.observe(stage);
   cleanups.push(() => io.disconnect());
 
+  const prevPos = new THREE.Vector3(), prevTgt = new THREE.Vector3();
   let last = performance.now(), raf = 0, playAcc = 0;
   function frame(nowT) {
     if (!alive) return;
@@ -607,14 +660,28 @@ function createApp(el) {
       }
     }
     if (state.mode === 'walk' && walk) {
-      walk.update(dt);
-      renderer.render(scene, walk.camera);
+      const moved = walk.update(dt);
+      if (moved || renderFrames > 0 || state.playing) {
+        renderer.render(scene, walk.camera);
+        if (renderFrames > 0) renderFrames--;
+      }
       return;
     }
-    stepFly(dt);
+    if (fly) {
+      stepFly();
+      requestRender(2);
+    }
+    prevPos.copy(camera.position);
+    prevTgt.copy(controls.target);
     controls.update();
-    if (building) syncPins();
-    renderer.render(scene, camera);
+    if (prevPos.distanceToSquared(camera.position) > 1e-7 || prevTgt.distanceToSquared(controls.target) > 1e-7) {
+      requestRender(2);
+    }
+    if (renderFrames > 0 || state.playing) {
+      if (building) syncPins();
+      renderer.render(scene, camera);
+      if (renderFrames > 0) renderFrames--;
+    }
   }
 
   // -- boot -----------------------------------------------------------------
@@ -626,7 +693,7 @@ function createApp(el) {
       if (!res.ok) throw new Error(res.status);
       const data = await res.json();
       if (!alive) return;
-      building = createBuilding(data, apartments, { basePath: base() });
+      building = createBuilding(data, apartments, { basePath: base(), onUpdate: () => requestRender(2) });
       scene.add(building.object);
       // pool, roof restaurant, garden first: the forest has to leave room for them
       amenities = createAmenities(building, data, groundHeight);
@@ -637,6 +704,7 @@ function createApp(el) {
         keepOut: [...building.keepOut, ...amenities.keepOut],
         roadFrom: building.roadFrom, approaches: building.approaches,
         parkingGround: building.parkingGround, paths: amenities.paths,
+        mobile,
       });
       site.setShadowFocus(new THREE.Vector3(0, 8, 0), 60);
       // pose before the first frame: from the sea side, matching the main facade render
@@ -645,8 +713,11 @@ function createApp(el) {
       controls.target.copy(start.target);
       resize();
       applySun();
+      site.refreshEnvironment();
+      clearTimeout(envTimer);
       renderAll();
       el.classList.remove('is-loading');
+      requestRender(4);
       raf = requestAnimationFrame(frame);
 
       // deep link: /flats-3d?floor=4&apt=405&walk=1
@@ -671,11 +742,10 @@ function createApp(el) {
       clearTimeout(envTimer);
       if (site) site.dispose();
       if (amenities) amenities.dispose();
-      envRT.dispose(); pmrem.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       el.innerHTML = '';
-      el.classList.remove('af3d', 'has-card', 'is-loading');
+      el.classList.remove('af3d', 'has-card', 'has-sun-open', 'is-loading');
       document.documentElement.classList.remove('af3d-lock');
       if (window.AF_lenis) window.AF_lenis.start();
       if (window.AF_refresh3d) delete window.AF_refresh3d;
@@ -689,23 +759,30 @@ function createApp(el) {
         <div class="af3d__tip" data-tip hidden></div>
         <p class="af3d__loading" data-loading role="status">${esc(t('Загружаем 3D-модель дома…'))}</p>
       </div>
-      <nav class="af3d__crumb" data-crumb aria-label="${esc(t('Навигация по модели'))}"></nav>
-      <div class="af3d__floors-wrap" data-floors-wrap>
-        <p class="af3d__floors-title">${esc(t('Этажи'))}</p>
+      <nav class="af3d__nav" data-nav aria-label="${esc(t('Навигация по модели'))}">
+        <div class="af3d__nav-head" data-nav-head></div>
         <ol class="af3d__floors" data-floors aria-label="${esc(t('Этажи'))}"></ol>
         <p class="af3d__legend" data-legend></p>
-      </div>
+      </nav>
       <aside class="af3d__card" data-card hidden aria-labelledby="af3dCardTitle"></aside>
       <div class="af3d__walkbar" data-walkbar hidden></div>
-      <div class="af3d__time" data-time>
-        <div class="af3d__seasons" role="group" aria-label="${esc(t('Дата для расчёта солнца'))}" data-seasons></div>
-        <div class="af3d__clock-row">
-          <button type="button" class="af3d__play" data-act="play" data-play></button>
-          <label class="af3d__range"><span class="af3d__sr">${esc(t('Время суток'))}</span>
-            <input type="range" min="0" max="1435" step="5" value="900" data-time-range>
-          </label>
-          <p class="af3d__clock"><b data-clock>15:00</b> <span data-date></span></p>
+      <div class="af3d__sun" data-sun>
+        <div class="af3d__sun-panel" data-sun-panel hidden>
+          <div class="af3d__seasons" role="group" aria-label="${esc(t('Дата для расчёта солнца'))}" data-seasons></div>
+          <div class="af3d__clock-row">
+            <button type="button" class="af3d__play" data-act="play" data-play></button>
+            <label class="af3d__range"><span class="af3d__sr">${esc(t('Время суток'))}</span>
+              <input type="range" min="0" max="1435" step="5" value="900" data-time-range>
+            </label>
+            <p class="af3d__clock"><b data-clock>15:00</b> <span data-date></span></p>
+          </div>
         </div>
+        <button type="button" class="af3d__sun-btn" data-act="toggle-sun" data-sun-btn aria-expanded="false" aria-label="${esc(t('Солнце и время суток'))}">
+          <svg class="af3d__sun-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+          <b data-sun-clock>15:00</b>
+          <span class="af3d__sun-tag" data-sun-tag></span>
+          <span class="af3d__sun-caret" aria-hidden="true">▴</span>
+        </button>
       </div>
       <p class="af3d__hint" data-hint></p>
       <div class="af3d__lightbox" data-lightbox hidden role="dialog" aria-modal="true" aria-label="${esc(t('Просмотр изображения'))}">
