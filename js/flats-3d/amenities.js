@@ -147,6 +147,9 @@ export function createAmenities(building, data, height) {
   const plan = new THREE.Group();
   const world = new THREE.Group();
   const P = new Bins(), W = new Bins(), RF = new Bins();   // RF: the roof, hidden with the upper floors
+  // T7: decor on the level-7 terraces. Its positions are set for the exterior view and cross
+  // the detailed flat models, so a walk through a level-7 flat hides it (app.js showLandscape).
+  const T7 = new Bins();
   const keepOut = [], paths = [];
   const lampPlan = [], lampWorld = [], wallLights = [], roofLamps = [];
   const toWorld = (x, y, z) => building.planToWorld(x, z, y);
@@ -294,10 +297,10 @@ export function createAmenities(building, data, height) {
   if (L(7)) {
     const y7 = L(7).floor;
     // Sleek dark steel pergola over the left wing Level-7 corner terrace (фасад 2)
-    pergola(RF, 9.8, 24.2, 13.4, 29.1, y7, { vines: false, colour: 'dark' });
+    pergola(T7, 9.8, 24.2, 13.4, 29.1, y7, { vines: false, colour: 'dark' });
     // 3 white umbrellas along the right wing Level-7 terrace
     for (const ux of [16.2, 18.6, 21.0]) {
-      umbrella(RF, ux, y7, 18.6, 1.45);
+      umbrella(T7, ux, y7, 18.6, 1.45);
     }
   }
 
@@ -404,6 +407,10 @@ export function createAmenities(building, data, height) {
   // -- build ----------------------------------------------------------------------
   COLOURS.glass = 0x8cb4cc;
   const roofGroup = new THREE.Group();
+  const terraceDecor = new THREE.Group();
+  terraceDecor.userData.level = 7;
+  T7.build(terraceDecor);
+  roofGroup.add(terraceDecor);
   P.build(plan);
   RF.build(roofGroup).filter((m) => m.material.color.getHex() === new THREE.Color(COLOURS.glass).getHex()).forEach((m) => {
     Object.assign(m.material, { transparent: true, opacity: 0.38, depthWrite: false, roughness: 0.05 });
@@ -421,7 +428,7 @@ export function createAmenities(building, data, height) {
   const lamps = [planLamps, roofPosts, roofWall, gardenLamps];
 
   return {
-    plan, roof: roofGroup, world, keepOut, paths,
+    plan, roof: roofGroup, terraceDecor, world, keepOut, paths,
     setNight(f) {
       lamps.forEach((l) => l.setNight(f));
       poolMat.emissiveIntensity = 0.08 + 0.85 * f;

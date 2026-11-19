@@ -11,7 +11,7 @@ import { GLTFLoader } from './three.js';
 import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
 import { createWalkFinishes } from './walk-finishes.js?v=4';
 import { createWalkAccessories } from './walk-accessories.js?v=3';
-import { floorCutout } from './walk-shell.js';
+import { floorCutout } from './walk-shell.js?v=2';
 
 const EYE = 1.6;
 const CEILING = 2.8;

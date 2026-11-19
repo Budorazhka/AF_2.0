@@ -8,7 +8,7 @@ import * as THREE from './three.js';
 import { storeyQuads } from './storey-surfaces.js';
 import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=21';
 import { PARKING, SETBACK_ROOFS, parkingAccess } from './exterior-layout.js';
-import { trimWalkStorey } from './walk-shell.js';
+import { trimWalkStorey, rectCutout } from './walk-shell.js?v=2';
 
 export const SLAB = 0.3;
 const CUT = 1.25;          // wall height left standing when a floor is opened
@@ -450,7 +450,11 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     restoreStorey = null;
     if (unit) {
       const storey = levels.find((l) => l.level === unit.level);
-      restoreStorey = trimWalkStorey([...storey.vert.children, storey.rails, storey.decks], cutouts);
+      // The traced glazing of the flat itself sits up to 0.4 m outside the model's own glass
+      // and would read as a second window; cut it out with its mullions (0.03 m overhang).
+      const k = storey.data.units.indexOf(unit.data);
+      const ownGlass = storey.data.glass.filter((r) => r[4] === k).map((r) => rectCutout(r, 0.05));
+      restoreStorey = trimWalkStorey([...storey.vert.children, storey.rails, storey.decks], [...cutouts, ...ownGlass]);
     }
   }
 

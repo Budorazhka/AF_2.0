@@ -13,9 +13,9 @@
 import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
-import { createBuilding, STATUS_COLORS } from './building.js?v=27';
-import { createWalk } from './walk.js?v=32';
-import { createAmenities } from './amenities.js?v=24';
+import { createBuilding, STATUS_COLORS } from './building.js?v=28';
+import { createWalk } from './walk.js?v=33';
+import { createAmenities } from './amenities.js?v=25';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
 const t = (s) => (window.AF_I18N && window.AF_I18N.t ? window.AF_I18N.t(s) : s);
@@ -412,7 +412,12 @@ function createApp(el) {
     site.setLandscape(on);
     // garden, pool deck, planters and the car park go too: from the windows only the
     // photograph is seen, no grey slabs of the crude massing under the balcony
-    if (amenities) { amenities.world.visible = on; amenities.plan.visible = on; }
+    if (amenities) {
+      amenities.world.visible = on;
+      amenities.plan.visible = on;
+      // terrace umbrellas and pergola stand where the detailed flat model has its rooms
+      amenities.terraceDecor.visible = on || state.unit?.level !== amenities.terraceDecor.userData.level;
+    }
     if (building.parkGroup) building.parkGroup.visible = on;
   }
   function leaveWalk() {

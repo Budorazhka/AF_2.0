@@ -23,6 +23,11 @@ export function floorCutout(geometry, [offsetX, offsetZ]) {
   });
 }
 
+/** A plan rectangle [x0, z0, x1, z1] grown by `pad`, in the same plane form as floorCutout. */
+export function rectCutout([x0, z0, x1, z1], pad) {
+  return [[1, 0, pad - x0], [-1, 0, x1 + pad], [0, 1, pad - z0], [0, -1, z1 + pad]];
+}
+
 // Subtract a convex prism from one polygon, interpolating normals at cut edges.
 function subtract(polygon, planes) {
   const distance = ([a, b, c], vertex) => a * vertex[0] + b * vertex[2] + c;
