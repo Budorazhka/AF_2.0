@@ -54,7 +54,7 @@ function balconyFrame(panes) {
   return geometry;
 }
 
-export function createWalkAccessories(basePath) {
+export function createWalkAccessories(basePath, onUpdate) {
   const staging = createWalkStaging(basePath);
   const metal = new THREE.MeshStandardMaterial({ color: 0x4a5158, roughness: 0.37, metalness: 0.76 });
   const display = new THREE.MeshBasicMaterial({ color: 0xe2e9ee, toneMapped: false });
@@ -87,7 +87,7 @@ export function createWalkAccessories(basePath) {
     picture.rotation.y = axis === 'x' ? sign * Math.PI / 2 : (sign > 0 ? 0 : Math.PI);
     picture.visible = false;
     tv.add(picture);
-    loadScreen().then((loaded) => { picture.visible = loaded; });
+    loadScreen().then((loaded) => { picture.visible = loaded; if (loaded && onUpdate) onUpdate(); });
   }
 
   function addChairLegs(seat, floor) {

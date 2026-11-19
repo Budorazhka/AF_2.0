@@ -45,15 +45,16 @@ export function groundHeight(x, z) {
 
 /* -- relief ------------------------------------------------------------------ */
 
-function relief(height, localBounds) {
+function relief(height, localBounds, mobile = false) {
   // one grid, dense near the house and stretched towards the horizon
-  const n = 280, R = 9000, k = 2.2;
+  const n = mobile ? 120 : 220, R = 9000, k = 2.2;
   const map = (u) => Math.sign(u) * R * Math.abs(u) ** k;
   const regular = Array.from({ length: n + 1 }, (_, i) => map((i / n) * 2 - 1));
+  const step = mobile ? 1.6 : 0.85;
   const axis = (min, max) => {
     if (!localBounds) return regular;
     const values = regular.filter((v) => v < min || v > max);
-    for (let v = min; v <= max; v += 0.85) values.push(v);
+    for (let v = min; v <= max; v += step) values.push(v);
     return values.sort((a, b) => a - b);
   };
   const [x0, z0, x1, z1] = localBounds || [];
@@ -107,17 +108,22 @@ export function seasonOf(month) {
 
 /* -- forest ------------------------------------------------------------------ */
 
-function treeGeometry() {
+function treeGeometry(lowPoly = false) {
   const parts = [];
   const r = rng(5);
-  for (const [x, y, z, s] of [[0, 1.0, 0, 1], [0.45, 0.75, 0.2, 0.75], [-0.4, 0.8, -0.25, 0.72], [0.1, 1.45, -0.1, 0.62]]) {
-    const b = new THREE.IcosahedronGeometry(s * 0.62, 1);
+  const lobes = lowPoly
+    ? [[0, 1.0, 0, 1], [0.22, 0.82, 0.14, 0.76]]
+    : [[0, 1.0, 0, 1], [0.45, 0.75, 0.2, 0.75], [-0.4, 0.8, -0.25, 0.72], [0.1, 1.45, -0.1, 0.62]];
+  const radius = lowPoly ? 0.72 : 0.62;
+  const detail = lowPoly ? 0 : 1;
+  for (const [x, y, z, s] of lobes) {
+    const b = new THREE.IcosahedronGeometry(s * radius, detail);
     const p = b.attributes.position;
     for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) * (0.9 + r() * 0.2), p.getY(i) * (0.8 + r() * 0.2), p.getZ(i) * (0.9 + r() * 0.2));
     b.translate(x * 0.62, y * 0.62 + 0.35, z * 0.62);
     parts.push(b);                                   // polyhedra come non-indexed already
   }
-  const trunk = new THREE.CylinderGeometry(0.05, 0.08, 0.6, 5).translate(0, 0.3, 0).toNonIndexed();
+  const trunk = new THREE.CylinderGeometry(0.05, 0.08, 0.6, lowPoly ? 4 : 5).translate(0, 0.3, 0).toNonIndexed();
   parts.push(trunk);
   const g = mergeGeometries(parts.map((p) => { p.deleteAttribute('uv'); return p; }), false);
   g.computeVertexNormals();
@@ -142,8 +148,9 @@ function distToPath(x, z, path) {
 
 const GREENS = [0x2f5422, 0x3b6329, 0x467231, 0x26471b, 0x527d38, 0x355c25, 0x5d8942];
 
-function forest({ keepOut, roads, houses, paths = [] }) {
-  const geo = treeGeometry();
+function forest({ keepOut, roads, houses, paths = [], mobile = false }) {
+  const geoHigh = mobile ? null : treeGeometry(false);
+  const geoLow = treeGeometry(true);
   const mat = new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: false });
   const random = rng(42);
   const place = (count, rMin, rMax, sMin, sMax) => {
@@ -166,9 +173,10 @@ function forest({ keepOut, roads, houses, paths = [] }) {
     return out;
   };
   // geometry is ~1.6 units tall: lush 6–11 m trees right around the house, bigger canopy further off
-  const near = [...place(700, 14, 75, 3.8, 7.2), ...place(2400, 50, 340, 3.5, 6.8)];
-  const far = place(4600, 330, 1400, 4.8, 8.5);
-  const build = (list, shadows) => {
+  const close = mobile ? place(320, 14, 75, 4.4, 7.8) : place(600, 14, 75, 3.8, 7.2);
+  const mid = mobile ? place(700, 50, 340, 4.5, 7.6) : place(1800, 50, 340, 3.5, 6.8);
+  const far = mobile ? place(1100, 330, 1400, 6.2, 10.5) : place(3200, 330, 1400, 4.8, 8.5);
+  const build = (list, geo, shadows) => {
     const im = new THREE.InstancedMesh(geo, mat, list.length);
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
     list.forEach((t, i) => {
@@ -183,7 +191,8 @@ function forest({ keepOut, roads, houses, paths = [] }) {
     return im;
   };
   const group = new THREE.Group();
-  const meshes = [[build(near, true), near], [build(far, false), far]];
+  const mainGeo = mobile ? geoLow : geoHigh;
+  const meshes = [[build(close, mainGeo, true), close], [build(mid, mainGeo, false), mid], [build(far, geoLow, false), far]];
   meshes.forEach(([m]) => group.add(m));
   const c = new THREE.Color();
   function setSeason(name) {
@@ -198,7 +207,7 @@ function forest({ keepOut, roads, houses, paths = [] }) {
       m.instanceColor.needsUpdate = true;
     }
   }
-  return { group, setSeason, dispose() { geo.dispose(); mat.dispose(); } };
+  return { group, setSeason, dispose() { if (geoHigh) geoHigh.dispose(); geoLow.dispose(); mat.dispose(); } };
 }
 
 /* -- neighbours, road, Batumi ------------------------------------------------ */
@@ -223,7 +232,7 @@ function neighbourSpots(keepOut, road) {
   return out;
 }
 
-function neighbours(spots) {
+function neighbours(spots, mobile = false) {
   const body = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
   const roof = new THREE.ConeGeometry(0.78, 1, 4).rotateY(Math.PI / 4).translate(0, 0.5, 0);
   const walls = new THREE.InstancedMesh(body, new THREE.MeshStandardMaterial({ roughness: 0.85 }), spots.length);
@@ -237,7 +246,7 @@ function neighbours(spots) {
     m.compose(new THREE.Vector3(p.x, p.y + p.h, p.z), q, new THREE.Vector3(p.w * 1.08, 2.6, p.d * 1.08));
     roofs.setMatrixAt(i, m); roofs.setColorAt(i, c.setHex(roofCol[(i * 7) % roofCol.length]));
   });
-  [walls, roofs].forEach((o) => { o.castShadow = true; o.receiveShadow = true; });
+  [walls, roofs].forEach((o) => { o.castShadow = !mobile; o.receiveShadow = true; });
   // lit windows after dark: a warm band round most houses, a few stay dark
   const litSpots = spots.filter((p, i) => (i * 37) % 10 < 7);
   const bandMat = new THREE.MeshBasicMaterial({ color: 0xffc98a, transparent: true, opacity: 0, toneMapped: false });
@@ -348,7 +357,7 @@ function batumi() {
 /* -- site ----------------------------------------------------------------------- */
 
 /** keepOut: world AABBs [x0, z0, x1, z1] of the house. */
-export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z: 30 }, approaches = [], parkingGround = null, paths = [] } = {}) {
+export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z: 30 }, approaches = [], parkingGround = null, paths = [], mobile = false } = {}) {
   const group = new THREE.Group();
   scene.add(group);
 
@@ -367,7 +376,7 @@ export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z
     { halfWidth: 3, path: road.slice(0, 6).map((p) => new THREE.Vector3(p.x, roadElevation(p, p.x, p.z), p.z)) },
   ] : [];
   const terrain = accessTerrain([...drives, ...join], parkingGround);
-  const ground = relief(terrain.height, terrain.bounds);
+  const ground = relief(terrain.height, terrain.bounds, mobile);
   group.add(ground);
 
   const sea = new THREE.Mesh(
@@ -388,9 +397,9 @@ export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z
     apron.receiveShadow = true;
     group.add(apron);
   }
-  const houses = neighbours(spots);
+  const houses = neighbours(spots, mobile);
   group.add(houses);
-  const trees = forest({ keepOut, roads: [road, ...drives.map(({ path }) => path)], houses: spots, paths });
+  const trees = forest({ keepOut, roads: [road, ...drives.map(({ path }) => path)], houses: spots, paths, mobile });
   group.add(trees.group);
   const city = batumi();
   group.add(city);
@@ -409,7 +418,8 @@ export function createSite(scene, renderer, { keepOut = [], roadFrom = { x: 0, z
 
   const sun = new THREE.DirectionalLight(0xffffff, 3);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  const shadowSize = mobile ? 1024 : 2048;
+  sun.shadow.mapSize.set(shadowSize, shadowSize);
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.04;
   const sc = sun.shadow.camera;

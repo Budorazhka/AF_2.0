@@ -410,5 +410,11 @@ Object.assign(window.AF_I18N_EN, {
 
 /* 3D-выбор квартиры: подписи этажей и фото видов */
 Object.assign(window.AF_I18N_EN, {
-  "Фото с балконов дома; с вашего этажа ракурс будет близким.": "Photos taken from the balconies of the house; the view from your floor will be close to it."
+  "Фото с балконов дома; с вашего этажа ракурс будет близким.": "Photos taken from the balconies of the house; the view from your floor will be close to it.",
+  "3D-тур по дому": "3D building tour",
+  "3D-тур": "3D tour",
+  "Шахматка": "Price grid",
+  "Режим выбора квартиры": "Apartment view mode",
+  "Пройти по квартире в 3D": "Walk through in 3D",
+  "Солнце и время суток": "Sun and time of day"
 });

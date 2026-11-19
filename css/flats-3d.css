@@ -46,31 +46,40 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 .af3d.is-loading .af3d__loading { display: block; }
 
 /* ---------- panels ---------- */
-.af3d__crumb, .af3d__floors-wrap, .af3d__card, .af3d__time, .af3d__walkbar {
-  position: absolute; z-index: 3; background: var(--af3d-panel);
-  border: 1px solid var(--af3d-line); box-shadow: var(--af3d-shadow); border-radius: 4px;
+.af3d__nav, .af3d__card, .af3d__sun-panel, .af3d__sun-btn, .af3d__walkbar {
+  background: var(--af3d-panel);
+  border: 1px solid var(--af3d-line);
+  box-shadow: var(--af3d-shadow);
+  border-radius: 4px;
+}
+.af3d__nav, .af3d__card, .af3d__sun, .af3d__walkbar {
+  position: absolute; z-index: 3;
 }
 
-.af3d__crumb {
+.af3d__nav {
   top: var(--af3d-gap); left: var(--af3d-gap);
-  display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-  font-size: 0.9rem;
+  width: 224px; padding: 12px 10px;
 }
-.af3d__crumb button, .af3d__crumb span {
-  font: inherit; color: var(--navy); background: none; border: 0; padding: 6px 8px; cursor: pointer;
+.af3d__nav-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 6px 10px; margin-bottom: 6px; border-bottom: 1px solid var(--af3d-line);
 }
-.af3d__crumb button[aria-current] { color: var(--af3d-text); cursor: default; }
-.af3d__crumb > span { color: var(--af3d-text); padding: 6px 4px; }
-.af3d__crumb > span[aria-hidden] { color: var(--af3d-muted); padding: 0; }
-
-.af3d__floors-wrap {
-  top: calc(var(--af3d-gap) + 58px); left: var(--af3d-gap);
-  width: 210px; padding: 14px 10px 12px;
-}
-.af3d__floors-title {
-  margin: 0 8px 8px; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+.af3d__nav-title {
+  font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
   font-weight: 600; color: var(--chess-label, #7a5f2e);
 }
+.af3d__back {
+  display: inline-flex; align-items: center; gap: 4px; padding: 5px 9px;
+  border: 1px solid var(--af3d-line); border-radius: 3px; background: var(--cream-2, #f6f5f4);
+  color: var(--navy); font: 600 0.78rem/1.2 var(--body); cursor: pointer; white-space: nowrap;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.af3d__back:hover { background: var(--navy); border-color: var(--navy); color: #fff; }
+.af3d__chess-link {
+  font-size: 0.76rem; font-weight: 600; color: var(--navy); text-decoration: none;
+  white-space: nowrap; opacity: 0.85;
+}
+.af3d__chess-link:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
 .af3d__floors { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .af3d__floor {
   width: 100%; display: grid; grid-template-columns: 26px 1fr; grid-template-rows: auto auto;
@@ -129,7 +138,7 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 
 /* ---------- card ---------- */
 .af3d__card {
-  top: var(--af3d-gap); right: var(--af3d-gap); bottom: calc(var(--af3d-gap) + 96px);
+  top: var(--af3d-gap); right: var(--af3d-gap); bottom: var(--af3d-gap);
   width: min(380px, 34vw); padding: 22px 22px 20px; overflow-y: auto; overscroll-behavior: contain;
 }
 .af3d__close {
@@ -182,20 +191,39 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 .af3d__link { justify-self: start; padding: 4px 0; border: 0; background: none; color: var(--navy); font: inherit; font-size: 0.9rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .af3d__cta-note { margin: 0; padding: 12px; text-align: center; background: var(--cream-2, #f6f5f4); font-size: 0.9rem; }
 
-/* ---------- time of day ---------- */
-.af3d__time {
+/* ---------- sun & time of day (collapsed pill + popover) ---------- */
+.af3d__sun {
   left: 50%; bottom: var(--af3d-gap); transform: translateX(-50%);
-  width: min(620px, calc(100% - 2 * var(--af3d-gap))); padding: 10px 14px 8px;
+  display: flex; flex-direction: column; align-items: center;
 }
-.af3d.has-card .af3d__time { left: calc((100% - min(380px, 34vw) - var(--af3d-gap)) / 2); width: min(560px, calc(100% - min(380px, 34vw) - 3 * var(--af3d-gap))); }
-.af3d__seasons { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-.af3d__seasons button, .af3d__styles button {
+.af3d.has-card .af3d__sun { left: calc((100% - min(380px, 34vw) - var(--af3d-gap)) / 2); }
+.af3d__sun-panel {
+  margin-bottom: 8px; width: min(500px, calc(100vw - 40px)); padding: 10px 14px;
+  border-radius: 6px;
+}
+.af3d[data-mode="walk"] .af3d__sun-panel { width: min(340px, calc(100vw - 40px)); }
+.af3d__sun-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px;
+  border-radius: 999px; cursor: pointer; font: inherit; color: var(--af3d-text);
+  white-space: nowrap; transition: border-color 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.af3d__sun-btn:hover { border-color: var(--gold); }
+.af3d__sun-btn[aria-expanded="true"] { border-color: var(--navy); background: var(--navy); color: #fff; }
+.af3d__sun-ico { color: var(--gold-2, #8c6d3f); flex: none; }
+.af3d__sun-btn[aria-expanded="true"] .af3d__sun-ico { color: var(--gold); }
+.af3d__sun-btn b { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; line-height: 1; }
+.af3d__sun-tag { font-size: 0.78rem; color: var(--af3d-muted); }
+.af3d__sun-btn[aria-expanded="true"] .af3d__sun-tag { color: rgba(255, 255, 255, 0.82); }
+.af3d__sun-caret { font-size: 0.72rem; opacity: 0.7; transition: transform 0.2s var(--ease); }
+.af3d__sun-btn[aria-expanded="true"] .af3d__sun-caret { transform: rotate(180deg); }
+
+.af3d__seasons { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.af3d__seasons button {
   padding: 6px 11px; border: 1px solid transparent; border-radius: 3px; background: none; cursor: pointer;
-  font: 500 0.84rem/1.2 var(--body); color: var(--af3d-text);
+  font: 500 0.82rem/1.2 var(--body); color: var(--af3d-text);
 }
-.af3d__seasons button:hover, .af3d__styles button:hover { background: var(--cream-2, #f6f5f4); }
-.af3d__seasons button[aria-pressed="true"], .af3d__styles button[aria-pressed="true"] { background: var(--navy); color: #fff; }
-.af3d__styles button:disabled { opacity: 0.45; cursor: default; background: none; }
+.af3d__seasons button:hover { background: var(--cream-2, #f6f5f4); }
+.af3d__seasons button[aria-pressed="true"] { background: var(--navy); color: #fff; }
 .af3d__clock-row { display: flex; align-items: center; gap: 12px; }
 .af3d__play {
   flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--af3d-line); background: #fff; cursor: pointer; position: relative;
@@ -204,17 +232,18 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 .af3d__play.is-playing::before { left: 11px; width: 4px; clip-path: none; box-shadow: 7px 0 0 var(--graphite); }
 .af3d__range { flex: 1; display: flex; }
 .af3d__range input { width: 100%; accent-color: var(--navy); }
-.af3d__clock { margin: 0; white-space: nowrap; font-size: 0.86rem; color: var(--af3d-muted); }
-.af3d__clock b { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; color: var(--af3d-text); }
+.af3d__clock { margin: 0; white-space: nowrap; font-size: 0.84rem; color: var(--af3d-muted); }
+.af3d__clock b { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; color: var(--af3d-text); }
 
 /* подсказка в свободном правом верхнем углу; с открытой карточкой не нужна */
 .af3d__hint {
   position: absolute; z-index: 2; right: var(--af3d-gap); top: var(--af3d-gap); margin: 0;
-  max-width: 300px; padding: 8px 12px; background: rgba(255, 255, 255, 0.92); border-radius: 3px;
+  max-width: 290px; padding: 8px 12px; background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px); border: 1px solid var(--af3d-line); border-radius: 4px;
   font-size: 0.8rem; line-height: 1.45; color: var(--af3d-muted);
 }
 .af3d.has-card .af3d__hint { display: none; }
-.af3d[data-mode="walk"] .af3d__hint { top: auto; right: auto; left: var(--af3d-gap); bottom: var(--af3d-gap); }
+.af3d[data-mode="walk"] .af3d__hint { top: auto; right: auto; left: var(--af3d-gap); bottom: var(--af3d-gap); max-width: 330px; }
 .af3d[data-mode="walk"] .af3d__labels { display: none; }
 @media (max-width: 1260px) {
   .af3d[data-mode="walk"] .af3d__hint { display: none; }
@@ -224,16 +253,40 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 /* left/right + auto margins: with left: 50% the bar only gets half the width and wraps */
 .af3d__walkbar {
   top: var(--af3d-gap); left: var(--af3d-gap); right: var(--af3d-gap); margin: 0 auto; width: max-content;
-  display: flex; align-items: center; gap: 14px; padding: 8px 10px; max-width: calc(100% - 2 * var(--af3d-gap));
+  display: flex; align-items: center; gap: 10px; padding: 7px 10px; max-width: calc(100% - 2 * var(--af3d-gap));
 }
-.af3d__exit { padding: 8px 12px; border: 1px solid var(--af3d-line); border-radius: 3px; background: #fff; cursor: pointer; font: 500 0.88rem var(--body); color: var(--af3d-text); white-space: nowrap; }
+.af3d__walk-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.af3d__sep { width: 1px; height: 24px; background: var(--af3d-line); flex: none; }
+.af3d__exit { padding: 8px 12px; border: 1px solid var(--af3d-line); border-radius: 3px; background: #fff; cursor: pointer; font: 500 0.86rem var(--body); color: var(--af3d-text); white-space: nowrap; }
 .af3d__exit:hover { border-color: var(--graphite); }
 .af3d__walk-title { margin: 0; font-family: var(--serif); font-size: 1.15rem; white-space: nowrap; }
 .af3d__walk-title span { font-family: var(--body); font-size: 0.82rem; color: var(--af3d-muted); margin-left: 6px; }
-.af3d__styles { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.af3d__styles-label { font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--chess-label, #7a5f2e); margin-right: 4px; }
-.af3d[data-mode="walk"] .af3d__crumb { display: none; }
-.af3d[data-mode="walk"] .af3d__hint { max-width: 330px; }
+.af3d__styles {
+  display: inline-flex; align-items: center; gap: 3px; padding: 3px;
+  background: var(--cream-2, #f3f1ed); border-radius: 4px;
+}
+.af3d__styles button {
+  padding: 6px 11px; border: 0; border-radius: 3px; background: transparent; cursor: pointer;
+  font: 500 0.82rem/1.2 var(--body); color: var(--af3d-text);
+  transition: background 0.18s var(--ease), color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.af3d__styles button:hover { background: rgba(255, 255, 255, 0.72); }
+.af3d__styles button[aria-pressed="true"] {
+  background: var(--navy); color: #fff; box-shadow: 0 2px 6px rgba(20, 32, 48, 0.16);
+}
+.af3d__toggle {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px;
+  border: 1px solid var(--af3d-line); border-radius: 999px; background: #fff; cursor: pointer;
+  font: 500 0.82rem/1.2 var(--body); color: var(--af3d-text); white-space: nowrap;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.af3d__toggle-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: #c5c0b8; flex: none;
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.af3d__toggle[aria-pressed="true"] { border-color: var(--navy); color: var(--navy); background: var(--chess-active-bg, #eaf1f9); }
+.af3d__toggle[aria-pressed="true"] .af3d__toggle-dot { background: var(--navy); box-shadow: 0 0 0 2px rgba(28, 78, 137, 0.2); }
+.af3d__toggle:disabled { opacity: 0.45; cursor: default; background: #f7f6f4; border-color: var(--af3d-line); color: var(--af3d-muted); }
 
 /* ---------- lightbox ---------- */
 .af3d__lightbox {
@@ -247,19 +300,25 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 .af3d__lightbox-close { position: absolute; top: 14px; right: 18px; width: 44px; height: 44px; border: 0; background: none; color: #fff; font-size: 2rem; cursor: pointer; }
 
 /* ---------- focus ---------- */
-.af3d button:focus-visible, .af3d input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.af3d button:focus-visible, .af3d input:focus-visible, .af3d a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* ---------- narrow screens ---------- */
 @media (max-width: 860px) {
   .af3d { min-height: 480px; }
-  .af3d__crumb { top: 10px; left: 10px; right: 10px; padding: 2px 4px; font-size: 0.86rem; }
-  .af3d__floors-wrap {
-    top: 58px; left: 10px; right: 10px; width: auto; padding: 6px; display: flex; align-items: center;
+  .af3d__nav {
+    top: 10px; left: 10px; right: 10px; width: auto; padding: 6px 8px;
+    display: flex; align-items: center; gap: 8px;
   }
-  .af3d__floors-title, .af3d__legend { display: none; }
-  .af3d__floors { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
-  .af3d__floor { grid-template-columns: auto; grid-template-rows: auto; padding: 6px 10px; justify-items: center; row-gap: 3px; }
-  .af3d__floor-num { grid-row: auto; font-size: 1.1rem; }
+  .af3d__nav-head {
+    padding: 0 8px 0 2px; margin: 0; border-bottom: 0;
+    border-right: 1px solid var(--af3d-line); flex: none;
+  }
+  .af3d[data-mode="overview"] .af3d__nav-title { display: none; }
+  .af3d[data-mode="floor"] .af3d__chess-link { display: none; }
+  .af3d__legend { display: none; }
+  .af3d__floors { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+  .af3d__floor { grid-template-columns: auto; grid-template-rows: auto; padding: 5px 10px; justify-items: center; row-gap: 3px; }
+  .af3d__floor-num { grid-row: auto; font-size: 1.05rem; }
   .af3d__floor-free { display: none; }
   .af3d__floor-dots { gap: 3px; }
   .af3d__floor-dots .af3d__dot { width: 6px; height: 6px; }
@@ -269,16 +328,32 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
   }
   .af3d__actions { bottom: -16px; margin: 16px -16px -16px; padding: 12px 16px 14px; grid-template-columns: 1fr 1fr; }
   .af3d__actions .af3d__cta-note { grid-column: 1 / -1; }
-  .af3d.has-card .af3d__time, .af3d.has-card .af3d__hint { display: none; }
-  .af3d__time { width: calc(100% - 20px); bottom: 10px; padding: 8px 10px 6px; }
+  .af3d.has-card .af3d__sun, .af3d.has-card .af3d__hint, .af3d.has-sun-open .af3d__hint { display: none; }
+  .af3d__sun { left: 10px; bottom: 10px; transform: none; align-items: flex-start; }
+  .af3d__sun-tag { display: none; }
+  .af3d__sun-panel, .af3d[data-mode="walk"] .af3d__sun-panel { width: calc(100vw - 20px); max-width: 460px; padding: 9px 10px 8px; }
   .af3d__seasons { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .af3d__seasons button { white-space: nowrap; }
-  .af3d__hint, .af3d[data-mode="walk"] .af3d__hint { display: block; top: auto; bottom: 118px; left: 10px; right: 10px; max-width: none; }
-  .af3d__walkbar { top: 10px; left: 10px; right: 10px; width: auto; flex-wrap: wrap; gap: 8px; }
+  .af3d__hint, .af3d[data-mode="walk"] .af3d__hint {
+    display: block; top: auto; bottom: 10px; left: 124px; right: 10px; max-width: none;
+    font-size: 0.72rem; line-height: 1.3; padding: 7px 9px;
+  }
+  .af3d__walkbar {
+    top: 10px; left: 10px; right: 10px; width: auto;
+    display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px;
+  }
+  .af3d__sep { display: none; }
+  .af3d__walk-main { grid-column: 1; grid-row: 1; gap: 8px; }
   .af3d__walk-title span { display: none; }
-  .af3d__styles { flex-wrap: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; }
-  .af3d__styles button { white-space: nowrap; }
-  .af3d__styles-label { display: none; }
+  .af3d__toggle { grid-column: 2; grid-row: 1; justify-self: end; padding: 6px 10px; font-size: 0.78rem; }
+  .af3d__styles {
+    grid-column: 1 / -1; grid-row: 2;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%;
+  }
+  .af3d__styles button {
+    padding: 7px 4px; font-size: 0.74rem; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; text-align: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

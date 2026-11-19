@@ -61,8 +61,9 @@ function finishOf(mesh, role) {
   return role === 'rug' || role === 'wood' ? role : null;
 }
 
-function roundedBox(size, radius) {
-  const geometry = new THREE.BoxGeometry(2, 2, 2, 8, 8, 8);
+function roundedBox(size, radius, mobile = false) {
+  const segs = mobile ? 3 : 8;
+  const geometry = new THREE.BoxGeometry(2, 2, 2, segs, segs, segs);
   const { position, normal } = geometry.attributes;
   const inner = size.clone().multiplyScalar(0.5).addScalar(-radius);
   const point = new THREE.Vector3(), centre = new THREE.Vector3(), n = new THREE.Vector3();
@@ -77,7 +78,7 @@ function roundedBox(size, radius) {
   return geometry;
 }
 
-export function createWalkFinishes(renderer, basePath) {
+export function createWalkFinishes(renderer, basePath, { mobile = false } = {}) {
   const loader = new THREE.TextureLoader();
   const textures = new Map();
   const materialSets = new Map();
@@ -93,7 +94,7 @@ export function createWalkFinishes(renderer, basePath) {
           texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
           texture.repeat.set(1 / size, 1 / size);
         }
-        texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        texture.anisotropy = mobile ? 2 : Math.min(8, renderer.capabilities.getMaxAnisotropy());
         if (isColor) texture.colorSpace = THREE.SRGBColorSpace;
         return texture;
       }).catch(() => null));
@@ -158,14 +159,14 @@ export function createWalkFinishes(renderer, basePath) {
       if (countertop) bounds.min.x = tallUnit.geometry.boundingBox.max.x;
       const size = bounds.getSize(new THREE.Vector3());
       const centre = bounds.getCenter(new THREE.Vector3());
-      const geometry = soft ? roundedBox(size, Math.min(size.x, size.y, size.z) * 0.32) : new THREE.BoxGeometry(size.x, size.y, size.z);
+      const geometry = soft ? roundedBox(size, Math.min(size.x, size.y, size.z) * 0.32, mobile) : new THREE.BoxGeometry(size.x, size.y, size.z);
       geometry.translate(centre.x, centre.y, centre.z);
       addMetricUVs(geometry);
       replacements.set(mesh, { original, geometry });
     });
 
     function box(group, key, x, y, z, w, h, d, radius = 0) {
-      const geometry = radius ? roundedBox(new THREE.Vector3(w, h, d), radius) : new THREE.BoxGeometry(w, h, d);
+      const geometry = radius ? roundedBox(new THREE.Vector3(w, h, d), radius, mobile) : new THREE.BoxGeometry(w, h, d);
       addMetricUVs(geometry);
       const mesh = new THREE.Mesh(geometry, null);
       mesh.position.set(x, y, z);

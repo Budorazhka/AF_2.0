@@ -257,9 +257,23 @@ h1, h2, h3 { max-width: 100%; overflow-wrap: break-word; }
 .header__select {
   font-family: var(--body);
   font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
-  opacity: 1; transition: color 0.3s, opacity 0.3s; white-space: nowrap; color: var(--navy);
+  opacity: 1; transition: color 0.3s, opacity 0.3s, background 0.3s, border-color 0.3s; white-space: nowrap; color: var(--navy);
 }
 .header__select:hover { color: var(--gold); opacity: 1; }
+.header__select--3d {
+  padding: 5px 10px;
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  color: var(--gold-2, #8c6d3f);
+  line-height: 1.2;
+}
+.header__select--3d:hover { background: var(--gold); color: #fff; }
+@media (max-width: 1180px) {
+  .header { padding-left: 20px; padding-right: 20px; }
+  .header__side { gap: 14px; }
+  .header__select { font-size: 0.66rem; letter-spacing: 0.1em; }
+  .header__phone { padding-left: 16px; font-size: 0.76rem; }
+}
 .header__phone {
   position: relative;
   font-size: 0.82rem; letter-spacing: 0.08em; font-weight: 600; white-space: nowrap; color: var(--graphite);
@@ -352,6 +366,7 @@ h1, h2, h3 { max-width: 100%; overflow-wrap: break-word; }
 .overlay-menu.is-open .overlay-menu__primary a:nth-child(2) { animation-delay: 0.2s; }
 .overlay-menu.is-open .overlay-menu__primary a:nth-child(3) { animation-delay: 0.28s; }
 .overlay-menu.is-open .overlay-menu__primary a:nth-child(4) { animation-delay: 0.36s; }
+.overlay-menu.is-open .overlay-menu__primary a:nth-child(5) { animation-delay: 0.44s; }
 @keyframes menuIn { to { opacity: 1; transform: none; } }
 .overlay-menu__primary a i { font-family: var(--sans); font-style: normal; font-size: 0.8rem; letter-spacing: 0.1em; color: var(--gold-2); font-weight: 600; }
 .overlay-menu__primary a:hover { color: var(--gold); }

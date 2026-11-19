@@ -471,6 +471,9 @@
       html += '</div>';
     }
 
+    var walkHref = (window.__BASE_PATH__ || "") + "/flats-3d?floor=" + encodeURIComponent(apt.floor) + "&apt=" + encodeURIComponent(apt.apartmentNumber) + "&walk=1";
+    html += '<a class="chess-panel__walk3d" href="' + esc(walkHref) + '" data-barba-prevent>' + esc(t("Пройти по квартире в 3D")) + ' ↗</a>';
+
     if (apt.status === "active" || apt.status === "reserved") {
       const ctaAptNum = apt.apartmentNumber || apt.id || "";
       const ctaAptArea = apt.areaTotal || "";

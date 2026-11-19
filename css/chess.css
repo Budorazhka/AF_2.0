@@ -22,6 +22,67 @@
   --chess-unavailable-bg: #f1f1f0;
 }
 
+/* ---------- mode switcher (chess / 3D) ---------- */
+.chess-mode-switch {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  background: var(--cream-2);
+  border: 1px solid var(--grey-light);
+  border-radius: 3px;
+}
+.chess-mode-switch__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 18px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--graphite);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.chess-mode-switch__tab.is-active {
+  background: var(--navy);
+  color: #fff;
+  cursor: default;
+}
+.chess-mode-switch__tab--3d {
+  background: var(--white);
+  border: 1px solid rgba(175, 140, 94, 0.55);
+  color: var(--navy);
+}
+.chess-mode-switch__tab--3d:hover {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.chess-mode-switch__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+@media (max-width: 600px) {
+  .chess-mode-switch { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .chess-mode-switch__tab { padding: 10px 10px; font-size: 0.72rem; letter-spacing: 0.06em; }
+}
+
 /* ---------- filters ---------- */
 .chess-filters {
   padding: 22px clamp(16px, 3vw, 28px) 14px;
@@ -437,6 +498,27 @@
 }
 .chess-panel__comment p:last-child { font-size: 0.88rem; font-weight: 400; color: var(--graphite); margin-top: 4px; }
 
+.chess-panel__walk3d {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 18px;
+  margin-bottom: 12px;
+  border: 1px solid var(--navy);
+  background: #fff;
+  color: var(--navy);
+  text-decoration: none;
+  font: 600 0.76rem/1.2 var(--body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.chess-panel__walk3d:hover {
+  background: var(--navy);
+  color: #fff;
+}
 .chess-panel__cta { margin-top: 8px; }
 .chess-panel__cta-note {
   text-align: center;
