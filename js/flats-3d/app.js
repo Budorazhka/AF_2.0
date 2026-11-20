@@ -15,7 +15,7 @@ import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
 import { createBuilding, STATUS_COLORS } from './building.js?v=28';
 import { createWalk } from './walk.js?v=34';
-import { createAmenities } from './amenities.js?v=25';
+import { createAmenities } from './amenities.js?v=26';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
 const t = (s) => (window.AF_I18N && window.AF_I18N.t ? window.AF_I18N.t(s) : s);
@@ -410,7 +410,7 @@ function createApp(el) {
     if (amenities) {
       amenities.world.visible = on;
       amenities.plan.visible = on;
-      // terrace umbrellas and pergola stand where the detailed flat model has its rooms
+      // The exterior pergola overlaps the detailed level-7 flat model.
       amenities.terraceDecor.visible = on || state.unit?.level !== amenities.terraceDecor.userData.level;
     }
     if (building.parkGroup) building.parkGroup.visible = on;

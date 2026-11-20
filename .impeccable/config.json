@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "montserrat",
+        "createdAt": "2026-11-20T10:02:30.601Z",
+        "reason": "PRODUCT.md закрепляет Montserrat как фирменный шрифт Aurum Fort."
+      }
+    ]
+  }
+}

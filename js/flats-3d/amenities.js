@@ -1,13 +1,12 @@
 /* What the renders (фасад 2 / 16.png) and the masterplan show around the tower:
    - the lobby-level restaurant terrace: 3 beige retractable awnings under the
-     right wing, a dark steel pergola draped in lush green vines, white café
-     umbrellas and dining tables;
+     right wing, a dark steel pergola draped in lush green vines, and dining tables;
    - the spa podium with 4 large dark-framed spa windows, a glazed left pavilion,
      and the exterior staircase descending on the left to the pool deck;
    - the dark-stone pool deck: turquoise swimming pool with white coping, row of
-     white loungers and 3 umbrellas on the right, white lounge sofas with an
-     umbrella on the left, and the wooden children's playground in front;
-   - the roof terrace and Level-7 penthouse pergola & umbrellas;
+     white loungers on the right, white lounge sofas on the left, and the
+     wooden children's playground in front;
+   - the roof terrace and Level-7 penthouse pergola;
    - the garden on the north side and evening lighting. */
 import * as THREE from './three.js';
 import { mergeGeometries } from './three.js';
@@ -18,7 +17,6 @@ const COLOURS = {
   dark: 0x232830,
   slate: 0x3b4556,
   wood: 0xa67c52,
-  cloth: 0xf4f1e8,
   awning: 0xdfd3be,
   roof: 0x6f5a45,
   stone: 0xd2cbbd,
@@ -63,13 +61,13 @@ class Bins {
       const isRail = key === 'glass';
       const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
         color: COLOURS[key],
-        roughness: isGlass || isRail ? 0.06 : key === 'cloth' || key === 'awning' ? 0.88 : 0.72,
+        roughness: isGlass || isRail ? 0.06 : key === 'awning' ? 0.88 : 0.72,
         metalness: isGlass ? 0.7 : isRail ? 0.2 : key === 'dark' ? 0.35 : 0.04,
         transparent: isRail,
         opacity: isRail ? 0.38 : 1,
         depthWrite: !isRail,
         side: isRail ? THREE.DoubleSide : THREE.FrontSide,
-        flatShading: key === 'leaf' || key === 'cloth',
+        flatShading: key === 'leaf',
       }));
       m.castShadow = !isRail;
       m.receiveShadow = true;
@@ -83,15 +81,10 @@ class Bins {
 /* -- pieces ------------------------------------------------------------------- */
 const box = (w, h, d, x, y, z, rot = 0) => new THREE.BoxGeometry(w, h, d).rotateY(rot).translate(x, y + h / 2, z);
 
-function umbrella(b, x, y, z, r = 1.65) {
-  b.add('cloth', new THREE.ConeGeometry(r, 0.42, 8).translate(x, y + 2.38, z));
-  b.add('dark', new THREE.CylinderGeometry(0.035, 0.035, 2.35, 6).translate(x, y + 1.18, z));
-}
-function tableSet(b, x, y, z, withUmbrella) {
+function tableSet(b, x, y, z) {
   b.add('white', new THREE.CylinderGeometry(0.46, 0.46, 0.04, 16).translate(x, y + 0.74, z));
   b.add('dark', new THREE.CylinderGeometry(0.04, 0.04, 0.72, 6).translate(x, y + 0.36, z));
   for (const [dx, dz] of [[0.72, 0], [-0.72, 0], [0, 0.72], [0, -0.72]]) b.add('dark', box(0.42, 0.44, 0.42, x + dx, y, z + dz));
-  if (withUmbrella) umbrella(b, x, y, z, 1.55);
 }
 function lounger(b, x, y, z, rot = 0) {
   b.add('white', box(1.85, 0.26, 0.68, x, y, z, rot));
@@ -237,12 +230,12 @@ export function createAmenities(building, data, height) {
     P.add('leaf', new THREE.IcosahedronGeometry(0.55, 1).scale(1.15, 0.5, 0.9).translate(x, podiumY + 0.95, 30.35));
   }
 
-  // Dining tables and white café umbrellas on the open lobby restaurant terrace
-  for (const [tx, tz, umb] of [
-    [15.6, 28.0, false], [18.7, 28.0, false], [21.8, 28.0, false],
-    [16.8, 23.6, true], [20.6, 23.6, true], [24.4, 23.8, true],
+  // Dining tables on the open lobby restaurant terrace
+  for (const [tx, tz] of [
+    [15.6, 28.0], [18.7, 28.0], [21.8, 28.0],
+    [16.8, 23.6], [20.6, 23.6], [24.4, 23.8],
   ]) {
-    tableSet(P, tx, podiumY, tz, umb);
+    tableSet(P, tx, podiumY, tz);
   }
 
   // -- 2. Pool deck, swimming pool, loungers, lounge corner & playground (фасад 2) --
@@ -262,19 +255,15 @@ export function createAmenities(building, data, height) {
   water.position.set(px, spaFloor + 0.13, pz);
   plan.add(base, deck, coping, water);
 
-  // Row of 6 white sun loungers + 3 white umbrellas on the right of the pool
+  // Row of 6 white sun loungers on the right of the pool
   for (let i = 0; i < 6; i++) {
     lounger(P, 22.8, spaFloor + 0.14, 31.6 + i * 1.12, 0);
   }
-  for (const uz of [32.2, 34.5, 36.8]) {
-    umbrella(P, 23.5, spaFloor + 0.14, uz, 1.5);
-  }
 
-  // Left lounge area at the foot of the stairs (white L-sofa, coffee table, white umbrella)
+  // Left lounge area at the foot of the stairs (white L-sofa and coffee table)
   P.add('white', box(2.3, 0.42, 0.8, 7.2, spaFloor + 0.14, 34.2));
   P.add('white', box(0.8, 0.42, 1.7, 6.2, spaFloor + 0.14, 35.3));
   P.add('white', new THREE.CylinderGeometry(0.5, 0.5, 0.34, 16).translate(7.5, spaFloor + 0.31, 35.4));
-  umbrella(P, 6.9, spaFloor + 0.14, 33.8, 1.65);
 
   // Children's wooden playground in front of the pool deck (x = 7.5..18.5, z = 38.6..42.8)
   const playY = spaFloor - 0.65;
@@ -292,16 +281,11 @@ export function createAmenities(building, data, height) {
   worldBox(dx0 - 2, dz0 - 2, dx1 + 2, dz1 + 5, 4);
   worldBox(24.5, 19.0, 43.0, 33.5, 4);
 
-  // -- 3. Level 7 penthouse pergola & umbrellas + Roof terrace (Level 8) --
-  // Placed in RF (attached to Level 8) so they hide whenever any floor 2..7 is opened!
+  // -- 3. Level 7 penthouse pergola and roof terrace (Level 8) --
   if (L(7)) {
     const y7 = L(7).floor;
     // Sleek dark steel pergola over the left wing Level-7 corner terrace (фасад 2)
     pergola(T7, 9.8, 24.2, 13.4, 29.1, y7, { vines: false, colour: 'dark' });
-    // 3 white umbrellas along the right wing Level-7 terrace
-    for (const ux of [16.2, 18.6, 21.0]) {
-      umbrella(T7, ux, y7, 18.6, 1.45);
-    }
   }
 
   if (roof && roof.outline) {
@@ -337,8 +321,8 @@ export function createAmenities(building, data, height) {
         if (free(x, z, 1.4) && [[1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]].every(([ox, oz]) => free(x + ox, z + oz, 0.3))) seats.push([x, z]);
       }
     }
-    seats.slice(0, 8).forEach(([x, z], i) => {
-      if (z < 18.0) tableSet(RF, x, y + 0.06, z, i % 2 === 0);
+    seats.slice(0, 8).forEach(([x, z]) => {
+      if (z < 18.0) tableSet(RF, x, y + 0.06, z);
     });
     const big = housing.slice().sort((a, b) => (b[2] - b[0]) * (b[3] - b[1]) - (a[2] - a[0]) * (a[3] - a[1]))[0];
     if (big && free((big[0] + big[2]) / 2, big[3] + 1.2, 0.3)) RF.add('white', box(Math.min(4, big[2] - big[0]), 1.1, 0.6, (big[0] + big[2]) / 2, y + 0.06, big[3] + 0.9));
