@@ -1666,6 +1666,27 @@ main > section { margin: 0; }
   .header__logo-text { font-size: 0.62rem; letter-spacing: 0.14em; }
   .header__side--right .lang-switch { gap: 4px; font-size: 0.68rem; }
   .lang-switch__btn { min-width: 30px; min-height: 36px; }
+
+  .header:has(~ [data-barba-namespace="home"]) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px;
+  }
+  .header:has(~ [data-barba-namespace="home"]) .header__side--left { gap: 4px; }
+  .header:has(~ [data-barba-namespace="home"]) .header__select--3d {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    color: var(--graphite);
+  }
+}
+@media (max-width: 360px) {
+  .header:has(~ [data-barba-namespace="home"]) { padding-inline: 8px; }
+  .header:has(~ [data-barba-namespace="home"]) .lang-switch { gap: 2px; }
+  .header:has(~ [data-barba-namespace="home"]) .lang-switch__btn { min-width: 26px; }
 }
 @media (max-width: 980px) {
   .intro__grid, .contacts__grid, .location__grid, .residences__grid { grid-template-columns: 1fr; }

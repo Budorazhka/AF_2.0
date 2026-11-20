@@ -280,19 +280,6 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
 .af3d__styles button[aria-pressed="true"] {
   background: var(--navy); color: #fff; box-shadow: 0 2px 6px rgba(20, 32, 48, 0.16);
 }
-.af3d__toggle {
-  display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px;
-  border: 1px solid var(--af3d-line); border-radius: 999px; background: #fff; cursor: pointer;
-  font: 500 0.82rem/1.2 var(--body); color: var(--af3d-text); white-space: nowrap;
-  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease);
-}
-.af3d__toggle-dot {
-  width: 10px; height: 10px; border-radius: 50%; background: #c5c0b8; flex: none;
-  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
-}
-.af3d__toggle[aria-pressed="true"] { border-color: var(--navy); color: var(--navy); background: var(--chess-active-bg, #eaf1f9); }
-.af3d__toggle[aria-pressed="true"] .af3d__toggle-dot { background: var(--navy); box-shadow: 0 0 0 2px rgba(28, 78, 137, 0.2); }
-.af3d__toggle:disabled { opacity: 0.45; cursor: default; background: #f7f6f4; border-color: var(--af3d-line); color: var(--af3d-muted); }
 
 /* ---------- lightbox ---------- */
 .af3d__lightbox {
@@ -345,12 +332,11 @@ html.af3d-lock, html.af3d-lock body { overflow: hidden; height: 100%; overscroll
   .af3d.has-card .af3d__hint { top: calc(100% + 8px); bottom: auto; }
   .af3d__walkbar {
     top: 10px; left: 10px; right: 10px; width: auto;
-    display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px;
+    display: grid; grid-template-columns: 1fr; gap: 8px; padding: 8px;
   }
   .af3d__sep { display: none; }
   .af3d__walk-main { grid-column: 1; grid-row: 1; gap: 8px; }
   .af3d__walk-title span { display: none; }
-  .af3d__toggle { grid-column: 2; grid-row: 1; justify-self: end; padding: 6px 10px; font-size: 0.78rem; }
   .af3d__styles {
     grid-column: 1 / -1; grid-row: 2;
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%;
