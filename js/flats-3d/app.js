@@ -13,8 +13,8 @@
 import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
-import { createBuilding, STATUS_COLORS } from './building.js?v=28';
-import { createWalk } from './walk.js?v=34';
+import { createBuilding, STATUS_COLORS } from './building.js?v=31';
+import { createWalk } from './walk.js?v=40';
 import { createAmenities } from './amenities.js?v=26';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
@@ -27,6 +27,11 @@ const area = (n) => String(n).replace('.', ',') + ' ' + t('м²');
 const STATUS = { active: 'В продаже', booked: 'Забронировано', sold: 'Продано', reserved: 'Резерв застройщика', unavailable: 'Недоступно' };
 const SIDES = { n: 'север', e: 'восток', s: 'юг', w: 'запад' };
 const SIDE_TITLE = { n: 'Север', e: 'Восток', s: 'Юг', w: 'Запад' };
+const PUBLIC_FLOORS = {
+  '-1': { title: 'Спа и бассейн', slug: 'spa', panoramaLevel: 2 },
+  1: { title: 'Лобби и ресторан', slug: 'lobby', panoramaLevel: 2 },
+  8: { title: 'Терраса на крыше', slug: 'roof', panoramaLevel: 7 },
+};
 const SIDE_VIEW = { n: 'Вид на Батуми и море', e: 'Вид на лес на склоне', s: 'Вид на горы и море', w: 'Вид на море' };
 // real photographs from the balconies of the house where there is one for that side
 const VIEW_PHOTO = { n: '/assets/img/home-views-1.webp', w: '/assets/img/home-views-2.webp', s: '/assets/img/home-views-3.webp', e: '/assets/residences/views/e.webp' };
@@ -110,6 +115,7 @@ function createApp(el) {
   let amenities = null;
   let building = null;
   let walk = null;
+  let navigation = 0;
 
   // -- camera moves ---------------------------------------------------------
   let fly = null;
@@ -187,7 +193,10 @@ function createApp(el) {
   }
   function renderFloors() {
     const list = $('[data-floors]');
-    list.innerHTML = building.residentialLevels.slice().reverse().map((level) => {
+    list.innerHTML = building.selectableLevels.slice().reverse().map((level) => {
+      const common = PUBLIC_FLOORS[level];
+      if (common) return `<li><button type="button" class="af3d__floor" data-floor="${level}" aria-pressed="${state.level === level}" aria-label="${esc(t('Этаж'))} ${level} · ${esc(t(common.title))}">
+        <span class="af3d__floor-num">${level}</span><span class="af3d__floor-use">${esc(t(common.title))}</span></button></li>`;
       const units = building.unitsOf(level);
       const [free, total] = freeCount(level);
       const dots = units.slice().sort((a, b) => a.number.localeCompare(b.number))
@@ -261,6 +270,15 @@ function createApp(el) {
   function renderWalkBar() {
     const bar = $('[data-walkbar]');
     if (state.mode !== 'walk' || !walk) { bar.hidden = true; return; }
+    if (walk.views) {
+      const common = PUBLIC_FLOORS[state.level];
+      bar.innerHTML = `<div class="af3d__walk-main af3d__walk-main--public"><button type="button" class="af3d__exit" data-act="exit-walk">← ${esc(t('Весь дом'))}</button>
+        <p class="af3d__walk-title">${esc(t(common.title))} <span>${esc(t('Этаж'))} ${state.level}</span></p></div>
+        <div class="af3d__styles af3d__room-views" role="group" aria-label="${esc(t('Ракурсы интерьера'))}">
+        ${walk.views.map((view,i) => `<button type="button" data-room-view="${i}" aria-pressed="${i === walk.viewIndex}">${esc(t(view.title))}</button>`).join('')}</div>`;
+      bar.hidden = false;
+      return;
+    }
     const u = state.unit;
     bar.innerHTML = `
       <div class="af3d__walk-main">
@@ -326,16 +344,20 @@ function createApp(el) {
 
   function syncUrl() {
     const q = new URLSearchParams(location.search);
-    ['floor', 'apt', 'walk'].forEach((k) => q.delete(k));
+    ['floor', 'apt', 'walk', 'view'].forEach((k) => q.delete(k));
     if (state.level != null) q.set('floor', state.level);
     if (state.unit) q.set('apt', state.unit.number);
     if (state.mode === 'walk') q.set('walk', '1');
+    const view = state.mode === 'walk' && walk?.views?.[walk.viewIndex];
+    if (view?.key) q.set('view', view.key);
     const url = location.pathname + (q.toString() ? '?' + q : '') + location.hash;
     if (url !== location.pathname + location.search + location.hash) history.replaceState(history.state, '', url);
   }
 
   // -- modes ----------------------------------------------------------------
   function toOverview() {
+    navigation++;
+    el.classList.remove('is-loading');
     leaveWalk();
     state.mode = 'overview'; state.level = null; state.unit = null;
     building.setFocus(null); building.setSelected(null); building.setHover(null);
@@ -343,7 +365,9 @@ function createApp(el) {
     flyTo(orbitPose(new THREE.Vector3(0, 8.5, 2), 76, 12, keepAzimuth()));
     renderAll();
   }
-  function toFloor(level, { keepUnit = false } = {}) {
+  function toFloor(level, { keepUnit = false, view = null } = {}) {
+    navigation++;
+    el.classList.remove('is-loading');
     leaveWalk();
     state.mode = 'floor'; state.level = level;
     if (!keepUnit) state.unit = null;
@@ -352,6 +376,7 @@ function createApp(el) {
     const target = building.levelCenter(level);
     flyTo(state.unit ? orbitPose(building.worldOf(state.unit), 30, 52, keepAzimuth()) : orbitPose(target, 58, 56, keepAzimuth()));
     renderAll();
+    if (PUBLIC_FLOORS[level]) enterWalk(view);
   }
   function select(unit) {
     if (!unit) { state.unit = null; building.setSelected(null); renderAll(); return; }
@@ -364,31 +389,37 @@ function createApp(el) {
     card.scrollTop = 0;
   }
 
-  let walkReady = null;
-  async function enterWalk() {
+  async function enterWalk(view = null) {
     const u = state.unit;
-    if (!u || !u.data.model) return;
+    const common = PUBLIC_FLOORS[state.level];
+    if (!common && !u?.data.model) return;
+    const ticket = ++navigation;
+    const current = () => alive && navigation === ticket;
     el.classList.add('is-loading');
-    $('[data-loading]').textContent = t('Загружаем квартиру…');
+    $('[data-loading]').textContent = t(common ? 'Загружаем интерьер…' : 'Загружаем квартиру…');
     if (!walk) walk = createWalk({ renderer, site, scene, basePath: base(), assetUrl: (slug, file) => (window.AF_RESIDENCE_MEDIA ? window.AF_RESIDENCE_MEDIA.asset(slug, file) : base() + '/assets/residences/' + slug + '/' + file), mobile, onUpdate: () => requestRender(2) });
-    const sides = building.facing(u);
-    const azOf = { n: 0, e: 90, s: 180, w: 270 };
     try {
-      walkReady = walk.enter({
-        slug: u.data.model.slug, parent: building.inner, offset: u.data.model.offset,
-        floorY: building.floorOf(u), floor: u.level, windows: u.data.windows,
-        facingAz: azOf[sides[0]] != null ? azOf[sides[0]] : 270,
-      });
-      const cutouts = await walkReady;
-      if (!alive) return;
-      // the whole house stays in view; only this flat's own walls and glass give way to its model
+      if (common) {
+        const storey = building.levels.find(l => l.level === state.level);
+        await walk.enterPublic({ ...common, view, parent: building.inner, floorY: storey.floor, current });
+        if (!current()) return;
+        building.setPublicInterior(storey.level);
+      } else {
+        const azOf = { n: 0, e: 90, s: 180, w: 270 };
+        const cutouts = await walk.enter({
+          slug: u.data.model.slug, parent: building.inner, offset: u.data.model.offset,
+          floorY: building.floorOf(u), floor: u.level, windows: u.data.windows,
+          facingAz: azOf[building.facing(u)[0]] ?? 270, current,
+        });
+        if (!current()) return;
+        building.setWalk(u, cutouts);
+      }
       building.setFocus(null);
       building.setSelected(null);
-      building.setWalk(u, cutouts);
       showLandscape(false);
     } catch (err) {
-      el.classList.remove('is-loading');
-      $('[data-loading]').textContent = t('Не удалось загрузить квартиру. Обновите страницу.');
+      if (!current()) return;
+      $('[data-loading]').textContent = t(common ? 'Не удалось загрузить интерьер. Выберите этаж ещё раз.' : 'Не удалось загрузить квартиру. Обновите страницу.');
       return;
     }
     if (!alive) return;
@@ -419,12 +450,24 @@ function createApp(el) {
     if (state.mode !== 'walk') return;
     controls.enabled = true;
     if (walk) walk.exit();
+    building.setPublicInterior(null);
     building.setWalk(null);
     showLandscape(true);
     site.setShadowFocus(new THREE.Vector3(0, 8, 0), 60);
     state.mode = 'floor';
     applySun();
     requestRender(3);
+  }
+
+  function exitTour() {
+    if (!state.unit) {
+      const level = state.level;
+      toOverview();
+      el.querySelector(`[data-floor="${level}"]`)?.focus();
+      return;
+    }
+    toFloor(state.unit.level, { keepUnit: true });
+    el.querySelector('[data-act="walk"]')?.focus();
   }
 
   // -- picking --------------------------------------------------------------
@@ -439,7 +482,7 @@ function createApp(el) {
     if (!hit) return null;
     if (state.mode === 'floor') return building.findUnit(hit.object.userData.number);
     const level = hit.object.userData.level;
-    return building.residentialLevels.includes(level) ? level : null;
+    return building.selectableLevels.includes(level) ? level : null;
   }
   function showTip(ev, html) {
     if (!html) { tip.hidden = true; return; }
@@ -451,6 +494,7 @@ function createApp(el) {
   function tipFor(target) {
     if (target == null) return '';
     if (typeof target === 'number') {
+      if (PUBLIC_FLOORS[target]) return `<b>${esc(t(PUBLIC_FLOORS[target].title))}</b><span>${esc(t('Этаж'))} ${target}</span>`;
       const [free, total] = freeCount(target);
       return `<b>${esc(t('Этаж'))} ${target}</b><span>${free ? esc(t('свободно')) + ': ' + free + ' / ' + total : esc(t('нет свободных'))}</span>`;
     }
@@ -511,6 +555,14 @@ function createApp(el) {
     if (b.dataset.floor) { toFloor(Number(b.dataset.floor)); return; }
     if (b.dataset.pin) { select(building.findUnit(b.dataset.pin)); return; }
     if (b.dataset.style) { walk.setStyle(b.dataset.style); renderWalkBar(); requestRender(3); return; }
+    if (b.hasAttribute('data-room-view')) {
+      walk.goToView(Number(b.dataset.roomView));
+      renderWalkBar();
+      syncUrl();
+      el.querySelector(`[data-room-view="${walk.viewIndex}"]`).focus();
+      requestRender(3);
+      return;
+    }
     if (b.dataset.season) { setSeason(b.dataset.season); return; }
     if (b.dataset.view) { openLightbox(b.dataset.view, b.dataset.viewCaption); return; }
     switch (b.dataset.act) {
@@ -518,7 +570,7 @@ function createApp(el) {
       case 'floor': select(null); toFloor(state.level); break;
       case 'deselect': select(null); break;
       case 'walk': enterWalk(); break;
-      case 'exit-walk': leaveWalk(); toFloor(state.unit.level, { keepUnit: true }); setTimeout(() => { const w = el.querySelector('[data-act="walk"]'); if (w) w.focus(); }); break;
+      case 'exit-walk': exitTour(); break;
       case 'play': state.playing = !state.playing; renderTime(); requestRender(2); break;
       case 'toggle-sun': state.sunOpen = !state.sunOpen; renderTime(); break;
       case 'lightbox-close': closeLightbox(); break;
@@ -549,7 +601,7 @@ function createApp(el) {
         $('[data-help] summary').focus();
       }
       else if (state.sunOpen) { state.sunOpen = false; renderTime(); }
-      else if (state.mode === 'walk') { leaveWalk(); toFloor(state.unit.level, { keepUnit: true }); }
+      else if (state.mode === 'walk') exitTour();
       else if (state.unit) select(null);
       else if (state.mode === 'floor') toOverview();
       return;
@@ -729,7 +781,7 @@ function createApp(el) {
       // deep link: /flats-3d?floor=4&apt=405&walk=1
       const unit = q.get('apt') && building.findUnit(q.get('apt'));
       if (unit) { state.unit = unit; toFloor(unit.level, { keepUnit: true }); if (q.get('walk')) enterWalk(); }
-      else if (q.get('floor') && building.residentialLevels.includes(Number(q.get('floor')))) toFloor(Number(q.get('floor')));
+      else if (q.get('floor') && building.selectableLevels.includes(Number(q.get('floor')))) toFloor(Number(q.get('floor')), { view: q.get('view') });
     } catch (err) {
       $('[data-loading]').textContent = t('Не удалось загрузить 3D-модель. Обновите страницу или откройте шахматку квартир.');
     }

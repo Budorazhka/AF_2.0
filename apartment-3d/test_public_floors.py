@@ -1,0 +1,109 @@
+"""The public-floor tour must spawn on a dry floor and outside its obstacles."""
+
+import json
+import struct
+import unittest
+from PIL import Image, ImageDraw, ImageFilter
+
+from public_floors import build, SPA_POOL
+
+
+class PublicFloorTests(unittest.TestCase):
+    def test_treadmill_bases_reach_the_gym_floor(self):
+        scene = build(-1)
+        for x in (6.5, 8.35, 10.2):
+            bases = [
+                scene.bounds(obj)
+                for obj in scene.objects
+                if obj["name"] == "frame"
+                and abs(scene.bounds(obj)[0] - (x - 0.4)) < 0.001
+                and abs(scene.bounds(obj)[2] - 24.35) < 0.001
+            ]
+            self.assertEqual(len(bases), 1)
+            self.assertAlmostEqual(bases[0][1], 0)
+
+    def test_walking_routes_connect_public_viewpoints(self):
+        # Check the connecting passages with 25 cm clearance for the 22 cm avatar.
+        def pixel(x, z):
+            return round(x * 20), round(z * 20)
+
+        for level in (1, 8):
+            scene = build(level)
+            mask = Image.new("L", (660, 650))
+            draw = ImageDraw.Draw(mask)
+            for a, b, c, d in scene.floors:
+                draw.rectangle([pixel(a, b), pixel(c, d)], fill=255)
+            for a, b, c, d, e, f in scene.floor_triangles:
+                draw.polygon([pixel(a, b), pixel(c, d), pixel(e, f)], fill=255)
+            for a, b, c, d in scene.barriers:
+                draw.rectangle([pixel(a, b), pixel(c, d)], fill=0)
+            mask = mask.filter(ImageFilter.MinFilter(11))
+            start = pixel(*scene.views[0]["eye"])
+            self.assertEqual(mask.getpixel(start), 255)
+            ImageDraw.floodfill(mask, start, 128)
+            for view in scene.views:
+                self.assertEqual(mask.getpixel(pixel(*view["eye"])), 128, view["title"])
+
+    def test_roof_pool_and_drop_are_outside_the_walkable_deck(self):
+        roof = build(8)
+        self.assertGreaterEqual(len(roof.views), 3)
+
+        def on_deck(x, z):
+            for ax, az, bx, bz, cx, cz in roof.floor_triangles:
+                sides = [
+                    (bx - ax) * (z - az) - (bz - az) * (x - ax),
+                    (cx - bx) * (z - bz) - (cz - bz) * (x - bx),
+                    (ax - cx) * (z - cz) - (az - cz) * (x - cx),
+                ]
+                if min(sides) >= -1e-8 or max(sides) <= 1e-8:
+                    return True
+            return False
+
+        for x, z in [(18, 17), (17.42, 19.44), (14.5, 23), (12, 31)]:
+            self.assertFalse(on_deck(x, z), (x, z))
+        for view in roof.views:
+            x, z = view["eye"]
+            self.assertTrue(on_deck(x, z))
+            self.assertFalse(
+                any(a - 0.22 < x < c + 0.22 and b - 0.22 < z < d + 0.22 for a, b, c, d in roof.barriers)
+            )
+
+    def test_dining_room_and_open_kitchen_have_distinct_accessible_views(self):
+        scene = build(1)
+        views = {v.get("key"): v for v in scene.views}
+        for key in ("restaurant", "kitchen"):
+            self.assertIn(key, views)
+        self.assertNotEqual(views["restaurant"]["eye"], views["kitchen"]["eye"])
+        # Door in the partition between the dining room and service hall.
+        self.assertFalse(
+            any(a - 0.22 < 17.29 < c + 0.22 and b - 0.22 < 12.95 < d + 0.22 for a, b, c, d in scene.barriers)
+        )
+
+    def test_models_preserve_viewpoints_textures_and_walkable_pool_surround(self):
+        for level in (-1, 1):
+            scene = build(level)
+            raw = scene.export()
+            (length,) = struct.unpack_from("<I", raw, 12)
+            gltf = json.loads(raw[20 : 20 + length])
+            self.assertTrue(gltf["images"])
+            self.assertTrue(all("TEXCOORD_0" in mesh["primitives"][0]["attributes"] for mesh in gltf["meshes"]))
+            meta = gltf["scenes"][0]["extras"]
+
+            def dry(x, z):
+                return any(a <= x <= c and b <= z <= d for a, b, c, d in meta["floorRects"])
+
+            for view in meta["views"]:
+                x, z = view["eye"]
+                self.assertTrue(dry(x, z), view)
+                for a, b, c, d in meta["barriers"]:
+                    self.assertFalse(a - 0.22 < x < c + 0.22 and b - 0.22 < z < d + 0.22, view)
+            if level == -1:
+                a, b, c, d = SPA_POOL
+                self.assertFalse(dry((a + c) / 2, (b + d) / 2))
+                self.assertTrue(dry(a - 0.5, (b + d) / 2))
+                self.assertTrue(dry(c + 0.5, (b + d) / 2))
+                self.assertIn(list(SPA_POOL), meta["barriers"])
+
+
+if __name__ == "__main__":
+    unittest.main()
