@@ -417,3 +417,25 @@ Object.assign(window.AF_I18N_EN, {
   "Пройти по квартире в 3D": "Walk through in 3D",
   "Солнце и время суток": "Sun and time of day"
 });
+
+Object.assign(window.AF_I18N_EN, {
+  "Спа и бассейн": "Spa & pool",
+  "Лобби и кафе": "Lobby & café",
+  "Ресепшен": "Reception",
+  "Кафе": "Café",
+  "Сауна": "Sauna",
+  "Спортзал": "Gym",
+  "У панорамных окон": "By the windows",
+  "Лобби и ресторан": "Lobby & restaurant",
+  "Терраса на крыше": "Roof terrace",
+  "Бассейн на крыше": "Rooftop pool",
+  "Обеденная терраса": "Dining terrace",
+  "Столики у окон": "Window tables",
+  "Лаунж с видом на море": "Sea-view lounge",
+  "Ресторан": "Restaurant",
+  "Открытая кухня": "Open kitchen",
+  "Референс": "Design reference",
+  "Рендер": "Render",
+  "Загружаем интерьер…": "Loading the interior…",
+  "Не удалось загрузить интерьер. Выберите этаж ещё раз.": "Could not load the interior. Select the floor again."
+});

@@ -34,6 +34,11 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
 
   const loader = new GLTFLoader();
   const glbCache = new Map();
+  let publicViews = null, viewIndex = 0;
+  let openDeck = false;
+  let reflectionTarget = null, reflectionDay = null;
+  let reflectiveSurfaces = [];
+  let disposed = false;
   const finishes = createWalkFinishes(renderer, basePath, { mobile });
   const accessories = createWalkAccessories(basePath, onUpdate);
   const railGlass = new THREE.MeshStandardMaterial({ color: 0xaecad8, roughness: 0.08, metalness: 0.12, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false });
@@ -50,6 +55,28 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     // writes depth so the live sky dome behind it (40 km) cannot paint over the photographs
     new THREE.MeshBasicMaterial({ side: THREE.BackSide, fog: false, toneMapped: false })
   );
+  // Use the repaired sky only where both images contain blue sky. The original
+  // panorama remains the source for the coastline, buildings and vegetation.
+  const repairedSky = { value: null }, skyStrength = { value: 0 };
+  sphere.material.onBeforeCompile = (shader) => {
+    shader.uniforms.afRepairedSky = repairedSky;
+    shader.uniforms.afSkyStrength = skyStrength;
+    shader.fragmentShader = shader.fragmentShader.replace(
+      'void main() {',
+      'uniform sampler2D afRepairedSky;\nuniform float afSkyStrength;\nvoid main() {'
+    ).replace('#include <map_fragment>', `
+      #ifdef USE_MAP
+        vec4 original = texture2D(map, vMapUv);
+        vec4 repaired = texture2D(afRepairedSky, vMapUv);
+        float originalBlue = smoothstep(0.025, 0.12, original.b - original.r)
+          * smoothstep(0.005, 0.09, original.b - original.g);
+        float repairedBlue = smoothstep(0.025, 0.12, repaired.b - repaired.r)
+          * smoothstep(0.005, 0.09, repaired.b - repaired.g);
+        float aboveHorizon = smoothstep(0.49, 0.54, vMapUv.y);
+        diffuseColor *= mix(original, repaired, afSkyStrength * originalBlue * repairedBlue * aboveHorizon);
+      #endif
+    `);
+  };
   const panoCache = new Map();
   function loadPano(file) {
     if (!panoCache.has(file)) {
@@ -57,14 +84,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
         t.colorSpace = THREE.SRGBColorSpace;
         t.anisotropy = mobile ? Math.min(2, renderer.capabilities.getMaxAnisotropy()) : renderer.capabilities.getMaxAnisotropy();
         resolve(t);
-      }, undefined, reject)));
+      }, undefined, reject)).catch(error => { panoCache.delete(file); throw error; }));
     }
     return panoCache.get(file);
-  }
-  async function buildRing(floor, centre) {
-    sphere.material.map = await loadPano(`pano-${floor}.webp`);
-    sphere.material.needsUpdate = true;
-    sphere.position.copy(centre);
   }
   let style = STYLES[1];
   let walkable = [];           // floor triangles in model space [ax, az, bx, bz, cx, cz]
@@ -77,13 +99,14 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   const tmp = new THREE.Vector3();
   const qInv = new THREE.Quaternion();
 
-  function loadGlb(slug) {
-    if (!glbCache.has(slug)) {
-      const url = assetUrl(slug, 'apartment.glb');
-      const vUrl = url + (url.includes('?') ? '&' : '?') + 'walk=20';
-      glbCache.set(slug, new Promise((resolve, reject) => loader.load(vUrl, (g) => resolve(g.scene), undefined, reject)));
+  function loadGlb(slug, file = 'apartment.glb') {
+    const url = assetUrl(slug, file);
+    if (!glbCache.has(url)) {
+      const revision = file === 'interior.glb' ? 'public=4' : 'walk=20';
+      const vUrl = url + (url.includes('?') ? '&' : '?') + revision;
+      glbCache.set(url, loader.loadAsync(vUrl).then(g => g.scene).catch(error => { glbCache.delete(url); throw error; }));
     }
-    return glbCache.get(slug);
+    return glbCache.get(url);
   }
 
   function prepare(src) {
@@ -180,7 +203,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     return onFloor(x, z) || onFloor(x, z + 0.3) || onFloor(x, z - 0.3) || onFloor(x + 0.3, z) || onFloor(x - 0.3, z);
   }
   function free(x, z) {
-    if (!inside(x, z)) return false;
+    if (!(publicViews ? onFloor(x, z) : inside(x, z))) return false;
+    if (openDeck && ![[-RADIUS,-RADIUS],[-RADIUS,RADIUS],[RADIUS,-RADIUS],[RADIUS,RADIUS]]
+      .every(([dx,dz]) => onFloor(x + dx, z + dz))) return false;
     for (const b of blockers) {
       const dx = Math.max(b[0] - x, 0, x - b[2]), dz = Math.max(b[1] - z, 0, z - b[3]);
       if (dx * dx + dz * dz < RADIUS * RADIUS) return false;
@@ -234,9 +259,12 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
 
   /* -- public ------------------------------------------------------------ */
   /** parent: the building's plan-space group; offset: [x, z] of the model in it; floorY: slab top. */
-  async function enter({ slug, parent: p, offset, floorY, facingAz, floor, windows = [] }) {
+  async function enter({ slug, parent: p, offset, floorY, facingAz, floor, windows = [], current = () => true }) {
     const [src] = await Promise.all([loadGlb(slug), finishes.load(style.id), accessories.load()]);
+    const pano = await loadPano(`pano-${floor}.webp`);
+    if (disposed || !current()) return;
     exit();
+    skyStrength.value = 0;
     parent = p;
     model = prepare(src);
     finishDetails = finishes.decorate(model, slug);
@@ -270,20 +298,80 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     lamp.position.copy(roomLight);
     placeCamera();
     site.setShadowFocus(box.getCenter(new THREE.Vector3()), 16);
-    await buildRing(floor, camera.position.clone());
+    sphere.material.map = pano;
+    repairedSky.value = pano;
+    sphere.material.needsUpdate = true;
+    sphere.position.copy(camera.position);
     scene.add(sphere);
     return model.children.filter((mesh) => mesh.userData.af?.group === 'floor')
       .map((mesh) => floorCutout(mesh.geometry, offset)).filter((planes) => planes.length >= 3);
+  }
+
+  function goToView(index) {
+    const view = publicViews?.[index];
+    if (!view) return;
+    viewIndex = index;
+    keys.clear();
+    glide = null;
+    local.set(view.eye[0], 0, view.eye[1]);
+    tmp.set(view.target[0] - local.x, 0, view.target[1] - local.z).applyQuaternion(model.getWorldQuaternion(qInv));
+    yaw.v = Math.atan2(-tmp.x, -tmp.z);
+    pitch.v = view.pitch;
+    roomLight.set(local.x, 2.7, local.z);
+    windowLight.copy(roomLight);
+    lamp.position.copy(roomLight);
+    placeCamera();
+  }
+
+  async function enterPublic({ slug, panoramaLevel, view, parent: p, floorY, current }) {
+    const [src, pano, sky] = await Promise.all([
+      loadGlb(slug, 'interior.glb'),
+      loadPano(`pano-${panoramaLevel}.webp`),
+      (slug === 'roof' || slug === 'lobby') ? loadPano('pano-roof-sky.png').catch(() => null) : null,
+    ]);
+    if (disposed || !current()) return;
+    exit();
+    parent = p;
+    model = src.clone(true);
+    publicViews = src.userData.views;
+    blockers = src.userData.barriers;
+    furnBlockers = [];
+    openDeck = !!src.userData.floorTriangles;
+    walkable = src.userData.floorTriangles ?? src.userData.floorRects.flatMap(([a,b,c,d]) => [[a,b,c,b,c,d], [a,b,c,d,a,d]]);
+    model.traverse(o => {
+      if (!o.isMesh) return;
+      o.castShadow = !o.material.transparent;
+      o.receiveShadow = true;
+      if (['water', 'satin', 'chrome', 'nero', 'bronze', 'crystal', 'dining-stone'].includes(o.material.name)) reflectiveSurfaces.push(o.material);
+    });
+    model.position.y = floorY;
+    parent.add(model);
+    model.add(lamp, fillLight);
+    parent.updateWorldMatrix(true, true);
+    goToView(Math.max(0, publicViews.findIndex(v => v.key === view)));
+    site.setShadowFocus(new THREE.Box3().setFromObject(model).getCenter(tmp), 24);
+    sphere.material.map = pano;
+    repairedSky.value = sky || pano;
+    skyStrength.value = sky ? 1 : 0;
+    sphere.material.needsUpdate = true;
+    sphere.position.copy(camera.position);
+    scene.add(sphere);
   }
 
   function exit() {
     finishDetails?.dispose();
     finishDetails = null;
     stagingDetails = null;
+    reflectiveSurfaces.forEach(material => { material.envMap = null; material.needsUpdate = true; });
+    reflectiveSurfaces = [];
+    reflectionTarget?.dispose();
+    reflectionTarget = reflectionDay = null;
     if (model && parent) {
       parent.remove(model);
-      model.traverse((o) => o.geometry?.dispose());
+      if (!publicViews) model.traverse((o) => o.geometry?.dispose());
     }
+    publicViews = null;
+    openDeck = false;
     model = null;
     scene.remove(sphere);
     keys.clear();
@@ -299,6 +387,23 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     fillLight.intensity = 0.25 + 0.12 * day;
     sphere.material.color.setScalar(0.18 + 0.82 * day);
     renderer.toneMappingExposure = 0.66 + 0.2 * day;
+    // Capture the actual room, glass wall and sea once per lighting state.
+    // Chrome, polished stone and water then reflect the interior even while standing still.
+    if (publicViews && reflectionDay !== Math.round(day * 2)) {
+      reflectionDay = Math.round(day * 2);
+      reflectionTarget ??= new THREE.WebGLCubeRenderTarget(mobile ? 128 : 256, {
+        type: renderer.extensions.has('EXT_color_buffer_float') ? THREE.HalfFloatType : THREE.UnsignedByteType,
+      });
+      const probe = new THREE.CubeCamera(.08, PANO_R * 2, reflectionTarget);
+      probe.position.copy(camera.position);
+      probe.position.y -= .5;
+      probe.update(renderer, scene);
+      reflectiveSurfaces.forEach(material => {
+        material.envMap = reflectionTarget.texture;
+        material.envMapIntensity = .85;
+        material.needsUpdate = true;
+      });
+    }
   }
 
   function update(dt) {
@@ -339,6 +444,15 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   function tapTo(ndc) {
     if (!model) return;
     ray.setFromCamera(ndc, camera);
+    if (publicViews) {
+      const origin = model.getWorldPosition(tmp);
+      const hit = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -origin.y), new THREE.Vector3());
+      if (hit) {
+        const p = model.worldToLocal(hit);
+        if (free(p.x, p.z)) glide = { x: p.x, z: p.z };
+      }
+      return;
+    }
     const targets = [];
     model.traverse((o) => { if (o.isMesh && o.visible && o.userData.af && o.userData.af.group === 'floor') targets.push(o); });
     const hit = ray.intersectObjects(targets, false)[0];
@@ -354,7 +468,9 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
 
   return {
     camera, styles: STYLES,
-    enter, exit, setSun, update, tapTo, look,
+    enter, enterPublic, goToView, exit, setSun, update, tapTo, look,
+    get views() { return publicViews; },
+    get viewIndex() { return viewIndex; },
     get active() { return !!model; },
     get style() { return style.id; },
     setStyle(id) {
@@ -367,11 +483,18 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     clearKeys() { keys.clear(); glide = null; },
     resize(w, h) { camera.aspect = w / h; camera.updateProjectionMatrix(); },
     dispose() {
+      disposed = true;
       exit(); railGlass.dispose(); lamp.dispose(); fillLight.dispose();
       finishes.dispose();
       accessories.dispose();
       sphere.geometry.dispose(); sphere.material.dispose();
       panoCache.forEach((p) => p.then((t) => t.dispose()).catch(() => {}));
+      glbCache.forEach(p => p.then(g => g.traverse(o => {
+        if (!o.isMesh) return;
+        o.geometry.dispose();
+        o.material.map?.dispose();
+        o.material.dispose();
+      })).catch(() => {}));
     },
   };
 }

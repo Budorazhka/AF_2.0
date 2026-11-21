@@ -377,13 +377,13 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
   }
 
   // -- state ----------------------------------------------------------------
-  let focus = null, hover = null, selected = null, night = 0;
+  let focus = null, hover = null, selected = null, night = 0, publicInterior = null;
 
   function paint() {
     for (const L of levels) {
       const opened = focus !== null && L.level === focus;
       const hidden = focus !== null && L.level > focus;
-      L.group.visible = !hidden;
+      L.group.visible = !hidden && publicInterior === null;
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
       if (L.walls) L.walls.material = opened ? mats.wallCut : mats.wall;
       if (L.columns) L.columns.material = opened ? mats.wallCut : mats.column;
@@ -486,6 +486,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     top,
     occluders,
     residentialLevels: levels.filter((l) => l.kind === 'residential').map((l) => l.level),
+    selectableLevels: levels.map(l => l.level),
     worldOf: (u) => toWorld(u.anchor),
     levelCenter(level) {
       const L = levels.find((l) => l.level === level);
@@ -496,11 +497,11 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
       if (mode === 'floor') return levels.filter((l) => l.level === focus).flatMap((l) => l.units.map((u) => u.zone));
       // only what is drawn: the hidden plan sheets (41 x 38 m, wider than the house) and
       // hover volumes would otherwise catch the ray above a lower floor and light the one over it
-      return levels.filter((l) => l.kind === 'residential')
-        .flatMap((l) => l.group.children.concat(l.vert.children))
+      return levels.flatMap((l) => l.group.children.concat(l.vert.children))
         .filter((c) => c.isMesh && c.visible && !c.userData.hoverVolume);
     },
     setFocus(level) { focus = level; paint(); },
+    setPublicInterior(level) { publicInterior = level; paint(); },
     setHover(h) { hover = h; paint(); },
     setSelected(u) { selected = u; paint(); },
     setNight(f) { night = f; paint(); },
