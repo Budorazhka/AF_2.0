@@ -25,6 +25,20 @@ function uncovered(start, end, adjacent) {
   return result;
 }
 
+export function subtractSlabOpenings(rects, openings) {
+  for (const [left, front, right, back] of openings) {
+    rects = rects.flatMap(rect => {
+      const [x0, z0, x1, z1] = rect;
+      const a = Math.max(x0, left), b = Math.max(z0, front);
+      const c = Math.min(x1, right), d = Math.min(z1, back);
+      if (a >= c || b >= d) return [rect];
+      return [[x0, z0, a, z1], [c, z0, x1, z1], [a, z0, c, b], [a, d, c, z1]]
+        .filter(([x, z, xEnd, zEnd]) => x < xEnd && z < zEnd);
+    });
+  }
+  return rects;
+}
+
 export function storeyQuads(rects, bottom, height) {
   const valid = rects.filter(([x, z, right, far]) => right > x && far > z);
   const zs = [...new Set(valid.flatMap((r) => [r[1], r[3]]))].sort((a, b) => a - b);

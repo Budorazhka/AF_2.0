@@ -5,7 +5,7 @@
    z down the sheet. Everything is built in plan coordinates inside `inner`;
    `outer` turns the sheet so that its "down" faces the real azimuth (the sea). */
 import * as THREE from './three.js';
-import { storeyQuads } from './storey-surfaces.js';
+import { storeyQuads, subtractSlabOpenings } from './storey-surfaces.js?v=2';
 import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=21';
 import { PARKING, SETBACK_ROOFS, parkingAccess } from './exterior-layout.js';
 import { trimWalkStorey, rectCutout } from './walk-shell.js?v=2';
@@ -136,7 +136,8 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
           r[0] > 14.5 ? Math.min(r[3], 19.65) : Math.min(r[3], 29.85),
         ])
       : lv.slab;
-    L.slabMesh = add(g, mesh(boxes([...baseSlab, ...extraSlab], y, SLAB, slabColours), mats.slab));
+    L.slabRects = [...baseSlab, ...extraSlab];
+    L.slabMesh = add(g, mesh(boxes(L.slabRects, y, SLAB, slabColours), mats.slab));
     if (lv.kind === 'roof') {
       add(g, mesh(boxes(lv.pool || [], L.floor, 0.04), mats.pool, false));
       add(g, mesh(boxes(lv.decks || [], L.floor, 0.06), mats.deck, false));
@@ -378,6 +379,26 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
 
   // -- state ----------------------------------------------------------------
   let focus = null, hover = null, selected = null, night = 0, publicInterior = null;
+  let restorePublicSlab = null;
+
+  function setPublicInterior(level, stairOpenings) {
+    restorePublicSlab?.();
+    restorePublicSlab = null;
+    publicInterior = level;
+    if (level === 1 && stairOpenings?.length) {
+      const upper = levels.find(storey => storey.level === level + 1);
+      if (upper?.slabMesh) {
+        const slab = upper.slabMesh, original = slab.geometry;
+        const rects = subtractSlabOpenings(upper.slabRects, stairOpenings);
+        slab.geometry = boxes(rects, upper.y0, SLAB, upper.slabColours);
+        restorePublicSlab = () => {
+          slab.geometry.dispose();
+          slab.geometry = original;
+        };
+      }
+    }
+    paint();
+  }
 
   function paint() {
     for (const L of levels) {
@@ -502,7 +523,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
         .filter((c) => c.isMesh && c.visible && !c.userData.hoverVolume);
     },
     setFocus(level) { focus = level; paint(); },
-    setPublicInterior(level) { publicInterior = level; paint(); },
+    setPublicInterior,
     setHover(h) { hover = h; paint(); },
     setSelected(u) { selected = u; paint(); },
     setNight(f) { night = f; paint(); },
@@ -517,6 +538,7 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     },
     dispose() {
       restoreStorey?.();
+      restorePublicSlab?.();
       disposables.forEach((d) => d.dispose && d.dispose());
       Object.values(mats).forEach((m) => m.dispose());
     },

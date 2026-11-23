@@ -13,8 +13,8 @@
 import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
-import { createBuilding, STATUS_COLORS } from './building.js?v=32';
-import { createWalk } from './walk.js?v=41';
+import { createBuilding, STATUS_COLORS } from './building.js?v=33';
+import { createWalk } from './walk.js?v=43';
 import { createAmenities } from './amenities.js?v=26';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
@@ -401,9 +401,9 @@ function createApp(el) {
     try {
       if (common) {
         const storey = building.levels.find(l => l.level === state.level);
-        await walk.enterPublic({ ...common, view, parent: building.inner, floorY: storey.floor, current });
+        const stairOpenings = await walk.enterPublic({ ...common, view, parent: building.inner, floorY: storey.floor, current });
         if (!current()) return;
-        building.setPublicInterior(storey.level);
+        building.setPublicInterior(storey.level, stairOpenings);
       } else {
         const azOf = { n: 0, e: 90, s: 180, w: 270 };
         const cutouts = await walk.enter({
