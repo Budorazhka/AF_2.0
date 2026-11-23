@@ -10,6 +10,44 @@ from public_dining import dining_table, restaurant
 from public_roof import roof, write_roof_plan
 
 SPA_POOL = (15.51, 21.28, 27.10, 26.33)
+STOREY_SLAB_DEPTH = 0.30
+
+
+def stair_underside(s, x0, x1, z0, z1, y0, y1, thickness=0.18):
+    """Continuous stone soffit below a return flight's stepped profile."""
+    s.mesh("limestone", [
+        (x0, y0, z0), (x1, y1, z0), (x1, y1, z1), (x0, y0, z1),
+        (x0, y0 - thickness, z0), (x1, y1 - thickness, z0),
+        (x1, y1 - thickness, z1), (x0, y0 - thickness, z1),
+    ], [0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1,
+        1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0], "#ffffff")
+
+
+def return_stair(s, run, landings, lower, upper, steps):
+    """Two parallel flights with the lower entrance at the right of the plan."""
+    x0, x1 = run
+    left, right = landings
+    lower_front, lower_back = lower
+    upper_front, upper_back = upper
+    top_floor = s.height + STOREY_SLAB_DEPTH
+    landing = top_floor / 2
+    rise, tread = landing / steps, (x1 - x0) / steps
+    z0, z1 = min(lower_front, upper_front), max(lower_back, upper_back)
+    s.part("limestone", left, z0, x0 - left, z1 - z0, 0, landing, solid=True)
+    for i in range(steps):
+        x = x0 + i * tread
+        s.part("limestone", x, lower_front, tread, lower_back - lower_front, 0, landing - i * rise, solid=True)
+        s.part("limestone", x, upper_front, tread, upper_back - upper_front, landing + i * rise, rise)
+    # Inset the sides so the soffit and the treads never share a plane.
+    stair_underside(s, x0, x1, upper_front + 0.004, upper_back - 0.004, landing, top_floor, thickness=0.21)
+    s.part("limestone", x1, upper_front, right - x1, upper_back - upper_front, top_floor - 0.14, 0.15)
+    rail_z = upper_front + 0.025 if lower_front < upper_front else upper_back - 0.025
+    for i in range(steps):
+        x = x0 + (i + 0.5) * tread
+        if i % 2 == 0 or i == steps - 1:
+            y = landing + (i + 1) * rise
+            s.tube("bronze", (x, y, rail_z), (x, y + 0.86 - rise / 2, rail_z), 0.015)
+    s.tube("bronze", (x0, landing + 0.86, rail_z), (x1, top_floor + 0.86, rail_z), 0.025)
 
 
 def glazing(s, x, z, x2, z2, divisions):
@@ -68,22 +106,23 @@ def core(s, ground):
         s.partition(x, z, x2, z2)
     for x, z, x2, z2 in [(7.59, 3.69, 17.39, 7.48), (7.59, 7.48, 16.15 if ground else 17.19, 9.85)]:
         s.floor(x, z, x2, z2, "limestone")
-    if ground:
-        # Leave the side stairwell open through the ceiling for its return flight.
-        s.floors.append([4.12, 9.85, 29.87, 16.48])
-        s.part("limestone", 4.12, 9.85, 25.75, 6.63, -0.14, 0.14)
-        for x, z, w, d in [(4.12, 9.85, 25.75, 4.15), (9.37, 14.0, 20.50, 2.48)]:
-            s.part("ivory", x, z, w, d, s.height, 0.10)
-    else:
-        s.floor(4.12, 9.85, 29.87, 16.48, "limestone")
+    # Leave the side stairwell open through the ceiling for its return flight.
+    s.floors.append([4.12, 9.85, 29.87, 16.48])
+    s.part("limestone", 4.12, 9.85, 25.75, 6.63, -0.14, 0.14)
+    for x, z, w, d in [(4.12, 9.85, 25.75, 4.15), (8.50, 14.0, 21.37, 2.48)]:
+        s.part("ivory", x, z, w, d, s.ceiling_y, 0.10)
+    for x, z, w, d in [(4.12, 14.0, 0.20, 2.48), (9.17, 14.0, 0.20, 2.48),
+                        (4.12, 14.0, 5.25, 0.20), (4.12, 16.28, 5.25, 0.20)]:
+        s.part("ivory", x, z, w, d, s.height, s.height)
+    s.part("ivory", 4.12, 14.0, 5.25, 2.48, s.height + s.ceiling_y, 0.10)
     if ground:
         # The stairwell is open above the return flight and the upper landing.
         s.floors.append([16.15, 7.48, 17.19, 9.85])
         s.part("limestone", 16.15, 7.48, 1.04, 2.37, -0.14, 0.14)
-        s.part("ivory", 16.15, 7.48, 1.04, 1.16, s.height, 0.10)
+        s.part("ivory", 16.15, 7.48, 1.04, 1.16, s.ceiling_y, 0.10)
         s.floors.append([17.19, 7.48, 21.76, 9.85])
         s.part("limestone", 17.19, 7.48, 4.57, 2.37, -0.14, 0.14)
-        s.part("ivory", 16.15, 7.48, 5.61, 2.37, s.height * 2, 0.10)
+        s.part("ivory", 16.15, 7.48, 5.61, 2.37, s.height + s.ceiling_y, 0.10)
         for x, z, w, d in [
             (16.15, 7.48, 5.61, 0.20),
             (17.19, 9.65, 4.57, 0.20),
@@ -92,7 +131,13 @@ def core(s, ground):
         ]:
             s.part("ivory", x, z, w, d, s.height, s.height)
     else:
-        s.floor(17.19, 7.48, 21.76, 9.85, "limestone")
+        s.floors.append([17.19, 7.48, 21.76, 9.85])
+        s.part("limestone", 17.19, 7.48, 4.57, 2.37, -0.14, 0.14)
+        s.part("ivory", 20.82, 7.48, 0.94, 2.37, s.ceiling_y, 0.10)
+        s.part("ivory", 17.19, 7.48, 4.57, 2.37, s.height + s.ceiling_y, 0.10)
+        for x, z, w, d in [(17.19, 7.48, 0.20, 2.37), (21.56, 7.48, 0.20, 2.37),
+                            (17.39, 7.48, 4.17, 0.20), (17.39, 9.65, 4.17, 0.20)]:
+            s.part("ivory", x, z, w, d, s.height, s.height)
     doors(s, 11.35, 13.50, 13.14, 13.50, [(11.80, 12.76)])
     for z in (15.0, 17.55):
         s.part("bronze", 11.23, z - 0.47, 0.035, 0.94, 0.02, 2.27)
@@ -103,20 +148,18 @@ def core(s, ground):
     doors(s, 7.7, 9.94, 21.65, 9.94, [(10.05, 11.02), (13.8, 14.85), (17.50, 18.55) if ground else (20.18, 21.22)])
     doors(s, 4.22, 13.51, 9.37, 13.51, [(8.1, 9.1)])
     doors(s, 9.37, 10.0, 9.37, 16.39, [(11.20, 12.28), (14.17, 15.2)])
-    stairs = [(4.52, 14.09, 3.20, 1.14)]
+    return_stair(s, run=(5.30, 8.50), landings=(4.32, 9.17),
+                 lower=(14.09, 15.23), upper=(15.25, 16.27), steps=10 if ground else 11)
+    s.part("oak", 9.143, 15.34, 0.027, 0.84, s.height + STOREY_SLAB_DEPTH + 0.02, 2.1)
     if not ground:
-        stairs.append((17.2, 8.1, 3.4, 1.15))
-    for x, z, length, width in stairs:
-        for i in range(10):
-            s.part("limestone", x + i * length / 10, z, length / 10, width, 0, (i + 1) * 0.15, solid=True)
+        return_stair(s, run=(18.22, 20.82), landings=(17.39, 21.56),
+                     lower=(8.76, 9.71), upper=(7.68, 8.63), steps=11)
+        s.part("oak", 21.533, 7.77, 0.027, 0.78, s.height + STOREY_SLAB_DEPTH + 0.02, 2.1)
     if ground:
-        # Side stair: landing and return flight continue to the next floor.
-        s.part("limestone", 7.72, 14.09, 1.45, 2.18, 0, 1.50, solid=True)
-        for i in range(10):
-            top = 3.30 - i * 0.18
-            s.part("limestone", 4.52 + i * 0.32, 15.25, 0.32, 1.02, top - 0.18, 0.18)
-        s.part("limestone", 4.32, 15.25, 0.20, 1.02, 3.16, 0.14)
-        s.tube("bronze", (4.58, 4.00, 15.20), (7.70, 2.25, 15.20), 0.025)
+        # Cut into the stairwell lining so slab edges don't share its plane.
+        s.stair_openings.extend([[4.28, 13.98, 8.50, 16.32], [17.30, 7.64, 20.50, 9.69]])
+        fascia_height = s.height + STOREY_SLAB_DEPTH - s.ceiling_y
+        s.part("ivory", 8.46, 14.0, 0.04, 2.48, s.ceiling_y, fascia_height)
         # The lower flight is on the far side; the high return leaves the
         # restaurant doorway and headroom unobstructed beneath it.
         for i in range(10):
@@ -125,12 +168,7 @@ def core(s, ground):
             s.part("limestone", 17.30 + i * 0.32, 8.77, 0.32, 0.94, top - 0.165, 0.165)
         s.part("limestone", 20.50, 7.70, 1.04, 2.01, 0, 1.65, solid=True)
         s.part("limestone", 16.27, 8.77, 1.03, 0.94, 3.16, 0.14)
-        # A sloped concrete slab supports the return flight above the landing.
-        s.mesh("limestone", [
-            (17.30, 3.135, 8.77), (20.50, 1.485, 8.77), (20.50, 1.485, 9.71), (17.30, 3.135, 9.71),
-            (17.30, 2.955, 8.77), (20.50, 1.305, 8.77), (20.50, 1.305, 9.71), (17.30, 2.955, 9.71),
-        ], [0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1,
-            1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0], "#ffffff")
+        stair_underside(s, 17.30, 20.50, 8.77, 9.71, 3.135, 1.485)
         # The low end of the overhead flight has less than standing headroom.
         s.barriers.append([18.95, 8.77, 20.50, 9.71])
         s.tube("bronze", (17.36, 3.95, 8.70), (20.48, 2.30, 8.70), 0.025)
@@ -200,7 +238,10 @@ def spa(s):
         (5.91, 26.98, 6.11, 28.16),
     ]:
         s.partition(x, z, x2, z2, "basalt")
-    glazing(s, 12.25, 30.73, 28.41, 30.73, 8)
+    glazing(s, 12.25, 30.73, 23.45, 30.73, 6)
+    glazing(s, 24.45, 30.73, 28.41, 30.73, 2)
+    s.part("glass", 23.45, 30.723, 1.0, 0.014, 2.32, s.height - 2.46)
+    s.part("frame", 23.45, 30.688, 1.0, 0.084, 2.29, 0.06)
     glazing(s, 6.11, 28.06, 12.05, 28.06, 3)
     glazing(s, 4.23, 16.48, 4.23, 26.78, 5)
     doors(s, 4.24, 19.56, 9.27, 19.56, [(5.12, 6.02), (7.42, 8.36)])
@@ -214,7 +255,8 @@ def spa(s):
     doors(s, 22.55, 12.02, 22.55, 16.17, [])
     doors(s, 13.14, 16.17, 24.24, 16.17, [(16.26, 17.19), (19.1, 20.2), (22.67, 23.96)], "travertine")
     doors(s, 24.24, 12.02, 24.24, 18.06, [(14.18, 15.08)])
-    doors(s, 24.24, 18.06, 29.76, 18.06, [(25.0, 25.87), (26.9, 27.76), (28.7, 29.57)])
+    # Keep the first entrance clear of the structural column at x=25.72.
+    doors(s, 24.24, 18.06, 29.76, 18.06, [(24.50, 25.45), (26.9, 27.76), (28.7, 29.57)])
     for x in (26.4, 28.09):
         doors(s, x, 14.89, x, 18.06, [])
     doors(s, 26.4, 14.89, 29.76, 14.89, [(26.9, 27.76), (28.8, 29.63)])
@@ -235,9 +277,13 @@ def spa(s):
     # The lower terrace gives the glazing a near foreground in front of the sea.
     s.part("basalt", 4.6, 28.06, 7.45, 2.78, -5.20, 5.20)
     s.part("basalt", 4.6, 30.84, 21.2, 7.56, -5.20, 5.20)
+    s.floors.extend([[4.6, 28.06, 12.05, 30.84], [4.6, 30.84, 25.8, 38.26]])
+    s.barriers.extend([[11.20, 32.40, 20.80, 36.60],
+                       [4.6, 30.84, 4.7, 38.26], [25.70, 30.84, 25.8, 38.26],
+                       [4.6, 38.16, 25.8, 38.26]])
     s.part("limestone", 10.82, 32.02, 10.36, 4.96, -0.07, 0.08)
     s.part("water", 11.20, 32.40, 9.60, 4.20, 0.012, 0.012)
-    for z in (32.02, 34.45, 36.86):
+    for z in (32.02, 34.65, 36.86):
         lounger(s, 22.80, z)
     palm(s, 27.46, 28.70)
     palm(s, 24.70, 31.80)
@@ -305,7 +351,10 @@ def lobby(s):
     glazing(s, 11.36, 18.94, 11.36, 20.40, 1)
     glazing(s, 11.36, 21.60, 11.36, 23.72, 1)
     s.partition(11.36, 23.62, 13.44, 23.82, "travertine")
-    glazing(s, 17.30, 18.07, 29.77, 18.07, 8)
+    glazing(s, 17.30, 18.07, 22.0, 18.07, 3)
+    glazing(s, 23.20, 18.07, 29.77, 18.07, 4)
+    s.part("glass", 22.0, 18.063, 1.20, 0.014, 2.32, s.height - 2.46)
+    s.part("frame", 22.0, 18.028, 1.20, 0.084, 2.29, 0.06)
     glazing(s, 29.77, 10.04, 29.77, 18.07, 4)
     for x in (17.20, 21.56, 25.72, 29.68):
         s.part("travertine", x - 0.21, 17.78, 0.42, 0.42, 0, s.height, solid=True)
@@ -331,7 +380,8 @@ def lobby(s):
     # Match the terrace and balustrade to the external building model.
     s.part("basalt", 13.45, 30.28, 12.75, 0.22, -0.07, 0.78)
     s.part("basalt", 26.00, 23.60, 0.20, 6.90, -0.07, 0.78)
-    for a, b in [((13.45, 30.38), (26.10, 30.38)), ((26.10, 23.60), (26.10, 30.38))]:
+    s.part("basalt", 13.35, 28.17, 0.20, 2.21, -0.07, 0.78, solid=True)
+    for a, b in [((13.45, 28.17), (13.45, 30.38)), ((13.45, 30.38), (26.10, 30.38)), ((26.10, 23.60), (26.10, 30.38))]:
         s.band("glass", [a, b], 0.025, 0.71, 0.40, "#ffffff")
         s.tube("bronze", (a[0], 1.13, a[1]), (b[0], 1.13, b[1]), 0.018)
     for x, z in [(15.6, 28.0), (18.7, 28.0), (21.8, 28.0), (16.8, 23.6), (20.6, 23.6), (24.4, 23.8)]:
@@ -343,7 +393,7 @@ def lobby(s):
 
 
 def build(level):
-    s = PublicScene(3.70 if level == -1 else 3.30)
+    s = PublicScene(3.70 if level == -1 else 3.30, ceiling_drop=0.04 if level == 1 else 0)
     {-1: spa, 1: lobby, 8: roof}[level](s)
     return s
 

@@ -43,11 +43,13 @@ FINISH = {
 
 
 class PublicScene(Scene):
-    def __init__(self, height):
+    def __init__(self, height, ceiling_drop=0):
         super().__init__()
         self.height = height
+        self.ceiling_y = height - ceiling_drop
         self.floors, self.barriers, self.views = [], [], []
         self.floor_triangles = []
+        self.stair_openings = []
 
     def part(self, finish, x, z, w, d, y, h, *, solid=False):
         if solid:
@@ -57,7 +59,7 @@ class PublicScene(Scene):
     def floor(self, x, z, x2, z2, finish):
         self.floors.append([x, z, x2, z2])
         self.part(finish, x, z, x2 - x, z2 - z, -0.14, 0.14)
-        self.part("ivory", x, z, x2 - x, z2 - z, self.height, 0.10)
+        self.part("ivory", x, z, x2 - x, z2 - z, self.ceiling_y, 0.10)
 
     def partition(self, x, z, x2, z2, finish="ivory"):
         self.part(finish, x, z, x2 - x, z2 - z, 0, self.height, solid=True)
@@ -110,6 +112,8 @@ class PublicScene(Scene):
         g["scenes"][0]["extras"] = dict(views=self.views, floorRects=self.floors, barriers=self.barriers)
         if self.floor_triangles:
             g["scenes"][0]["extras"]["floorTriangles"] = self.floor_triangles
+        if self.stair_openings:
+            g["scenes"][0]["extras"]["stairOpenings"] = self.stair_openings
         for mesh, mat in zip(g["meshes"], g["materials"]):
             name = mesh["name"]
             tint, rough, metal, path, w, h = FINISH[name]
