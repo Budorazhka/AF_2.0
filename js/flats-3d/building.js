@@ -383,7 +383,8 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     for (const L of levels) {
       const opened = focus !== null && L.level === focus;
       const hidden = focus !== null && L.level > focus;
-      L.group.visible = !hidden && publicInterior === null;
+      // Keep the storeys above the lobby visible from its terrace.
+      L.group.visible = !hidden && (publicInterior === null || (publicInterior === 1 && L.level > 1));
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
       if (L.walls) L.walls.material = opened ? mats.wallCut : mats.wall;
       if (L.columns) L.columns.material = opened ? mats.wallCut : mats.column;

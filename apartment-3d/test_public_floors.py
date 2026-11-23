@@ -9,6 +9,36 @@ from public_floors import build, SPA_POOL
 
 
 class PublicFloorTests(unittest.TestCase):
+    def test_lobby_stairs_and_terrace_do_not_block_their_entrances(self):
+        scene = build(1)
+
+        def clear(x, z):
+            return not any(a - 0.22 < x < c + 0.22 and b - 0.22 < z < d + 0.22
+                           for a, b, c, d in scene.barriers)
+
+        # Door from the restaurant opens under the high end of the return flight.
+        for z in (10.2, 9.94, 9.5):
+            self.assertTrue(clear(18.0, z), (18.0, z))
+        for obj in scene.objects:
+            a, y0, b, c, y1, d = scene.bounds(obj)
+            if a < 18.0 < c and b < 9.2 < d and len(obj['v']) == 8:
+                left = min(v[1] for v in obj['v'] if abs(v[0] - a) < 1e-6)
+                right = min(v[1] for v in obj['v'] if abs(v[0] - c) < 1e-6)
+                y0 = left + (right - left) * (18.0 - a) / (c - a)
+            self.assertFalse(a < 18.0 < c and b < 9.2 < d and y0 < 2.1 and y1 > 0.05,
+                             (obj['name'], scene.bounds(obj)))
+        # Reception-to-terrace doorway and the paved area beyond it.
+        for x in (10.9, 11.36, 11.8, 12.3):
+            self.assertTrue(clear(x, 21.0), (x, 21.0))
+            self.assertTrue(any(a <= x <= c and b <= 21.0 <= d for a, b, c, d in scene.floors))
+
+        # The side stair has a return flight reaching the next floor.
+        self.assertTrue(any(obj['name'] == 'limestone' and
+                            4.5 <= scene.bounds(obj)[0] < 7.8 and
+                            15.2 <= scene.bounds(obj)[2] < 16.4 and
+                            scene.bounds(obj)[4] >= 3.1
+                            for obj in scene.objects))
+
     def test_treadmill_bases_reach_the_gym_floor(self):
         scene = build(-1)
         for x in (6.5, 8.35, 10.2):
@@ -43,6 +73,9 @@ class PublicFloorTests(unittest.TestCase):
             ImageDraw.floodfill(mask, start, 128)
             for view in scene.views:
                 self.assertEqual(mask.getpixel(pixel(*view["eye"])), 128, view["title"])
+            if level == 1:
+                self.assertEqual(mask.getpixel(pixel(12.3, 21.0)), 128, "terrace entrance")
+                self.assertEqual(mask.getpixel(pixel(15.0, 25.0)), 128, "terrace tables")
 
     def test_roof_pool_and_drop_are_outside_the_walkable_deck(self):
         roof = build(8)
