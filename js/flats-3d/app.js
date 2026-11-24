@@ -13,9 +13,9 @@
 import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
-import { createBuilding, STATUS_COLORS } from './building.js?v=33';
-import { createWalk } from './walk.js?v=43';
-import { createAmenities } from './amenities.js?v=26';
+import { createBuilding, STATUS_COLORS } from './building.js?v=34';
+import { createWalk } from './walk.js?v=48';
+import { createAmenities } from './amenities.js?v=29';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
 const t = (s) => (window.AF_I18N && window.AF_I18N.t ? window.AF_I18N.t(s) : s);
@@ -28,7 +28,7 @@ const STATUS = { active: 'В продаже', booked: 'Забронирован�
 const SIDES = { n: 'север', e: 'восток', s: 'юг', w: 'запад' };
 const SIDE_TITLE = { n: 'Север', e: 'Восток', s: 'Юг', w: 'Запад' };
 const PUBLIC_FLOORS = {
-  '-1': { title: 'Спа и бассейн', slug: 'spa', panoramaLevel: 2 },
+  '-1': { title: 'Спа и бассейн', slug: 'spa', panoramaLevel: 'spa' },
   1: { title: 'Лобби и ресторан', slug: 'lobby', panoramaLevel: 2 },
   8: { title: 'Терраса на крыше', slug: 'roof', panoramaLevel: 7 },
 };
@@ -441,6 +441,7 @@ function createApp(el) {
     if (amenities) {
       amenities.world.visible = on;
       amenities.plan.visible = on;
+      amenities.upperTerrace.visible = on || state.level === -1;
       // The exterior pergola overlaps the detailed level-7 flat model.
       amenities.terraceDecor.visible = on || state.unit?.level !== amenities.terraceDecor.userData.level;
     }
@@ -756,6 +757,7 @@ function createApp(el) {
       // pool, roof restaurant, garden first: the forest has to leave room for them
       amenities = createAmenities(building, data, groundHeight);
       building.attachToLevel(1, amenities.plan);
+      building.attachToLevel(1, amenities.upperTerrace);
       building.attachToLevel(8, amenities.roof);
       scene.add(amenities.world);
       site = createSite(scene, renderer, {

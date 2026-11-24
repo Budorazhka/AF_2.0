@@ -6,9 +6,9 @@
    `outer` turns the sheet so that its "down" faces the real azimuth (the sea). */
 import * as THREE from './three.js';
 import { storeyQuads, subtractSlabOpenings } from './storey-surfaces.js?v=2';
-import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=21';
-import { PARKING, SETBACK_ROOFS, parkingAccess } from './exterior-layout.js';
-import { trimWalkStorey, rectCutout } from './walk-shell.js?v=2';
+import { frameGeometry, balustradeGeometry, carPark } from './facade.js?v=23';
+import { PARKING, SETBACK_ROOFS, parkingAccess, replacesWalkFrontage } from './exterior-layout.js?v=2';
+import { trimWalkStorey, rectCutout } from './walk-shell.js?v=3';
 
 export const SLAB = 0.3;
 const CUT = 1.25;          // wall height left standing when a floor is opened
@@ -404,8 +404,9 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
     for (const L of levels) {
       const opened = focus !== null && L.level === focus;
       const hidden = focus !== null && L.level > focus;
-      // Keep the storeys above the lobby visible from its terrace.
-      L.group.visible = !hidden && (publicInterior === null || (publicInterior === 1 && L.level > 1));
+      // A detailed public interior (spa or lobby) replaces its own storey and anything below it.
+      // Keep all storeys above visible so looking back from the pool or lobby terrace shows the full house.
+      L.group.visible = !hidden && (publicInterior === null || (publicInterior < 8 && L.level > publicInterior));
       L.vert.scale.y = opened ? CUT / (L.kind === 'roof' ? 2.8 : L.full) : 1;
       if (L.walls) L.walls.material = opened ? mats.wallCut : mats.wall;
       if (L.columns) L.columns.material = opened ? mats.wallCut : mats.column;
@@ -476,7 +477,11 @@ export function createBuilding(data, apartments, { basePath = '', onUpdate = nul
       // and would read as a second window; cut it out with its mullions (0.03 m overhang).
       const k = storey.data.units.indexOf(unit.data);
       const ownGlass = storey.data.glass.filter((r) => r[4] === k).map((r) => rectCutout(r, 0.05));
-      restoreStorey = trimWalkStorey([...storey.vert.children, storey.rails, storey.decks], [...cutouts, ...ownGlass]);
+      restoreStorey = trimWalkStorey(
+        [...storey.vert.children, storey.rails, storey.frames, storey.decks],
+        [...cutouts, ...ownGlass],
+        part => replacesWalkFrontage(part, unit.data.outdoor || [], cutouts)
+      );
     }
   }
 

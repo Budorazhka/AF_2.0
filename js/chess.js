@@ -563,6 +563,10 @@
      подменяемых страниц — переинициализируемся после каждого перехода. */
   function init() {
     if (!document.getElementById("chessBoard")) return;
+    document.documentElement.classList.remove("af3d-lock");
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    if (window.AF_lenis) window.AF_lenis.start();
     renderFilters();
     renderLegend();
     renderBoard();
