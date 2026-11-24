@@ -75,20 +75,33 @@ class PublicFloorTests(unittest.TestCase):
             self.assertTrue(ceilings, (x, z))
             for ceiling in ceilings:
                 self.assertLessEqual(ceiling[1], slab_bottom - 0.02, (x, z, ceiling))
-        # Glass balustrades enclose front (with stair opening x=6.2..8.2), left, and right edges.
+        # Glass balustrades enclose front (with stair opening x=6.2..8.2), left (leaving Yoga Pavilion doorway z=28.15..30.50 open), and right edges.
         glass = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'glass']
         self.assertTrue(any(b[0] <= 5.0 and b[3] >= 6.1 and b[2] >= 38.2 for b in glass))
         self.assertTrue(any(b[0] <= 8.3 and b[3] >= 25.0 and b[2] >= 38.2 for b in glass))
-        self.assertTrue(any(b[0] <= 4.7 and b[3] <= 4.8 and b[2] <= 29.0 and b[5] >= 38.0 for b in glass))
+        self.assertTrue(any(b[0] <= 4.7 and b[3] <= 4.8 and b[2] <= 30.6 and b[5] >= 38.0 for b in glass))
         self.assertTrue(any(b[0] >= 25.6 and b[3] <= 25.8 and b[2] <= 31.0 and b[5] >= 38.0 for b in glass))
         # Descending steps connect the pool deck to the ground-level playground.
         steps = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'teak'
                  and 6.0 <= scene.bounds(obj)[0] <= 6.5 and 38.2 <= scene.bounds(obj)[2] <= 39.8]
         self.assertGreaterEqual(len(steps), 5)
-        # Exterior left pavilion glass must never protrude inside the gym glazing (x=4.23, z=16.48..26.78).
+        # Exterior left pavilion glass must stay south of the gym panoramic glazing (x=4.23, z=16.48..26.78).
         for b in glass:
-            if b[0] < 4.10:
-                self.assertLessEqual(b[3], 4.10, f"Pavilion glass protrudes into gym: {b}")
+            if b[0] < 4.65 and b[2] < 26.80:
+                self.assertGreaterEqual(b[0], 4.10, f"Pavilion glass overlaps gym window: {b}")
+        # Exterior left Yoga Pavilion sits on a solid basalt foundation and teak floor, with walkable entrance from pool deck.
+        basalt = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'basalt']
+        self.assertTrue(any(b[0] <= 1.40 and b[3] >= 4.60 and b[2] <= 26.85 and b[5] >= 30.55 and b[1] <= -1.0 for b in basalt))
+        teak = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'teak']
+        self.assertTrue(any(b[0] <= 1.45 and b[3] >= 4.55 and b[2] <= 26.90 and b[5] >= 30.50 and b[4] >= 0.0 for b in teak))
+        self.assertFalse(any(a - 0.22 < 4.60 < c + 0.22 and b - 0.22 < 29.25 < d + 0.22 for a, b, c, d in scene.barriers))
+        # Parasol poles (barriers ~0.32x0.32) must never overlap lounger footprints (x=22.41..23.19) or the coffee table.
+        parasol_poles = [b for b in scene.barriers if 0.25 <= b[2] - b[0] <= 0.35 and 0.25 <= b[3] - b[1] <= 0.35]
+        self.assertGreaterEqual(len(parasol_poles), 3)
+        for px0, pz0, px1, pz1 in parasol_poles:
+            cx, cz = (px0 + px1) / 2, (pz0 + pz1) / 2
+            self.assertFalse(22.2 <= cx <= 23.4 and 31.0 <= cz <= 37.9, f"Parasol inside lounger: {(cx, cz)}")
+            self.assertFalse(6.8 <= cx <= 8.1 and 34.7 <= cz <= 36.0, f"Parasol inside coffee table: {(cx, cz)}")
 
     def test_lobby_ceiling_clears_second_storey_slab(self):
         scene = build(1)
