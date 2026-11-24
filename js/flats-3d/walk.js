@@ -11,7 +11,7 @@ import { GLTFLoader } from './three.js';
 import { STYLES, roleOf, materialFor, addMetricUVs } from './styles.js?v=19';
 import { createWalkFinishes } from './walk-finishes.js?v=4';
 import { createWalkAccessories } from './walk-accessories.js?v=3';
-import { floorCutout } from './walk-shell.js?v=2';
+import { floorCutout } from './walk-shell.js?v=3';
 
 const EYE = 1.6;
 const CEILING = 2.8;
@@ -80,7 +80,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   const panoCache = new Map();
   function loadPano(file) {
     if (!panoCache.has(file)) {
-      panoCache.set(file, new Promise((resolve, reject) => new THREE.TextureLoader().load(basePath + '/assets/residences/views/' + file, (t) => {
+      panoCache.set(file, new Promise((resolve, reject) => new THREE.TextureLoader().load(basePath + '/assets/residences/views/' + file + (file === 'pano-spa.webp' ? '?v=6k2' : ''), (t) => {
         t.colorSpace = THREE.SRGBColorSpace;
         t.anisotropy = mobile ? Math.min(2, renderer.capabilities.getMaxAnisotropy()) : renderer.capabilities.getMaxAnisotropy();
         resolve(t);
@@ -102,7 +102,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   function loadGlb(slug, file = 'apartment.glb') {
     const url = assetUrl(slug, file);
     if (!glbCache.has(url)) {
-      const revision = file === 'interior.glb' ? 'public=7' : 'walk=20';
+      const revision = file === 'interior.glb' ? 'public=10' : 'walk=20';
       const vUrl = url + (url.includes('?') ? '&' : '?') + revision;
       glbCache.set(url, loader.loadAsync(vUrl).then(g => g.scene).catch(error => { glbCache.delete(url); throw error; }));
     }
@@ -327,7 +327,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
     const [src, pano, sky] = await Promise.all([
       loadGlb(slug, 'interior.glb'),
       loadPano(`pano-${panoramaLevel}.webp`),
-      (slug === 'roof' || slug === 'lobby') ? loadPano('pano-roof-sky.png').catch(() => null) : null,
+      (slug === 'roof' || slug === 'lobby' || slug === 'spa') ? loadPano('pano-roof-sky.png').catch(() => null) : null,
     ]);
     if (disposed || !current()) return;
     exit();

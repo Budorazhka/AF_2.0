@@ -58,22 +58,33 @@ function subtract(polygon, planes) {
 
 /** Cut only this storey's shared walls, glazing and railings. Other storeys
  * and the continuous load-bearing slab retain their original geometry. */
-export function trimWalkStorey(meshes, cutouts) {
+export function trimWalkStorey(meshes, cutouts, replacesFrontage) {
   const originals = new Map();
   for (const mesh of meshes.filter(Boolean)) {
     const geometry = mesh.geometry;
+    const meshCutouts = geometry.userData.clipToFloor === false ? [] : cutouts;
     const { position, normal } = geometry.attributes;
     const pos = [], norm = [];
+    const omitted = new Map((geometry.userData.frontages || [])
+      .filter(replacesFrontage).map(part => [part.start, part.count]));
+    if (!meshCutouts.length && !omitted.size) continue;
     let changed = false;
     const count = geometry.index?.count ?? position.count;
-    for (let i = 0; i < count; i += 3) {
+    for (let i = 0; i < count;) {
+      const rangeLength = omitted.get(i);
+      if (rangeLength) {
+        i += rangeLength;
+        changed = true;
+        continue;
+      }
       const tri = [i, i + 1, i + 2].map((index) => {
         const j = geometry.index ? geometry.index.getX(index) : index;
         return [position.getX(j), position.getY(j), position.getZ(j),
           normal.getX(j), normal.getY(j), normal.getZ(j)];
       });
+      i += 3;
       let pieces = [tri];
-      for (const cutout of cutouts) pieces = pieces.flatMap((p) => subtract(p, cutout));
+      for (const cutout of meshCutouts) pieces = pieces.flatMap((p) => subtract(p, cutout));
       if (pieces.length !== 1 || pieces[0] !== tri) changed = true;
       for (const p of pieces) for (let j = 1; j + 1 < p.length; j++) {
         for (const v of [p[0], p[j], p[j + 1]]) {

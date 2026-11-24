@@ -22,6 +22,15 @@
   --chess-unavailable-bg: #f1f1f0;
 }
 
+/* ---------- page spacing: keep chessboard visible above the fold ---------- */
+[data-barba-namespace="flats-chess"] .location-hero {
+  padding: 108px 0 12px;
+}
+.chess.section {
+  padding-top: 16px;
+  padding-bottom: clamp(56px, 7vw, 100px);
+}
+
 /* ---------- mode switcher (chess / 3D) ---------- */
 .chess-mode-switch {
   display: inline-flex;

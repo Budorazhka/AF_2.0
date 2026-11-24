@@ -11,7 +11,7 @@
    Everything here is in plan coordinates (metres on the drawing). */
 import * as THREE from './three.js';
 import { mergeGeometries } from './three.js';
-import { PARKING } from './exterior-layout.js';
+import { PARKING } from './exterior-layout.js?v=2';
 
 /* Fixed plan-space node chains placed along the outer terrace edge; outward
    normals point +Z (south/sea) and +X (east), so the origami exoskeleton sits
@@ -67,13 +67,16 @@ const RIGHT_WING = enrichChain(RIGHT_CHAIN);
 
 /** Glass balustrades along balconies + stepped setback terraces on Levels 5..7. */
 export function balustradeGeometry(edges, y, level = 0) {
-  const parts = [];
+  const parts = [], frontages = [];
+  let indexOffset = 0;
   const addPanel = (ax, az, bx, bz, h = 1.08) => {
     const len = Math.hypot(bx - ax, bz - az);
     if (len < 0.4) return;
     const g = new THREE.BoxGeometry(len, h, 0.04);
     g.rotateY(-Math.atan2(bz - az, bx - ax));
     g.translate((ax + bx) / 2, y + h / 2, (az + bz) / 2);
+    frontages.push({ start: indexOffset, count: g.index.count, edge: [ax, az, bx, bz] });
+    indexOffset += g.index.count;
     parts.push(g);
   };
   for (const [ax, az, bx, bz, , , terrace] of edges) {
@@ -99,6 +102,7 @@ export function balustradeGeometry(edges, y, level = 0) {
   }
   if (!parts.length) return null;
   const merged = mergeGeometries(parts, false);
+  merged.userData.frontages = frontages;
   parts.forEach((p) => p.dispose());
   return merged;
 }
@@ -121,7 +125,7 @@ function starVertex(wing, idx, y, storeyIdx, back = false) {
 
 /** Sculpted 4-pointed star origami lattice with crisp 4-sided window openings (16.png & Blender). */
 export function frameGeometry(storeys) {
-  const pos = [];
+  const pos = [], frontages = [];
   const faceTri = (a, b, c, ox, oy, oz) => {
     const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
     const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
@@ -140,15 +144,20 @@ export function frameGeometry(storeys) {
     const len = seg.len;
     const nx = seg.nx, nz = seg.nz, tx = seg.tx, tz = seg.tz;
 
+    // Drop the lowest origami soffit 2 cm below Level 2's slab bottom (y0) so
+    // the white frame closure never Z-fights with the dark slab underside when
+    // viewed from the Level 1 lobby windows.
+    const botY = levelIdx === 0 ? y0 - 0.02 : y0;
+
     // 4 outer star apexes at the 4 corners of this cell
-    const S00 = starVertex(wing, i, y0, levelIdx, false);
-    const S10 = starVertex(wing, i + 1, y0, levelIdx, false);
+    const S00 = starVertex(wing, i, botY, levelIdx, false);
+    const S10 = starVertex(wing, i + 1, botY, levelIdx, false);
     const S11 = starVertex(wing, i + 1, y1, levelIdx + 1, false);
     const S01 = starVertex(wing, i, y1, levelIdx + 1, false);
 
     // 4 wall-back anchor points
-    const B00 = starVertex(wing, i, y0, levelIdx, true);
-    const B10 = starVertex(wing, i + 1, y0, levelIdx, true);
+    const B00 = starVertex(wing, i, botY, levelIdx, true);
+    const B10 = starVertex(wing, i + 1, botY, levelIdx, true);
     const B11 = starVertex(wing, i + 1, y1, levelIdx + 1, true);
     const B01 = starVertex(wing, i, y1, levelIdx + 1, true);
 
@@ -218,6 +227,13 @@ export function frameGeometry(storeys) {
     faceQuad(I_tr, I_tl, R_tl, R_tr, 0, -1, 0);
     faceQuad(I_tl, I_bl, R_bl, R_tl, tx, 0, tz);
 
+    // Close the back around the opening. From a balcony, glass embedded in
+    // a neighbouring pier would otherwise show through its hollow interior.
+    faceQuad(B00, B10, R_br, R_bl, -nx, 0, -nz);
+    faceQuad(B10, B11, R_tr, R_br, -nx, 0, -nz);
+    faceQuad(B11, B01, R_tl, R_tr, -nx, 0, -nz);
+    faceQuad(B01, B00, R_bl, R_tl, -nx, 0, -nz);
+
     // 6. Outer boundary side closures
     if (i === 0) {
       const B_lm = mid(B00, B01);
@@ -255,6 +271,8 @@ export function frameGeometry(storeys) {
 
   // Diagonal step-down wedge hood (as seen on the right wing in the Blender model & 16.png)
   function buildStepWedge(wing, i, y0, y1, levelIdx) {
+    const start = pos.length / 3;
+    const a = wing.nodes[i], b = wing.nodes[i + 1];
     const seg = wing.segN[i];
     const nx = seg.nx, nz = seg.nz;
     const S00 = starVertex(wing, i, y0, levelIdx, false);
@@ -267,6 +285,7 @@ export function frameGeometry(storeys) {
     faceTri(S00, S10, S01, nx, 0.2, nz);
     faceQuad(S01, S10, B10, B01, nx, 0.7, nz);
     faceQuad(B00, S00, S01, B01, -seg.tx, 0, -seg.tz);
+    frontages.push({ start, count: pos.length / 3 - start, wedge: true, edge: [a.x, a.z, b.x, b.z] });
   }
 
   for (const s of storeys) {
@@ -288,6 +307,10 @@ export function frameGeometry(storeys) {
 
   if (!pos.length) return null;
   const g = new THREE.BufferGeometry();
+  g.userData.frontages = frontages;
+  // Keep the piers closed. During a walk only a complete intersecting wedge
+  // is removed; slicing a pier open would expose the railing inside it.
+  g.userData.clipToFloor = false;
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.computeVertexNormals();
   return g;

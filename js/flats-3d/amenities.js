@@ -123,6 +123,10 @@ function awning(b, x0, x1, y, z0, z1) {
   b.add('awning', slope);
   b.add('awning', box(w, 0.18, 0.06, (x0 + x1) / 2, y - 0.48, z1));
 }
+function parasol(b, x, y, z, r = 1.45, h = 2.45) {
+  b.add('dark', new THREE.CylinderGeometry(0.035, 0.035, h, 8).translate(x, y + h / 2, z));
+  b.add('white', new THREE.ConeGeometry(r, 0.44, 8).translate(x, y + h, z));
+}
 function pavilion(b, x, y, z, a) {
   b.add('wood', box(5, 0.3, 5, x, y, z, a));
   b.add('roof', box(6, 0.28, 6, x, y + 2.9, z, a));
@@ -138,8 +142,9 @@ export function createAmenities(building, data, height) {
   const L = (n) => building.levels.find((l) => l.level === n);
   const spa = lv(-1), lobby = lv(1), roof = lv(8);
   const plan = new THREE.Group();
+  const upperTerrace = new THREE.Group();
   const world = new THREE.Group();
-  const P = new Bins(), W = new Bins(), RF = new Bins();   // RF: the roof, hidden with the upper floors
+  const P = new Bins(), UP = new Bins(), W = new Bins(), RF = new Bins();   // RF: the roof, hidden with the upper floors
   // T7: decor on the level-7 terraces. Its positions are set for the exterior view and cross
   // the detailed flat models, so a walk through a level-7 flat hides it (app.js showLandscape).
   const T7 = new Bins();
@@ -175,13 +180,16 @@ export function createAmenities(building, data, height) {
   // Spa podium block under the restaurant terrace (x = 9.8..26.2, z = 19.35..30.6)
   const podBase = solid(new THREE.BoxGeometry(16.4, leftPodH, 11.25), 0x3b4556, { roughness: 0.78 });
   podBase.position.set(18.0, (spaFloor + podiumY) / 2, 24.975);
-  const podDeck = solid(new THREE.BoxGeometry(16.4, 0.16, 11.25), 0x434d5e, { roughness: 0.82 });
-  podDeck.position.set(18.0, podiumY + 0.02, 24.975);
-  plan.add(leftWingBase, leftWalkBase, leftWalkDeck, podBase, podDeck);
+  // Keep the restaurant terrace deck cleanly above Level 1's slab bottom (podiumY)
+  // so it never overlaps the spa interior ceiling when viewed from Floor -1.
+  const podDeck = solid(new THREE.BoxGeometry(16.4, 0.18, 11.25), 0x434d5e, { roughness: 0.82 });
+  podDeck.position.set(18.0, podiumY + 0.14, 24.975);
+  plan.add(leftWingBase, leftWalkBase, leftWalkDeck, podBase);
+  upperTerrace.add(podDeck);
 
   // Parapet along the front and right side of the restaurant terrace
-  P.add('slate', box(16.4, 0.78, 0.32, 18.0, podiumY, 30.44));
-  P.add('slate', box(0.32, 0.78, 11.25, 26.04, podiumY, 24.975));
+  UP.add('slate', box(16.4, 0.78, 0.32, 18.0, podiumY + 0.14, 30.44));
+  UP.add('slate', box(0.32, 0.78, 11.25, 26.04, podiumY + 0.14, 24.975));
 
   // 4 large dark-framed spa windows along the front wall facing the pool (z = 30.62)
   for (let i = 0; i < 4; i++) {
@@ -193,52 +201,59 @@ export function createAmenities(building, data, height) {
     P.add('dark', box(0.08, 2.5, 0.2, wx + 1.6, spaFloor + 0.15, 30.64));
   }
 
-  // Left glazed spa/gym pavilion wing (x = 1.4..8.0, z = 24.0..30.6) with rooftop terrace & glass balustrade
+  // Left glazed spa/martial-arts pavilion wing (x = 1.4..8.0, z = 24.0..30.6) with wooden rooftop yoga terrace & glass balustrade (masterplan.jpg)
   const pavH = podiumY - spaFloor;
   P.add('dark', box(6.6, 0.24, 6.6, 4.7, spaFloor + pavH - 0.12, 27.3));
+  P.add('wood', box(6.3, 0.08, 6.3, 4.7, podiumY + 0.12, 27.3));
+  for (const [mx, mz] of [[3.2, 26.2], [4.7, 26.2], [6.2, 26.2], [4.0, 28.4], [5.5, 28.4]]) {
+    P.add('stone', box(0.68, 0.03, 1.75, mx, podiumY + 0.20, mz));
+  }
   P.add('spaGlass', box(6.3, pavH - 0.2, 6.3, 4.7, spaFloor + 0.05, 27.3));
   for (const x of [1.55, 3.1, 4.7, 6.3, 7.85]) P.add('dark', box(0.08, pavH - 0.1, 0.08, x, spaFloor + 0.05, 30.5));
   // Glass balustrade on top of the left pavilion roof terrace (y = podiumY)
-  P.add('glass', box(6.6, 1.05, 0.04, 4.7, podiumY + 0.08, 30.55));
-  P.add('glass', box(0.04, 1.05, 6.6, 1.45, podiumY + 0.08, 27.3));
+  P.add('glass', box(6.6, 1.05, 0.04, 4.7, podiumY + 0.16, 30.55));
+  P.add('glass', box(0.04, 1.05, 6.6, 1.45, podiumY + 0.16, 27.3));
 
-  // Exterior staircase descending in the open air (x = 8.0..9.8, z = 29.3..33.1) from the front terrace (podiumY) to the pool deck (spaFloor)
+  // Exterior staircase descending in the open air (x = 8.05..9.80, z = 30.55..34.10) from the open front walkway landing to the pool deck
   const steps = 12;
   for (let s = 0; s < steps; s++) {
     const t = s / steps;
     const sy = spaFloor + (1 - t) * (podiumY - spaFloor);
-    const sz = 29.3 + t * 3.8;
-    P.add('slate', box(1.75, 0.28, 0.38, 8.9, sy - 0.28, sz));
+    const sz = 30.55 + t * 3.55;
+    P.add('slate', box(1.75, 0.26, 0.34, 8.925, sy - 0.26, sz));
   }
-  for (const x of [8.05, 9.75]) {
-    const rGeo = new THREE.BoxGeometry(0.06, 0.06, 4.3);
-    rGeo.rotateX(Math.atan2(podiumY - spaFloor, 3.8));
-    rGeo.translate(x, (spaFloor + podiumY) / 2 + 0.85, 31.2);
+  for (const x of [8.08, 9.77]) {
+    const rGeo = new THREE.BoxGeometry(0.06, 0.06, 4.15);
+    rGeo.rotateX(Math.atan2(podiumY - spaFloor, 3.55));
+    rGeo.translate(x, (spaFloor + podiumY) / 2 + 0.90, 32.32);
     P.add('dark', rGeo);
   }
 
   // 3 cream/beige retractable awnings under the 2nd-floor right wing (x = 16.0..28.2, z = 19.35..22.15)
   for (let i = 0; i < 3; i++) {
     const ax0 = 16.0 + i * 4.1, ax1 = ax0 + 3.8;
-    awning(P, ax0, ax1, L(2).y0 - 0.05, 19.35, 22.15);
+    awning(UP, ax0, ax1, L(2).y0 - 0.05, 19.35, 22.15);
   }
 
   // Vine-covered dark steel pergola on the open restaurant terrace (x = 13.85..23.6, z = 25.8..30.2 — 100% clear of the left wing!)
-  pergola(P, 13.85, 25.8, 23.6, 30.2, podiumY, { vines: true, colour: 'dark' });
+  pergola(UP, 13.85, 25.8, 23.6, 30.2, podiumY + 0.22, { vines: true, colour: 'dark' });
   // Continuous green vine planter along the front parapet to the left of the pergola (x = 10.2..13.5, z = 30.2)
   for (let x = 10.4; x <= 13.4; x += 0.85) {
-    P.add('leaf', new THREE.IcosahedronGeometry(0.55, 1).scale(1.15, 0.5, 0.9).translate(x, podiumY + 0.95, 30.35));
+    UP.add('leaf', new THREE.IcosahedronGeometry(0.55, 1).scale(1.15, 0.5, 0.9).translate(x, podiumY + 1.05, 30.35));
   }
 
-  // Dining tables on the open lobby restaurant terrace
+  // Dining tables & white parasols on the open lobby restaurant terrace (п3.webp)
   for (const [tx, tz] of [
     [15.6, 28.0], [18.7, 28.0], [21.8, 28.0],
     [16.8, 23.6], [20.6, 23.6], [24.4, 23.8],
   ]) {
-    tableSet(P, tx, podiumY, tz);
+    tableSet(UP, tx, podiumY + 0.22, tz);
+  }
+  for (const [px2, pz2] of [[16.4, 24.4], [20.6, 24.4], [24.4, 24.6]]) {
+    parasol(UP, px2, podiumY + 0.22, pz2, 1.55, 2.55);
   }
 
-  // -- 2. Pool deck, swimming pool, loungers, lounge corner & playground (фасад 2) --
+  // -- 2. Pool deck, swimming pool, loungers, parasols, lounge corner & playground (п3.webp & masterplan.jpg) --
   const dx0 = 4.6, dx1 = 25.8, dz0 = 30.6, dz1 = 38.4;
   const base = solid(new THREE.BoxGeometry(dx1 - dx0, 5.2, dz1 - dz0), 0x363e4b);
   base.position.set((dx0 + dx1) / 2, spaFloor - 2.6, (dz0 + dz1) / 2);
@@ -247,35 +262,78 @@ export function createAmenities(building, data, height) {
 
   // Turquoise swimming pool with crisp white stone coping (centred in front of the 4 spa windows)
   const px = 16.0, pz = 34.5, pw = 9.6, pd = 4.2;
-  const coping = solid(new THREE.BoxGeometry(pw + 0.8, 0.12, pd + 0.8), 0xeeebe3, { roughness: 0.55 });
-  coping.position.set(px, spaFloor + 0.10, pz);
+  const coping = solid(new THREE.BoxGeometry(pw + 0.8, 0.10, pd + 0.8), 0xeeebe3, { roughness: 0.55 });
+  coping.position.set(px, spaFloor + 0.16, pz);
   const poolMat = new THREE.MeshStandardMaterial({ color: 0x38b5d6, roughness: 0.05, metalness: 0.12, emissive: 0x269ec2, emissiveIntensity: 0.12 });
   mats.push(poolMat);
-  const water = new THREE.Mesh(new THREE.BoxGeometry(pw, 0.12, pd), poolMat);
-  water.position.set(px, spaFloor + 0.13, pz);
+  const water = new THREE.Mesh(new THREE.BoxGeometry(pw, 0.08, pd), poolMat);
+  water.position.set(px, spaFloor + 0.19, pz);
   plan.add(base, deck, coping, water);
 
-  // Row of 6 white sun loungers on the right of the pool
+  // Glass balustrade along all three outer edges of the pool deck (with stair opening at x=6.2..8.2 to the playground)
+  P.add('glass', box(1.52, 1.04, 0.04, 5.44, spaFloor + 0.14, dz1 - 0.08));
+  P.add('glass', box(17.52, 1.04, 0.04, 16.96, spaFloor + 0.14, dz1 - 0.08));
+  P.add('glass', box(0.04, 1.04, dz1 - dz0 - 0.16, dx0 + 0.08, spaFloor + 0.14, (dz0 + dz1) / 2));
+  P.add('glass', box(0.04, 1.04, dz1 - dz0 - 0.16, dx1 - 0.08, spaFloor + 0.14, (dz0 + dz1) / 2));
+  for (const x of [dx0 + 0.12, 6.20, 8.20, 12.6, 17.4, 22.2, dx1 - 0.12]) P.add('dark', box(0.06, 1.06, 0.06, x, spaFloor + 0.14, dz1 - 0.08));
+  for (const x of [dx0 + 0.08, dx1 - 0.08]) {
+    for (let z = dz0 + 0.5; z <= dz1 - 0.2; z += 3.6) P.add('dark', box(0.06, 1.06, 0.06, x, spaFloor + 0.14, z));
+  }
+
+  // Row of 6 white sun loungers & 3 white parasols on the right of the pool (п3.webp)
   for (let i = 0; i < 6; i++) {
     lounger(P, 22.8, spaFloor + 0.14, 31.6 + i * 1.12, 0);
   }
+  for (const pz2 of [32.2, 34.5, 36.8]) {
+    parasol(P, 23.1, spaFloor + 0.14, pz2, 1.35, 2.35);
+  }
 
-  // Left lounge area at the foot of the stairs (white L-sofa and coffee table)
+  // Left lounge area at the foot of the stairs (white L-sofa, coffee table & white parasol)
   P.add('white', box(2.3, 0.42, 0.8, 7.2, spaFloor + 0.14, 34.2));
   P.add('white', box(0.8, 0.42, 1.7, 6.2, spaFloor + 0.14, 35.3));
   P.add('white', new THREE.CylinderGeometry(0.5, 0.5, 0.34, 16).translate(7.5, spaFloor + 0.31, 35.4));
+  parasol(P, 7.2, spaFloor + 0.14, 34.8, 1.45, 2.40);
 
-  // Children's wooden playground in front of the pool deck (x = 7.5..18.5, z = 38.6..42.8)
-  const playY = spaFloor - 0.65;
-  P.add('sand', box(11.0, 0.18, 4.2, 13.5, playY - 0.1, 40.6));
-  for (const [tx, tz] of [[10.0, 40.4], [13.7, 40.7], [17.0, 40.3]]) {
-    P.add('wood', box(1.15, 0.12, 1.15, tx, playY + 1.05, tz));
-    for (const [ox, oz] of [[-0.48, -0.48], [0.48, -0.48], [-0.48, 0.48], [0.48, 0.48]]) {
-      P.add('wood', box(0.11, 2.0, 0.11, tx + ox, playY, tz + oz));
+  // Children's wooden playground at ground level below the pool deck + 5-step stairs down (x = 6.2..8.2, masterplan.jpg)
+  const playY = spaFloor - 0.75;
+  for (let s = 0; s < 5; s++) {
+    const sy = spaFloor + 0.14 - ((s + 1) / 5) * (spaFloor + 0.14 - playY);
+    P.add('wood', box(1.96, 0.16, 0.32, 7.2, sy - 0.16, dz1 + 0.14 + s * 0.30));
+  }
+  P.add('slate', box(17.8, 3.4, 5.8, 13.7, playY - 3.45, 41.3));
+  P.add('sand', box(15.0, 0.18, 5.2, 14.5, playY - 0.08, 41.2));
+  P.add('stone', box(3.8, 0.18, 5.4, 6.6, playY - 0.08, 41.2));
+  // Two wooden play towers with pitched roofs + rope bridge + slide
+  for (const [tx, tz] of [[10.2, 40.9], [14.2, 41.1]]) {
+    P.add('wood', box(1.35, 0.14, 1.35, tx, playY + 1.15, tz));
+    for (const [ox, oz] of [[-0.56, -0.56], [0.56, -0.56], [-0.56, 0.56], [0.56, 0.56]]) {
+      P.add('wood', box(0.12, 2.35, 0.12, tx + ox, playY, tz + oz));
+    }
+    P.add('roof', new THREE.ConeGeometry(1.18, 0.85, 4).rotateY(Math.PI / 4).translate(tx, playY + 2.75, tz));
+  }
+  P.add('wood', box(3.2, 0.10, 0.72, 12.2, playY + 1.12, 41.0));
+  const slide = new THREE.BoxGeometry(1.85, 0.10, 0.62);
+  slide.rotateZ(0.58);
+  slide.translate(8.8, playY + 0.62, 40.9);
+  P.add('wood', slide);
+  // A-frame wooden swing set on the right of the playground
+  P.add('wood', box(2.6, 0.12, 0.12, 18.0, playY + 2.15, 41.3));
+  for (const sx of [16.8, 19.2]) {
+    for (const dz of [-0.55, 0.55]) {
+      const leg = new THREE.BoxGeometry(0.10, 2.35, 0.10);
+      leg.rotateX(dz > 0 ? -0.24 : 0.24);
+      leg.translate(sx, playY + 1.12, 41.3 + dz * 0.55);
+      P.add('wood', leg);
     }
   }
-  P.add('wood', box(3.5, 0.08, 0.65, 11.85, playY + 1.0, 40.55));
-  P.add('wood', box(3.1, 0.08, 0.65, 15.35, playY + 1.0, 40.5));
+  // Lush green bushes framing the playground perimeter
+  for (const [bx, bz, s] of [
+    [6.6, 39.2, 1.0], [6.8, 41.2, 1.15], [7.2, 43.2, 1.1],
+    [10.8, 43.4, 0.95], [15.6, 43.5, 1.05], [20.2, 43.2, 1.15],
+    [20.8, 40.6, 1.2], [20.5, 39.0, 0.95],
+  ]) {
+    P.add('leaf', new THREE.IcosahedronGeometry(0.75 * s, 1).scale(1.2, 0.75, 1.1).translate(bx, playY + 0.55 * s, bz));
+  }
 
   for (const [x, z] of [[dx0 + 0.6, dz0 + 0.6], [dx1 - 0.6, dz0 + 0.6], [dx0 + 0.6, dz1 - 0.6], [dx1 - 0.6, dz1 - 0.6]]) lampPlan.push([x, spaFloor + 0.14, z]);
   worldBox(dx0 - 2, dz0 - 2, dx1 + 2, dz1 + 5, 4);
@@ -396,6 +454,7 @@ export function createAmenities(building, data, height) {
   T7.build(terraceDecor);
   roofGroup.add(terraceDecor);
   P.build(plan);
+  UP.build(upperTerrace);
   RF.build(roofGroup).filter((m) => m.material.color.getHex() === new THREE.Color(COLOURS.glass).getHex()).forEach((m) => {
     Object.assign(m.material, { transparent: true, opacity: 0.38, depthWrite: false, roughness: 0.05 });
     m.castShadow = false;
@@ -412,13 +471,13 @@ export function createAmenities(building, data, height) {
   const lamps = [planLamps, roofPosts, roofWall, gardenLamps];
 
   return {
-    plan, roof: roofGroup, terraceDecor, world, keepOut, paths,
+    plan, upperTerrace, roof: roofGroup, terraceDecor, world, keepOut, paths,
     setNight(f) {
       lamps.forEach((l) => l.setNight(f));
       poolMat.emissiveIntensity = 0.08 + 0.85 * f;
     },
     dispose() {
-      [plan, roofGroup, world].forEach((g) => g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); }));
+      [plan, upperTerrace, roofGroup, world].forEach((g) => g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); }));
       lamps.forEach((l) => l.dispose());
     },
   };

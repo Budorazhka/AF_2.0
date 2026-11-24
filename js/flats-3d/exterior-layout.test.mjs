@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { PARKING, SETBACK_ROOFS, parkingAccess } from './exterior-layout.js';
+import { PARKING, SETBACK_ROOFS, parkingAccess, replacesWalkFrontage } from './exterior-layout.js';
 
 const data = JSON.parse(fs.readFileSync(new URL('../../assets/data/building-3d.json', import.meta.url)));
 for (const [level, x, z] of [[6, 30.10, 9.70], [7, 26.20, 9.70]]) {
@@ -24,4 +24,18 @@ for (const { points } of [upper, lower]) {
   }
 }
 
-console.log('PASS: setback roofs cover the end bays, both parking approaches reach their entries');
+const fifth = data.levels.find(floor => floor.level === 5);
+const balcony504 = fifth.units.find(unit => unit.number === '504').outdoor;
+const balcony505 = fifth.units.find(unit => unit.number === '505').outdoor;
+const panel505 = fifth.facade.find(([ax, az]) => ax === 21.47 && az === 19.73);
+assert.ok(panel505, 'The drawn frontage for balcony 505 must be present');
+const [ax, az, bx, bz] = panel505;
+for (const edge of [[ax, az, bx, bz], [bx, bz, ax, az]]) {
+  assert.ok(replacesWalkFrontage({ edge }, balcony505, []), 'Remove the entire duplicate pane in 505');
+  assert.equal(replacesWalkFrontage({ edge }, balcony504, []), false, 'Keep the neighbouring balcony in 504');
+}
+
+const wedge = { edge: [26.2, 19.78, 31.32, 19.48], wedge: true };
+const terraceCutout = [[1, 0, -25.87], [-1, 0, 31.57], [0, 1, -18.22], [0, -1, 19.95]];
+assert.ok(replacesWalkFrontage(wedge, balcony504, [terraceCutout]), 'Remove the wedge across the terrace');
+assert.equal(replacesWalkFrontage(wedge, balcony505, []), false, 'Keep wedges outside the active floor pieces');

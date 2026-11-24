@@ -11,7 +11,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "46";
+  var VERSION = "47";
   var app = null;
 
   function base() { return window.__BASE_PATH__ || ""; }
@@ -31,7 +31,11 @@
     el.setAttribute("data-mounted", "1");
     ensureCss();
     import(base() + "/js/flats-3d/app.js?v=" + VERSION)
-      .then(function (m) { app = m; m.mount(el); })
+      .then(function (m) {
+        if (!el.isConnected || document.getElementById("af3d") !== el) return;
+        app = m;
+        m.mount(el);
+      })
       .catch(function () {
         var status = el.querySelector("[data-af3d-status]");
         var t = window.AF_I18N ? window.AF_I18N.t : function (s) { return s; };
@@ -42,6 +46,10 @@
   function teardown() {
     if (app) app.unmount();
     app = null;
+    document.documentElement.classList.remove("af3d-lock");
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    if (window.AF_lenis) window.AF_lenis.start();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

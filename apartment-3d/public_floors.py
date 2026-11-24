@@ -178,6 +178,50 @@ def core(s, ground):
             s.tube("bronze", (x, y, 8.70), (x, y + 0.70, 8.70), 0.015)
 
 
+def shrub(s, x, z, base=0.0, scale=1.0):
+    """Organic low subtropical bush built from layered angled leaf fronds (no cylinders)."""
+    for ring, (count, r_scale, h_scale, pitch) in enumerate((
+        (10, 0.72, 0.42, 0.22),
+        (8, 0.50, 0.72, 0.55),
+        (5, 0.28, 0.92, 0.85),
+    )):
+        for i in range(count):
+            az = i * math.tau / count + ring * 0.45
+            dx, dz = math.cos(az), math.sin(az)
+            reach = r_scale * scale * (0.85 + 0.25 * ((i + ring) % 2))
+            p0 = (x + dx * 0.08 * scale, base + 0.12 * scale, z + dz * 0.08 * scale)
+            p1 = (x + dx * reach * 0.55, base + h_scale * scale, z + dz * reach * 0.55)
+            p2 = (x + dx * reach, base + (h_scale - pitch * 0.32) * scale, z + dz * reach)
+            w = 0.22 * scale
+            s.mesh(
+                "leaf",
+                [
+                    p0,
+                    (p1[0] - dz * w, p1[1] + 0.05 * scale, p1[2] + dx * w),
+                    p2,
+                    (p1[0] + dz * w, p1[1] + 0.05 * scale, p1[2] - dx * w),
+                ],
+                [0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2],
+                "#ffffff",
+            )
+
+
+def parasol(s, x, z, radius=1.35, height=2.35):
+    """Sun umbrella with dark pole and 8-panel linen canopy."""
+    s.tube("frame", (x, 0.0, z), (x, height, z), 0.032)
+    apex = (x, height + 0.34, z)
+    ring = [
+        (x + radius * math.cos(i * math.tau / 8), height - 0.06, z + radius * math.sin(i * math.tau / 8))
+        for i in range(8)
+    ]
+    pts = [apex] + ring
+    tri = []
+    for i in range(8):
+        j = (i + 1) % 8
+        tri.extend((0, i + 1, j + 1, 0, j + 1, i + 1))
+    s.mesh("linen", pts, tri, "#ffffff")
+
+
 def pool(s):
     a, b, c, d = SPA_POOL
     s.part("satin", a, b, c - a, d - b, s.height, 0.10)
@@ -275,21 +319,96 @@ def spa(s):
     for x in (19.3, 22.9, 26.1):
         lounger(s, x, 28.48)
     # The lower terrace gives the glazing a near foreground in front of the sea.
-    s.part("basalt", 4.6, 28.06, 7.45, 2.78, -5.20, 5.20)
-    s.part("basalt", 4.6, 30.84, 21.2, 7.56, -5.20, 5.20)
+    # Basalt structural base sits 2 cm below a warm teak deck finish (matching п6-pool.webp & masterplan.jpg).
+    s.part("basalt", 4.6, 28.06, 7.45, 2.78, -5.20, 5.18)
+    s.part("basalt", 4.6, 30.84, 21.2, 7.56, -5.20, 5.18)
+    s.part("teak", 4.6, 28.06, 7.45, 2.78, -0.02, 0.02)
+    s.part("teak", 4.6, 30.84, 21.2, 7.56, -0.02, 0.02)
     s.floors.extend([[4.6, 28.06, 12.05, 30.84], [4.6, 30.84, 25.8, 38.26]])
     s.barriers.extend([[11.20, 32.40, 20.80, 36.60],
-                       [4.6, 30.84, 4.7, 38.26], [25.70, 30.84, 25.8, 38.26],
-                       [4.6, 38.16, 25.8, 38.26]])
-    s.part("limestone", 10.82, 32.02, 10.36, 4.96, -0.07, 0.08)
-    s.part("water", 11.20, 32.40, 9.60, 4.20, 0.012, 0.012)
+                       [4.6, 28.06, 4.72, 38.26], [25.68, 30.84, 25.8, 38.26],
+                       [4.6, 38.14, 25.8, 38.26],
+                       [8.0, 30.4, 9.85, 34.2]])
+    # Outdoor pool coping and turquoise water cleanly layered above the teak deck.
+    s.part("limestone", 10.82, 32.02, 10.36, 4.96, 0.002, 0.045)
+    s.part("water", 11.20, 32.40, 9.60, 4.20, 0.052, 0.012)
     for z in (32.02, 34.65, 36.86):
         lounger(s, 22.80, z)
+    for z in (32.2, 34.6, 36.9):
+        parasol(s, 23.15, z, radius=1.32, height=2.32)
+    # Left lounge seating corner at the foot of the exterior stairs (п3.webp)
+    s.part("oak", 6.0, 33.85, 2.25, 0.80, 0.0, 0.14, solid=True)
+    s.part("linen", 6.04, 33.89, 2.17, 0.72, 0.14, 0.28)
+    s.part("linen", 6.04, 33.89, 2.17, 0.18, 0.42, 0.36)
+    s.part("oak", 5.85, 34.65, 0.80, 1.55, 0.0, 0.14, solid=True)
+    s.part("linen", 5.89, 34.69, 0.72, 1.47, 0.14, 0.28)
+    s.part("linen", 5.89, 34.69, 0.18, 1.47, 0.42, 0.36)
+    s.oval("limestone", 7.45, 35.35, 0.48, 0.48, 0.0, 0.34, "#ffffff")
+    s.barriers.append([6.97, 34.87, 7.93, 35.83])
+    parasol(s, 7.25, 34.85, radius=1.42, height=2.38)
+    # Exterior staircase ascending to the open Level 1 front walkway landing (outside the lobby glass at z=29.65)
+    # Landing connects right -> restaurant terrace (under pergola) and left -> pavilion rooftop yoga terrace (п3.webp)
+    s.part("basalt", 4.6, 29.75, 5.4, 0.90, s.height - 0.14, 0.24)
+    s.part("glass", 4.65, 30.60, 3.35, 0.03, s.height + 0.10, 1.02)
+    for st in range(12):
+        t = st / 12.0
+        sy = (1.0 - t) * s.height
+        sz = 30.55 + t * 3.55
+        s.part("basalt", 8.05, sz - 0.16, 1.75, 0.34, max(0.0, sy - 0.26), 0.26)
+    for rx in (8.08, 9.77):
+        s.tube("frame", (rx, s.height + 0.95, 30.55), (rx, 0.95, 34.10), 0.025)
+    # Adjacent left glazed pavilion ("Зал единоборств") with wooden rooftop yoga deck (masterplan.jpg)
+    s.part("frame", 1.4, 24.0, 3.2, 6.6, s.height - 0.18, 0.24)
+    s.part("teak", 1.55, 24.15, 2.9, 6.3, s.height + 0.06, 0.06)
+    s.part("glass", 1.45, 24.05, 3.1, 6.5, 0.02, s.height - 0.20)
+    for px in (1.50, 2.95, 4.45):
+        s.part("frame", px - 0.04, 30.48, 0.08, 0.08, 0.02, s.height - 0.16)
+    s.part("glass", 1.45, 30.52, 3.15, 0.03, s.height + 0.12, 1.02)
+    s.part("glass", 1.45, 24.05, 0.03, 6.5, s.height + 0.12, 1.02)
+    # Ground-level children's wooden playground, stairs down from the pool deck & garden apron (masterplan.jpg)
+    play_y = -0.75
+    # 5 wide teak/stone steps descending from the left-front edge of the pool deck (x = 6.2..8.2) to ground level
+    for st in range(5):
+        t = (st + 1) / 5.0
+        sy = -t * abs(play_y)
+        sz = 38.26 + st * 0.30
+        s.part("teak", 6.22, sz, 1.96, 0.32, sy - 0.15, 0.15)
+    for rx in (6.24, 8.16):
+        s.tube("frame", (rx, 0.96, 38.26), (rx, play_y + 0.96, 39.76), 0.024)
+        s.part("frame", rx - 0.03, 39.72, 0.06, 0.06, play_y, 0.98)
+    # Continuous ground-level stone walkway + sand playground + lush garden border (no cliff drop-off)
+    s.part("basalt", 3.6, 38.26, 23.4, 7.6, play_y - 2.6, 2.54)
+    s.part("limestone", 4.6, 38.26, 4.0, 5.8, play_y - 0.05, 0.07)
+    s.part("limestone", 8.6, 38.40, 13.6, 5.2, play_y - 0.06, 0.06)
+    s.part("teak", 8.5, 38.35, 13.8, 0.14, play_y - 0.02, 0.08)
+    s.part("teak", 8.5, 43.52, 13.8, 0.14, play_y - 0.02, 0.08)
+    s.part("teak", 22.16, 38.35, 0.14, 5.31, play_y - 0.02, 0.08)
+    for tx, tz in ((11.2, 40.9), (15.2, 41.1)):
+        s.part("oak", tx - 0.65, tz - 0.65, 1.30, 1.30, play_y + 1.15, 0.12)
+        for ox, oz in ((-0.54, -0.54), (0.54, -0.54), (-0.54, 0.54), (0.54, 0.54)):
+            s.part("oak", tx + ox - 0.06, tz + oz - 0.06, 0.12, 0.12, play_y, 2.25)
+        s.part("walnut", tx - 0.78, tz - 0.78, 1.56, 1.56, play_y + 2.25, 0.18)
+    s.part("oak", 11.8, 40.65, 2.8, 0.70, play_y + 1.12, 0.08)
+    # Organic multi-frond subtropical shrubs & palms framing the ground-level garden edge (no cylinders)
+    for bx, bz, sc in (
+        (5.1, 41.8, 1.15), (5.5, 43.8, 1.25), (8.2, 44.1, 1.10),
+        (11.4, 44.2, 1.20), (14.8, 44.3, 1.15), (18.4, 44.1, 1.25),
+        (21.8, 43.9, 1.20), (23.2, 41.6, 1.30), (23.5, 39.4, 1.15),
+    ):
+        shrub(s, bx, bz, base=play_y, scale=sc)
     palm(s, 27.46, 28.70)
     palm(s, 24.70, 31.80)
-    for x in (12.6, 17.4, 22.2):
-        s.part("frame", x - 0.035, 38.24, 0.07, 0.07, -0.075, 1.04)
-    s.part("glass", 4.75, 38.26, 20.9, 0.024, -0.05, 1.0)
+    # Complete glass balustrades & posts on front (with stair opening at x=6.2..8.2), left, and right outer edges
+    for x in (4.68, 6.20, 8.20, 12.6, 17.4, 22.2, 25.72):
+        s.part("frame", x - 0.035, 38.22, 0.07, 0.07, -0.02, 1.04)
+    s.part("glass", 4.68, 38.25, 1.52, 0.024, 0.0, 1.02)
+    s.part("glass", 8.20, 38.25, 17.52, 0.024, 0.0, 1.02)
+    for z in (28.15, 31.5, 34.9):
+        s.part("frame", 4.63, z - 0.035, 0.07, 0.07, -0.02, 1.04)
+    s.part("glass", 4.66, 28.12, 0.024, 10.14, 0.0, 1.02)
+    for z in (30.92, 34.6):
+        s.part("frame", 25.70, z - 0.035, 0.07, 0.07, -0.02, 1.04)
+    s.part("glass", 25.73, 30.86, 0.024, 7.40, 0.0, 1.02)
     for z in (12.43, 13.02):
         s.part("oak", 13.55, z, 4.06, 0.53, 0.03, 0.46 if z > 12.5 else 0.88, solid=True)
     for j in range(16):
@@ -393,7 +512,7 @@ def lobby(s):
 
 
 def build(level):
-    s = PublicScene(3.70 if level == -1 else 3.30, ceiling_drop=0.04 if level == 1 else 0)
+    s = PublicScene(3.70 if level == -1 else 3.30, ceiling_drop=0.04 if level in (-1, 1) else 0)
     {-1: spa, 1: lobby, 8: roof}[level](s)
     return s
 

@@ -61,6 +61,31 @@ class PublicFloorTests(unittest.TestCase):
                                 and scene.bounds(obj)[4] >= 0.70
                                 for obj in scene.objects), z)
 
+    def test_spa_ceiling_clears_first_storey_slab_and_terrace_is_enclosed(self):
+        scene = build(-1)
+        data = json.loads((Path(__file__).resolve().parent.parent /
+                           'assets/data/building-3d.json').read_text(encoding='utf-8'))
+        spa_level = next(level for level in data['levels'] if level['level'] == -1)
+        slab_bottom = spa_level['height'] - 0.30
+        for x, z in [(10.0, 24.0), (20.0, 18.0), (20.0, 29.0)]:
+            ceilings = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'ivory'
+                        and scene.bounds(obj)[0] < x < scene.bounds(obj)[3]
+                        and scene.bounds(obj)[2] < z < scene.bounds(obj)[5]
+                        and slab_bottom - 0.15 <= scene.bounds(obj)[1] <= slab_bottom]
+            self.assertTrue(ceilings, (x, z))
+            for ceiling in ceilings:
+                self.assertLessEqual(ceiling[1], slab_bottom - 0.02, (x, z, ceiling))
+        # Glass balustrades enclose front (with stair opening x=6.2..8.2), left, and right edges.
+        glass = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'glass']
+        self.assertTrue(any(b[0] <= 5.0 and b[3] >= 6.1 and b[2] >= 38.2 for b in glass))
+        self.assertTrue(any(b[0] <= 8.3 and b[3] >= 25.0 and b[2] >= 38.2 for b in glass))
+        self.assertTrue(any(b[0] <= 4.7 and b[3] <= 4.8 and b[2] <= 29.0 and b[5] >= 38.0 for b in glass))
+        self.assertTrue(any(b[0] >= 25.6 and b[3] <= 25.8 and b[2] <= 31.0 and b[5] >= 38.0 for b in glass))
+        # Descending steps connect the pool deck to the ground-level playground.
+        steps = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'teak'
+                 and 6.0 <= scene.bounds(obj)[0] <= 6.5 and 38.2 <= scene.bounds(obj)[2] <= 39.8]
+        self.assertGreaterEqual(len(steps), 5)
+
     def test_lobby_ceiling_clears_second_storey_slab(self):
         scene = build(1)
         data = json.loads((Path(__file__).resolve().parent.parent /
