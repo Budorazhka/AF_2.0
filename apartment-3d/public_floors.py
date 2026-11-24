@@ -178,32 +178,77 @@ def core(s, ground):
             s.tube("bronze", (x, y, 8.70), (x, y + 0.70, 8.70), 0.015)
 
 
-def shrub(s, x, z, base=0.0, scale=1.0):
-    """Organic low subtropical bush built from layered angled leaf fronds (no cylinders)."""
-    for ring, (count, r_scale, h_scale, pitch) in enumerate((
-        (10, 0.72, 0.42, 0.22),
-        (8, 0.50, 0.72, 0.55),
-        (5, 0.28, 0.92, 0.85),
-    )):
-        for i in range(count):
-            az = i * math.tau / count + ring * 0.45
-            dx, dz = math.cos(az), math.sin(az)
-            reach = r_scale * scale * (0.85 + 0.25 * ((i + ring) % 2))
-            p0 = (x + dx * 0.08 * scale, base + 0.12 * scale, z + dz * 0.08 * scale)
-            p1 = (x + dx * reach * 0.55, base + h_scale * scale, z + dz * reach * 0.55)
-            p2 = (x + dx * reach, base + (h_scale - pitch * 0.32) * scale, z + dz * reach)
-            w = 0.22 * scale
-            s.mesh(
-                "leaf",
-                [
-                    p0,
-                    (p1[0] - dz * w, p1[1] + 0.05 * scale, p1[2] + dx * w),
-                    p2,
-                    (p1[0] + dz * w, p1[1] + 0.05 * scale, p1[2] - dx * w),
-                ],
-                [0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2],
-                "#ffffff",
-            )
+def playground(s, play_y):
+    """Scandinavian wooden children's playground: gabled playhouse with slide, A-frame swings, and sandbox."""
+    # 1. Playhouse tower with pitched gable roof, safety railings, ladder, and chrome slide
+    tx, tz = 11.4, 41.0
+    deck_y = play_y + 1.12
+    eave_y = play_y + 2.26
+    ridge_y = play_y + 2.86
+    # Corner posts & raised deck
+    for ox, oz in ((-0.62, -0.62), (0.62, -0.62), (-0.62, 0.62), (0.62, 0.62)):
+        s.part("oak", tx + ox - 0.055, tz + oz - 0.055, 0.11, 0.11, play_y, eave_y - play_y)
+    s.part("oak", tx - 0.70, tz - 0.70, 1.40, 1.40, deck_y - 0.10, 0.10)
+    # Horizontal safety slats on back (z-0.62), front (z+0.62), and half of left side
+    for h in (0.28, 0.56, 0.84):
+        s.part("oak", tx - 0.62, tz + 0.59, 1.24, 0.05, deck_y + h, 0.09)
+        s.part("oak", tx - 0.62, tz - 0.64, 1.24, 0.05, deck_y + h, 0.09)
+    # Pitched gabled roof (two sloped walnut panels)
+    over_x, over_z = 0.84, 0.88
+    thick = 0.07
+    for side in (-1, 1):
+        z_eave = tz + side * over_z
+        pts = [
+            (tx - over_x, ridge_y, tz), (tx + over_x, ridge_y, tz),
+            (tx + over_x, eave_y, z_eave), (tx - over_x, eave_y, z_eave),
+            (tx - over_x, ridge_y - thick, tz), (tx + over_x, ridge_y - thick, tz),
+            (tx + over_x, eave_y - thick, z_eave), (tx - over_x, eave_y - thick, z_eave),
+        ]
+        s.mesh("walnut", pts, [
+            0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6,
+            0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2,
+            2, 6, 7, 2, 7, 3, 3, 7, 4, 3, 4, 0,
+        ], "#ffffff")
+    # Sloped climbing ladder on the left (-X)
+    for dz in (-0.28, 0.28):
+        s.tube("oak", (tx - 1.25, play_y, tz + dz), (tx - 0.66, deck_y + 0.05, tz + dz), 0.032)
+    for k in range(5):
+        t = (k + 0.5) / 5.0
+        lx = (tx - 1.25) + t * 0.59
+        ly = play_y + t * (deck_y - play_y)
+        s.tube("oak", (lx, ly, tz - 0.28), (lx, ly, tz + 0.28), 0.022)
+    # Stainless-steel (chrome) slide on the right (+X) with side curbs
+    sx0, sx1 = tx + 0.66, tx + 2.45
+    sy0, sy1 = deck_y - 0.02, play_y + 0.14
+    sw = 0.28
+    slide_pts = [
+        (sx0, sy0, tz - sw), (sx1, sy1, tz - sw), (sx1, sy1, tz + sw), (sx0, sy0, tz + sw),
+        (sx0, sy0 - 0.04, tz - sw), (sx1, sy1 - 0.04, tz - sw), (sx1, sy1 - 0.04, tz + sw), (sx0, sy0 - 0.04, tz + sw),
+    ]
+    s.mesh("chrome", slide_pts, [
+        0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6,
+        0, 4, 5, 0, 5, 1, 2, 6, 7, 2, 7, 3,
+    ], "#ffffff")
+    for dz in (-sw, sw):
+        s.tube("chrome", (sx0, sy0 + 0.11, tz + dz), (sx1, sy1 + 0.11, tz + dz), 0.024)
+    # 2. Wooden A-frame double swing set (x = 15.8..19.2, z = 41.0)
+    top_y = play_y + 2.25
+    s.tube("oak", (15.65, top_y, 41.0), (19.35, top_y, 41.0), 0.058)
+    for sx in (15.9, 19.1):
+        for dz in (-0.82, 0.82):
+            s.tube("oak", (sx, play_y, 41.0 + dz), (sx, top_y, 41.0), 0.048)
+    for cx in (16.9, 18.1):
+        seat_y = play_y + 0.54
+        s.part("walnut", cx - 0.26, 40.87, 0.52, 0.26, seat_y, 0.045)
+        for dx in (-0.22, 0.22):
+            s.tube("chrome", (cx + dx, seat_y + 0.04, 41.0), (cx + dx, top_y - 0.02, 41.0), 0.009)
+    # 3. Low wooden sandbox + balance stepping logs on the left (x = 8.9..10.2, z = 41.6..42.9)
+    s.part("teak", 8.85, 41.55, 1.45, 0.12, play_y, 0.24)
+    s.part("teak", 8.85, 42.88, 1.45, 0.12, play_y, 0.24)
+    s.part("teak", 8.85, 41.67, 0.12, 1.21, play_y, 0.24)
+    s.part("teak", 10.18, 41.67, 0.12, 1.21, play_y, 0.24)
+    for lx, lz, lh in ((14.6, 42.2, 0.24), (15.1, 42.5, 0.34), (15.6, 42.1, 0.28)):
+        s.oval("oak", lx, lz, 0.17, 0.17, play_y, lh, "#ffffff")
 
 
 def parasol(s, x, z, radius=1.35, height=2.35):
@@ -357,14 +402,17 @@ def spa(s):
         s.part("basalt", 8.05, sz - 0.16, 1.75, 0.34, max(0.0, sy - 0.26), 0.26)
     for rx in (8.08, 9.77):
         s.tube("frame", (rx, s.height + 0.95, 30.55), (rx, 0.95, 34.10), 0.025)
-    # Adjacent left glazed pavilion ("Зал единоборств") with wooden rooftop yoga deck (masterplan.jpg)
-    s.part("frame", 1.4, 24.0, 3.2, 6.6, s.height - 0.18, 0.24)
-    s.part("teak", 1.55, 24.15, 2.9, 6.3, s.height + 0.06, 0.06)
-    s.part("glass", 1.45, 24.05, 3.1, 6.5, 0.02, s.height - 0.20)
-    for px in (1.50, 2.95, 4.45):
+    # Adjacent left glazed pavilion ("Зал единоборств") with wooden rooftop yoga deck (masterplan.jpg).
+    # Keep strictly outside the gym wall (x <= 4.08) and south of the gym panoramic glazing (z >= 26.85).
+    s.part("frame", 1.40, 26.85, 2.68, 3.70, s.height - 0.18, 0.24)
+    s.part("teak", 1.50, 26.95, 2.48, 3.50, s.height + 0.06, 0.06)
+    s.part("glass", 1.45, 30.50, 2.60, 0.024, 0.02, s.height - 0.20)
+    s.part("glass", 1.45, 26.88, 0.024, 3.64, 0.02, s.height - 0.20)
+    s.part("glass", 1.45, 26.88, 2.60, 0.024, 0.02, s.height - 0.20)
+    for px in (1.48, 2.75, 4.02):
         s.part("frame", px - 0.04, 30.48, 0.08, 0.08, 0.02, s.height - 0.16)
-    s.part("glass", 1.45, 30.52, 3.15, 0.03, s.height + 0.12, 1.02)
-    s.part("glass", 1.45, 24.05, 0.03, 6.5, s.height + 0.12, 1.02)
+    s.part("glass", 1.45, 30.52, 2.60, 0.03, s.height + 0.12, 1.02)
+    s.part("glass", 1.45, 26.88, 0.03, 3.64, s.height + 0.12, 1.02)
     # Ground-level children's wooden playground, stairs down from the pool deck & garden apron (masterplan.jpg)
     play_y = -0.75
     # 5 wide teak/stone steps descending from the left-front edge of the pool deck (x = 6.2..8.2) to ground level
@@ -376,26 +424,22 @@ def spa(s):
     for rx in (6.24, 8.16):
         s.tube("frame", (rx, 0.96, 38.26), (rx, play_y + 0.96, 39.76), 0.024)
         s.part("frame", rx - 0.03, 39.72, 0.06, 0.06, play_y, 0.98)
-    # Continuous ground-level stone walkway + sand playground + lush garden border (no cliff drop-off)
-    s.part("basalt", 3.6, 38.26, 23.4, 7.6, play_y - 2.6, 2.54)
+    # Continuous ground-level stone walkway + sand playground + clean architectural border (no spiky bushes)
+    s.part("basalt", 4.2, 38.26, 19.0, 6.2, play_y - 2.6, 2.54)
     s.part("limestone", 4.6, 38.26, 4.0, 5.8, play_y - 0.05, 0.07)
     s.part("limestone", 8.6, 38.40, 13.6, 5.2, play_y - 0.06, 0.06)
     s.part("teak", 8.5, 38.35, 13.8, 0.14, play_y - 0.02, 0.08)
     s.part("teak", 8.5, 43.52, 13.8, 0.14, play_y - 0.02, 0.08)
     s.part("teak", 22.16, 38.35, 0.14, 5.31, play_y - 0.02, 0.08)
-    for tx, tz in ((11.2, 40.9), (15.2, 41.1)):
-        s.part("oak", tx - 0.65, tz - 0.65, 1.30, 1.30, play_y + 1.15, 0.12)
-        for ox, oz in ((-0.54, -0.54), (0.54, -0.54), (-0.54, 0.54), (0.54, 0.54)):
-            s.part("oak", tx + ox - 0.06, tz + oz - 0.06, 0.12, 0.12, play_y, 2.25)
-        s.part("walnut", tx - 0.78, tz - 0.78, 1.56, 1.56, play_y + 2.25, 0.18)
-    s.part("oak", 11.8, 40.65, 2.8, 0.70, play_y + 1.12, 0.08)
-    # Organic multi-frond subtropical shrubs & palms framing the ground-level garden edge (no cylinders)
-    for bx, bz, sc in (
-        (5.1, 41.8, 1.15), (5.5, 43.8, 1.25), (8.2, 44.1, 1.10),
-        (11.4, 44.2, 1.20), (14.8, 44.3, 1.15), (18.4, 44.1, 1.25),
-        (21.8, 43.9, 1.20), (23.2, 41.6, 1.30), (23.5, 39.4, 1.15),
-    ):
-        shrub(s, bx, bz, base=play_y, scale=sc)
+    # Clean low basalt perimeter curb + glass safety railing along the outer playground edge
+    s.part("basalt", 4.6, 43.75, 18.2, 0.30, play_y, 0.36)
+    s.part("glass", 4.65, 43.89, 18.1, 0.024, play_y + 0.36, 0.78)
+    for x in (4.68, 9.2, 13.7, 18.2, 22.72):
+        s.part("frame", x - 0.03, 43.86, 0.06, 0.06, play_y + 0.34, 0.82)
+    playground(s, play_y)
+    # Tasteful potted botanical palms in the playground corners (matching the spa terrace)
+    palm(s, 5.25, 43.15, base=play_y)
+    palm(s, 21.65, 43.10, base=play_y)
     palm(s, 27.46, 28.70)
     palm(s, 24.70, 31.80)
     # Complete glass balustrades & posts on front (with stair opening at x=6.2..8.2), left, and right outer edges

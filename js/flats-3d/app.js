@@ -14,7 +14,7 @@ import * as THREE from './three.js';
 import { OrbitControls } from './three.js';
 import { createSite, groundHeight } from './site.js?v=26';
 import { createBuilding, STATUS_COLORS } from './building.js?v=34';
-import { createWalk } from './walk.js?v=48';
+import { createWalk } from './walk.js?v=50';
 import { createAmenities } from './amenities.js?v=29';
 import { sunPosition, sunDirection, siteDate, sunHours, formatClock } from './sun.js?v=24';
 
