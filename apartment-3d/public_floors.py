@@ -251,9 +251,11 @@ def playground(s, play_y):
         s.oval("oak", lx, lz, 0.17, 0.17, play_y, lh, "#ffffff")
 
 
-def parasol(s, x, z, radius=1.35, height=2.35):
-    """Sun umbrella with dark pole and 8-panel linen canopy."""
-    s.tube("frame", (x, 0.0, z), (x, height, z), 0.032)
+def parasol(s, x, z, radius=1.25, height=2.35):
+    """Sun umbrella with weighted basalt base, dark pole, and 8-panel linen canopy."""
+    s.oval("basalt", x, z, 0.34, 0.34, 0.0, 0.05, "#ffffff")
+    s.tube("frame", (x, 0.05, z), (x, height, z), 0.032)
+    s.barriers.append([x - 0.16, z - 0.16, x + 0.16, z + 0.16])
     apex = (x, height + 0.34, z)
     ring = [
         (x + radius * math.cos(i * math.tau / 8), height - 0.06, z + radius * math.sin(i * math.tau / 8))
@@ -369,18 +371,21 @@ def spa(s):
     s.part("basalt", 4.6, 30.84, 21.2, 7.56, -5.20, 5.18)
     s.part("teak", 4.6, 28.06, 7.45, 2.78, -0.02, 0.02)
     s.part("teak", 4.6, 30.84, 21.2, 7.56, -0.02, 0.02)
-    s.floors.extend([[4.6, 28.06, 12.05, 30.84], [4.6, 30.84, 25.8, 38.26]])
+    s.floors.extend([[4.6, 28.06, 12.05, 30.84], [4.6, 30.84, 25.8, 38.26], [1.55, 26.95, 4.65, 30.45]])
     s.barriers.extend([[11.20, 32.40, 20.80, 36.60],
-                       [4.6, 28.06, 4.72, 38.26], [25.68, 30.84, 25.8, 38.26],
+                       [4.6, 30.55, 4.72, 38.26], [25.68, 30.84, 25.8, 38.26],
                        [4.6, 38.14, 25.8, 38.26],
-                       [8.0, 30.4, 9.85, 34.2]])
+                       [8.0, 30.4, 9.85, 34.2],
+                       [1.40, 26.85, 1.55, 30.55], [1.40, 26.85, 4.62, 27.00],
+                       [1.40, 30.40, 4.62, 30.55], [4.52, 26.85, 4.65, 28.15]])
     # Outdoor pool coping and turquoise water cleanly layered above the teak deck.
     s.part("limestone", 10.82, 32.02, 10.36, 4.96, 0.002, 0.045)
     s.part("water", 11.20, 32.40, 9.60, 4.20, 0.052, 0.012)
     for z in (32.02, 34.65, 36.86):
         lounger(s, 22.80, z)
-    for z in (32.2, 34.6, 36.9):
-        parasol(s, 23.15, z, radius=1.32, height=2.32)
+    # Place parasols cleanly beside the loungers (x=24.45, clear of x=22.41..23.19)
+    for z in (33.30, 35.85):
+        parasol(s, 24.45, z, radius=1.22, height=2.32)
     # Left lounge seating corner at the foot of the exterior stairs (п3.webp)
     s.part("oak", 6.0, 33.85, 2.25, 0.80, 0.0, 0.14, solid=True)
     s.part("linen", 6.04, 33.89, 2.17, 0.72, 0.14, 0.28)
@@ -390,7 +395,7 @@ def spa(s):
     s.part("linen", 5.89, 34.69, 0.18, 1.47, 0.42, 0.36)
     s.oval("limestone", 7.45, 35.35, 0.48, 0.48, 0.0, 0.34, "#ffffff")
     s.barriers.append([6.97, 34.87, 7.93, 35.83])
-    parasol(s, 7.25, 34.85, radius=1.42, height=2.38)
+    parasol(s, 5.65, 36.95, radius=1.22, height=2.38)
     # Exterior staircase ascending to the open Level 1 front walkway landing (outside the lobby glass at z=29.65)
     # Landing connects right -> restaurant terrace (under pergola) and left -> pavilion rooftop yoga terrace (п3.webp)
     s.part("basalt", 4.6, 29.75, 5.4, 0.90, s.height - 0.14, 0.24)
@@ -402,17 +407,39 @@ def spa(s):
         s.part("basalt", 8.05, sz - 0.16, 1.75, 0.34, max(0.0, sy - 0.26), 0.26)
     for rx in (8.08, 9.77):
         s.tube("frame", (rx, s.height + 0.95, 30.55), (rx, 0.95, 34.10), 0.025)
-    # Adjacent left glazed pavilion ("Зал единоборств") with wooden rooftop yoga deck (masterplan.jpg).
-    # Keep strictly outside the gym wall (x <= 4.08) and south of the gym panoramic glazing (z >= 26.85).
-    s.part("frame", 1.40, 26.85, 2.68, 3.70, s.height - 0.18, 0.24)
-    s.part("teak", 1.50, 26.95, 2.48, 3.50, s.height + 0.06, 0.06)
-    s.part("glass", 1.45, 30.50, 2.60, 0.024, 0.02, s.height - 0.20)
-    s.part("glass", 1.45, 26.88, 0.024, 3.64, 0.02, s.height - 0.20)
-    s.part("glass", 1.45, 26.88, 2.60, 0.024, 0.02, s.height - 0.20)
-    for px in (1.48, 2.75, 4.02):
-        s.part("frame", px - 0.04, 30.48, 0.08, 0.08, 0.02, s.height - 0.16)
-    s.part("glass", 1.45, 30.52, 2.60, 0.03, s.height + 0.12, 1.02)
+    # Adjacent left glazed Yoga & Stretching Pavilion ("Студия йоги") with wooden rooftop deck (masterplan.jpg).
+    # Keep strictly south of the gym panoramic glazing (z >= 26.85) and open onto the pool deck at x=4.62, z=28.15..30.45.
+    s.part("basalt", 1.35, 26.80, 3.30, 3.80, -5.20, 5.18)
+    s.part("basalt", 4.12, 26.78, 2.00, 1.32, -5.20, 5.18)
+    s.part("teak", 1.40, 26.85, 3.22, 3.70, -0.02, 0.025)
+    s.part("frame", 1.40, 26.85, 3.22, 3.70, s.height - 0.18, 0.24)
+    s.part("light", 1.80, 27.30, 2.20, 0.05, s.height - 0.20, 0.025)
+    s.part("teak", 1.50, 26.95, 3.05, 3.50, s.height + 0.06, 0.06)
+    # Perimeter bottom sill & transom over the wide doorway (x=4.58, z=28.15..30.46)
+    s.part("frame", 1.41, 30.46, 3.20, 0.08, 0.0, 0.06)
+    s.part("frame", 1.41, 26.85, 3.20, 0.08, 0.0, 0.06)
+    s.part("frame", 1.41, 26.85, 0.08, 3.69, 0.0, 0.06)
+    s.part("frame", 4.54, 26.85, 0.08, 1.30, 0.0, 0.06)
+    s.part("frame", 4.54, 28.12, 0.08, 2.38, 2.34, 0.08)
+    # Thin glass walls & vertical corner/bay mullions (east doorway z=28.15..30.46 is open!)
+    s.part("glass", 1.45, 30.50, 3.13, 0.024, 0.05, s.height - 0.23)
+    s.part("glass", 1.45, 26.88, 0.024, 3.64, 0.05, s.height - 0.23)
+    s.part("glass", 1.45, 26.88, 3.13, 0.024, 0.05, s.height - 0.23)
+    s.part("glass", 4.57, 26.88, 0.024, 1.27, 0.05, s.height - 0.23)
+    s.part("glass", 4.57, 28.15, 0.024, 2.31, 2.40, s.height - 2.58)
+    for px in (1.45, 2.50, 3.55, 4.58):
+        s.part("frame", px - 0.04, 30.46, 0.08, 0.08, 0.0, s.height - 0.16)
+    for px, pz in ((1.45, 26.89), (1.45, 28.70), (2.75, 26.89), (4.58, 26.89), (4.58, 28.12)):
+        s.part("frame", px - 0.04, pz - 0.04, 0.08, 0.08, 0.0, s.height - 0.16)
+    s.part("glass", 1.45, 30.52, 3.20, 0.03, s.height + 0.12, 1.02)
     s.part("glass", 1.45, 26.88, 0.03, 3.64, s.height + 0.12, 1.02)
+    # Yoga studio interior: 3 yoga mats with bolsters, wooden bench along north wall, and potted palm
+    for mz in (27.85, 28.75, 29.65):
+        s.part("linen", 2.05, mz - 0.30, 1.72, 0.60, 0.005, 0.022)
+        s.oval("walnut", 2.22, mz, 0.10, 0.24, 0.027, 0.11, "#ffffff")
+    s.part("oak", 2.15, 27.05, 1.65, 0.38, 0.0, 0.38, solid=True)
+    s.part("linen", 2.18, 27.08, 1.59, 0.32, 0.38, 0.06)
+    palm(s, 1.82, 30.08)
     # Ground-level children's wooden playground, stairs down from the pool deck & garden apron (masterplan.jpg)
     play_y = -0.75
     # 5 wide teak/stone steps descending from the left-front edge of the pool deck (x = 6.2..8.2) to ground level
@@ -447,9 +474,10 @@ def spa(s):
         s.part("frame", x - 0.035, 38.22, 0.07, 0.07, -0.02, 1.04)
     s.part("glass", 4.68, 38.25, 1.52, 0.024, 0.0, 1.02)
     s.part("glass", 8.20, 38.25, 17.52, 0.024, 0.0, 1.02)
-    for z in (28.15, 31.5, 34.9):
+    # Pool deck left glass balustrade starts at z=30.55, leaving x=4.6, z=28.15..30.45 wide open into the Yoga Pavilion
+    for z in (30.55, 34.4):
         s.part("frame", 4.63, z - 0.035, 0.07, 0.07, -0.02, 1.04)
-    s.part("glass", 4.66, 28.12, 0.024, 10.14, 0.0, 1.02)
+    s.part("glass", 4.66, 30.55, 0.024, 7.71, 0.0, 1.02)
     for z in (30.92, 34.6):
         s.part("frame", 25.70, z - 0.035, 0.07, 0.07, -0.02, 1.04)
     s.part("glass", 25.73, 30.86, 0.024, 7.40, 0.0, 1.02)
@@ -480,6 +508,7 @@ def spa(s):
     s.view("У панорамных окон", [27.58, 26.89], [20.1, 31.1], -0.065, "pool-evening.webp")
     s.view("Сауна", [17.15, 15.45], [14.95, 12.32], -0.13)
     s.view("Спортзал", [10.72, 20.36], [7.79, 26.72], -0.10)
+    s.view("Йога-павильон", [4.35, 29.25], [1.90, 28.60], -0.09)
 
 
 def lobby(s):

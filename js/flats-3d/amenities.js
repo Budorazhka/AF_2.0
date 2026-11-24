@@ -201,8 +201,11 @@ export function createAmenities(building, data, height) {
     P.add('dark', box(0.08, 2.5, 0.2, wx + 1.6, spaFloor + 0.15, 30.64));
   }
 
-  // Left glazed spa/martial-arts pavilion wing (x = 1.4..8.0, z = 24.0..30.6) with wooden rooftop yoga terrace & glass balustrade (masterplan.jpg)
+  // Left glazed spa/martial-arts pavilion wing (x = 1.4..8.0, z = 24.0..30.6) with solid plinth & rooftop yoga terrace (masterplan.jpg)
   const pavH = podiumY - spaFloor;
+  const pavPlinth = solid(new THREE.BoxGeometry(6.6, 5.2, 6.6), 0x363e4b);
+  pavPlinth.position.set(4.7, spaFloor - 2.6, 27.3);
+  plan.add(pavPlinth);
   P.add('dark', box(6.6, 0.24, 6.6, 4.7, spaFloor + pavH - 0.12, 27.3));
   P.add('wood', box(6.3, 0.08, 6.3, 4.7, podiumY + 0.12, 27.3));
   for (const [mx, mz] of [[3.2, 26.2], [4.7, 26.2], [6.2, 26.2], [4.0, 28.4], [5.5, 28.4]]) {
@@ -280,19 +283,19 @@ export function createAmenities(building, data, height) {
     for (let z = dz0 + 0.5; z <= dz1 - 0.2; z += 3.6) P.add('dark', box(0.06, 1.06, 0.06, x, spaFloor + 0.14, z));
   }
 
-  // Row of 6 white sun loungers & 3 white parasols on the right of the pool (п3.webp)
+  // Row of 6 white sun loungers & 2 white parasols clear of the loungers on the right of the pool (п3.webp)
   for (let i = 0; i < 6; i++) {
     lounger(P, 22.8, spaFloor + 0.14, 31.6 + i * 1.12, 0);
   }
-  for (const pz2 of [32.2, 34.5, 36.8]) {
-    parasol(P, 23.1, spaFloor + 0.14, pz2, 1.35, 2.35);
+  for (const pz2 of [33.1, 35.8]) {
+    parasol(P, 24.55, spaFloor + 0.14, pz2, 1.25, 2.35);
   }
 
-  // Left lounge area at the foot of the stairs (white L-sofa, coffee table & white parasol)
+  // Left lounge area at the foot of the stairs (white L-sofa, coffee table & clear white parasol)
   P.add('white', box(2.3, 0.42, 0.8, 7.2, spaFloor + 0.14, 34.2));
   P.add('white', box(0.8, 0.42, 1.7, 6.2, spaFloor + 0.14, 35.3));
   P.add('white', new THREE.CylinderGeometry(0.5, 0.5, 0.34, 16).translate(7.5, spaFloor + 0.31, 35.4));
-  parasol(P, 7.2, spaFloor + 0.14, 34.8, 1.45, 2.40);
+  parasol(P, 5.65, spaFloor + 0.14, 36.95, 1.25, 2.40);
 
   // Children's wooden playground at ground level below the pool deck + 5-step stairs down (x = 6.2..8.2, masterplan.jpg)
   const playY = spaFloor - 0.75;

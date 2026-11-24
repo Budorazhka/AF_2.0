@@ -102,7 +102,7 @@ export function createWalk({ renderer, site, scene, basePath = '', assetUrl, mob
   function loadGlb(slug, file = 'apartment.glb') {
     const url = assetUrl(slug, file);
     if (!glbCache.has(url)) {
-      const revision = file === 'interior.glb' ? 'public=12' : 'walk=20';
+      const revision = file === 'interior.glb' ? 'public=14' : 'walk=20';
       const vUrl = url + (url.includes('?') ? '&' : '?') + revision;
       glbCache.set(url, loader.loadAsync(vUrl).then(g => g.scene).catch(error => { glbCache.delete(url); throw error; }));
     }

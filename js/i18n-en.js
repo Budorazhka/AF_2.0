@@ -425,6 +425,7 @@ Object.assign(window.AF_I18N_EN, {
   "Кафе": "Café",
   "Сауна": "Sauna",
   "Спортзал": "Gym",
+  "Йога-павильон": "Yoga pavilion",
   "У панорамных окон": "By the windows",
   "Лобби и ресторан": "Lobby & restaurant",
   "Терраса на крыше": "Roof terrace",
