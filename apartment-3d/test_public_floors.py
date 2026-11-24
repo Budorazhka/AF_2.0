@@ -85,6 +85,10 @@ class PublicFloorTests(unittest.TestCase):
         steps = [scene.bounds(obj) for obj in scene.objects if obj['name'] == 'teak'
                  and 6.0 <= scene.bounds(obj)[0] <= 6.5 and 38.2 <= scene.bounds(obj)[2] <= 39.8]
         self.assertGreaterEqual(len(steps), 5)
+        # Exterior left pavilion glass must never protrude inside the gym glazing (x=4.23, z=16.48..26.78).
+        for b in glass:
+            if b[0] < 4.10:
+                self.assertLessEqual(b[3], 4.10, f"Pavilion glass protrudes into gym: {b}")
 
     def test_lobby_ceiling_clears_second_storey_slab(self):
         scene = build(1)
